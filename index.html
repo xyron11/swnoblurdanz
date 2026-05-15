@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Video Converter</title>
+<title>Converter</title>
 
 <style>
 
@@ -20,10 +21,10 @@ margin:0;
 }
 
 .box{
-background:#1a1a1a;
+background:#1b1b1b;
 padding:30px;
 border-radius:20px;
-width:320px;
+width:330px;
 text-align:center;
 }
 
@@ -36,10 +37,12 @@ background:#5865f2;
 color:white;
 font-size:16px;
 margin-top:15px;
+cursor:pointer;
 }
 
 input{
 margin-top:15px;
+width:100%;
 }
 
 #status{
@@ -52,6 +55,7 @@ color:#00ff99;
 }
 
 </style>
+
 </head>
 <body>
 
@@ -76,35 +80,80 @@ const API =
 
 async function upload() {
 
-const file =
-document.getElementById("file").files[0]
+  // CEK VERIF
+  if (
+    !localStorage.getItem(
+      "verified"
+    )
+  ) {
 
-if(!file){
-alert("pilih file dulu")
-return
-}
+    const code =
+      Math.random()
+      .toString(36)
+      .slice(2, 7)
+      .toUpperCase()
 
-const form = new FormData()
+    localStorage.setItem(
+      "verify_code",
+      code
+    )
 
-form.append("video", file)
+    await navigator.clipboard.writeText(
+      `verifikasi ${code}`
+    )
 
-document.getElementById("status").innerHTML =
-"Uploading..."
+    alert(
+      "Kode verifikasi sudah dicopy 😹\nPaste di grup lalu kirim."
+    )
 
-try{
+    window.location.href =
+      "https://chat.whatsapp.com/BVtogIjS1hAD0qOMhJ3f6a"
 
-const req = await fetch(
-API + "/upload",
-{
-method:"POST",
-body:form
-})
+    return
+  }
 
-const res = await req.json()
+  const file =
+    document.getElementById("file").files[0]
 
-if(res.status){
+  if (!file) {
+    alert("pilih file dulu")
+    return
+  }
 
-document.getElementById("status").innerHTML =
+  const form = new FormData()
+
+  form.append("video", file)
+
+  form.append(
+    "code",
+    localStorage.getItem(
+      "verify_code"
+    )
+  )
+
+  document.getElementById(
+    "status"
+  ).innerHTML =
+    "Uploading..."
+
+  try {
+
+    const req = await fetch(
+      API + "/upload",
+      {
+        method: "POST",
+        body: form
+      }
+    )
+
+    const res =
+      await req.json()
+
+    if (res.status) {
+
+      document.getElementById(
+        "status"
+      ).innerHTML =
 `
 DONE 😹
 <br><br>
@@ -113,19 +162,23 @@ DOWNLOAD
 </a>
 `
 
-}else{
+    } else {
 
-document.getElementById("status").innerHTML =
-res.error
+      document.getElementById(
+        "status"
+      ).innerHTML =
+        res.error
 
-}
+    }
 
-}catch(e){
+  } catch (e) {
 
-document.getElementById("status").innerHTML =
-e.message
+    document.getElementById(
+      "status"
+    ).innerHTML =
+      e.message
 
-}
+  }
 
 }
 
