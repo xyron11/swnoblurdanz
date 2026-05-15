@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 
 <meta charset="UTF-8">
@@ -66,17 +67,19 @@ color:#00ff99;
 </style>
 
 </head>
+
 <body>
 
 <div class="box">
 
 <h2>
-VIDEO CONVERTER
+M4A CONVERTER
 </h2>
 
 <input
 type="file"
-id="file">
+id="file"
+accept=".m4a">
 
 <input
 type="text"
@@ -98,86 +101,99 @@ const API =
 
 async function upload() {
 
-  const file =
-    document
-    .getElementById(
-      "file"
-    )
-    .files[0]
+const file =
+document
+.getElementById(
+"file"
+)
+.files[0]
 
-  const nomor =
-    document
-    .getElementById(
-      "nomor"
-    )
-    .value
+const nomor =
+document
+.getElementById(
+"nomor"
+)
+.value
 
-  if (!file) {
+if (!file) {
 
-    alert(
-      "pilih file dulu"
-    )
+alert(
+"pilih file dulu"
+)
 
-    return
+return
 
-  }
+}
 
-  if (!nomor) {
+if (!nomor) {
 
-    alert(
-      "isi nomor dulu"
-    )
+alert(
+"isi nomor dulu"
+)
 
-    return
+return
 
-  }
+}
 
-  const form =
-    new FormData()
+const form =
+new FormData()
 
-  form.append(
-    "video",
-    file
-  )
+form.append(
+"video",
+file
+)
 
-  form.append(
-    "nomor",
-    nomor
-  )
+form.append(
+"nomor",
+nomor
+)
 
-  document
-  .getElementById(
-    "status"
-  )
-  .innerHTML =
-    "Uploading..."
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+"Uploading..."
 
-  try {
+try {
 
-    const req =
-      await fetch(
-        API + "/upload",
-        {
-          method:
-            "POST",
+const req =
+await fetch(
+API + "/upload",
+{
+method:
+"POST",
 
-          body:
-            form
-        }
-      )
+body:
+form
+}
+)
 
-    const res =
-      await req.json()
+const res =
+await req.json()
 
-    if (res.status) {
+if (res.join) {
 
-      document
-      .getElementById(
-        "status"
-      )
-      .innerHTML =
+alert(
+"Gabung grup dulu Bre"
+)
+
+window.location.href =
+res.link
+
+return
+
+}
+
+if (res.status) {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
 `
-DONE 😹
+DONE 
 <br><br>
 
 <a href="${res.url}" target="_blank">
@@ -185,27 +201,27 @@ DOWNLOAD
 </a>
 `
 
-    } else {
+} else {
 
-      document
-      .getElementById(
-        "status"
-      )
-      .innerHTML =
-        res.error
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+res.error
 
-    }
+}
 
-  } catch (e) {
+} catch (e) {
 
-    document
-    .getElementById(
-      "status"
-    )
-    .innerHTML =
-      e.message
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+e.message
 
-  }
+}
 
 }
 
