@@ -73,13 +73,13 @@ color:#00ff99;
 <div class="box">
 
 <h2>
-DANZ STATUS
+DANZZ STATUS 
 </h2>
 
 <input
 type="file"
 id="file"
-accept=".m4a">
+accept="video/*">
 
 <input
 type="text"
@@ -113,12 +113,12 @@ document
 .getElementById(
 "nomor"
 )
-.value
+.value.trim()
 
 if (!file) {
 
 alert(
-"pilih file dulu"
+"Pilih video dulu"
 )
 
 return
@@ -128,7 +128,31 @@ return
 if (!nomor) {
 
 alert(
-"isi nomor dulu"
+"Isi nomor dulu"
+)
+
+return
+
+}
+
+if (
+!nomor.startsWith("62")
+) {
+
+alert(
+"Nomor harus awalan 62"
+)
+
+return
+
+}
+
+if (
+nomor.length < 10
+) {
+
+alert(
+"Nomor tidak valid"
 )
 
 return
@@ -171,19 +195,6 @@ form
 
 const res =
 await req.json()
-
-if (res.join) {
-
-alert(
-"Gabung grup dulu Bre"
-)
-
-window.location.href =
-res.link
-
-return
-
-}
 
 if (res.status) {
 
