@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Video Converter</title>
+
+<style>
+
+body{
+background:#0f0f0f;
+color:white;
+font-family:sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
+
+.box{
+background:#1a1a1a;
+padding:30px;
+border-radius:20px;
+width:320px;
+text-align:center;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#5865f2;
+color:white;
+font-size:16px;
+margin-top:15px;
+}
+
+input{
+margin-top:15px;
+}
+
+#status{
+margin-top:15px;
+word-break:break-all;
+}
+
+a{
+color:#00ff99;
+}
+
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<h2>VIDEO CONVERTER</h2>
+
+<input type="file" id="file">
+
+<button onclick="upload()">
+UPLOAD
+</button>
+
+<div id="status"></div>
+
+</div>
+
+<script>
+
+const API =
+"https://convert-api-production.up.railway.app"
+
+async function upload() {
+
+const file =
+document.getElementById("file").files[0]
+
+if(!file){
+alert("pilih file dulu")
+return
+}
+
+const form = new FormData()
+
+form.append("video", file)
+
+document.getElementById("status").innerHTML =
+"Uploading..."
+
+try{
+
+const req = await fetch(
+API + "/upload",
+{
+method:"POST",
+body:form
+})
+
+const res = await req.json()
+
+if(res.status){
+
+document.getElementById("status").innerHTML =
+`
+DONE 😹
+<br><br>
+<a href="${res.url}" target="_blank">
+DOWNLOAD
+</a>
+`
+
+}else{
+
+document.getElementById("status").innerHTML =
+res.error
+
+}
+
+}catch(e){
+
+document.getElementById("status").innerHTML =
+e.message
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
