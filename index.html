@@ -1,226 +1,242 @@
-const express = require("express")
-const multer = require("multer")
-const axios = require("axios")
-const FormData = require("form-data")
-const fs = require("fs")
-const cors = require("cors")
+<!DOCTYPE html>
+<html lang="id">
 
-const app = express()
+<head>
 
-app.use(cors())
-app.use(express.json())
+<meta charset="UTF-8">
 
-const upload = multer({
-  dest: "uploads/"
-})
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-let results = []
+<title>Converter</title>
 
-app.get("/", (req, res) => {
-  res.send("API READY")
-})
+<style>
 
-app.get("/results", (req, res) => {
+body{
+background:#0f0f0f;
+color:white;
+font-family:sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
 
-  res.json(results)
+.box{
+background:#1b1b1b;
+padding:30px;
+border-radius:20px;
+width:330px;
+text-align:center;
+}
 
-  results = []
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#5865f2;
+color:white;
+font-size:16px;
+margin-top:15px;
+cursor:pointer;
+}
 
-})
+input{
+margin-top:15px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#2a2a2a;
+color:white;
+box-sizing:border-box;
+}
 
-app.post("/upload", upload.single("video"), async (req, res) => {
+#status{
+margin-top:15px;
+word-break:break-all;
+}
 
-  try {
+a{
+color:#00ff99;
+}
 
-    const file = req.file
-    const nomor = req.body.nomor
+</style>
 
-    if (!file) {
+</head>
 
-      return res.json({
-        status: false,
-        error: "File tidak ditemukan"
-      })
+<body>
 
-    }
+<div class="box">
 
-    if (!nomor) {
+<h2>
+VIDEO CONVERTER
+</h2>
 
-      fs.unlinkSync(file.path)
+<input
+type="file"
+id="file"
+accept="video/*">
 
-      return res.json({
-        status: false,
-        error: "Nomor belum diisi"
-      })
+<input
+type="text"
+id="nomor"
+placeholder="628xxxx">
 
-    }
+<button onclick="upload()">
+UPLOAD
+</button>
 
-    const ext =
-    file.originalname
-    .split(".")
-    .pop()
-    .toLowerCase()
+<div id="status"></div>
 
-    const allowed = [
-      "mp4",
-      "mov",
-      "mkv",
-      "webm",
-      "avi",
-      "m4v"
-    ]
+</div>
 
-    if (
-      !allowed.includes(ext)
-    ) {
+<script>
 
-      fs.unlinkSync(file.path)
+const API =
+"https://convert-api-production.up.railway.app"
 
-      return res.json({
-        status: false,
-        error: "Hanya file video"
-      })
+async function upload() {
 
-    }
-
-    const check =
-    await axios.get(
-"https://raw.githubusercontent.com/USERNAME/REPO/main/verify.json"
-    )
-
-    const members =
-    check.data
-
-    if (
-      !members.includes(
-        nomor
-      )
-    ) {
-
-      fs.unlinkSync(file.path)
-
-      return res.json({
-        status: false,
-        error:
-        "Nomor tidak ada di grup"
-      })
-
-    }
-
-    const job = await axios.post(
-      "https://api.freeconvert.com/v1/process/jobs",
-      {
-        tasks: {
-
-          import: {
-            operation: "import/upload"
-          },
-
-          convert: {
-            operation: "convert",
-            input: "import",
-            input_format: ext,
-            output_format: "mp4"
-          },
-
-          "export-url": {
-            operation: "export/url",
-            input: "convert"
-          }
-
-        }
-      }
-    )
-
-    const data = job.data
-
-    const uploadTask =
-    data.tasks.find(
-      v => v.name === "import"
-    )
-
-    const uploadUrl =
-    uploadTask.result.form.url
-
-    const signature =
-    uploadTask.result.form.parameters.signature
-
-    const form = new FormData()
-
-    form.append(
-      "file",
-      fs.createReadStream(file.path),
-      file.originalname
-    )
-
-    form.append(
-      "signature",
-      signature
-    )
-
-    await axios.post(
-      uploadUrl,
-      form,
-      {
-        headers: {
-          ...form.getHeaders()
-        }
-      }
-    )
-
-    let resultUrl = null
-
-    while (true) {
-
-      const check = await axios.get(
-        `https://api.freeconvert.com/v1/process/jobs/${data.id}`
-      )
-
-      const exp =
-      check.data.tasks.find(
-        v => v.name === "export-url"
-      )
-
-      if (exp.result?.url) {
-
-        resultUrl =
-        exp.result.url
-
-        break
-
-      }
-
-      await new Promise(r =>
-        setTimeout(r, 3000)
-      )
-
-    }
-
-    fs.unlinkSync(file.path)
-
-    results.push({
-      nomor,
-      url: resultUrl
-    })
-
-    res.json({
-      status: true,
-      url: resultUrl
-    })
-
-  } catch (e) {
-
-    console.log(e)
-
-    res.json({
-      status: false,
-      error: e.message
-    })
-
-  }
-
-})
-
-app.listen(
-  process.env.PORT || 3000
+const file =
+document
+.getElementById(
+"file"
 )
+.files[0]
+
+const nomor =
+document
+.getElementById(
+"nomor"
+)
+.value.trim()
+
+if (!file) {
+
+alert(
+"Pilih video dulu"
+)
+
+return
+
+}
+
+if (!nomor) {
+
+alert(
+"Isi nomor dulu"
+)
+
+return
+
+}
+
+if (
+!nomor.startsWith("62")
+) {
+
+alert(
+"Nomor harus awalan 62"
+)
+
+return
+
+}
+
+if (
+nomor.length < 10
+) {
+
+alert(
+"Nomor tidak valid"
+)
+
+return
+
+}
+
+const form =
+new FormData()
+
+form.append(
+"video",
+file
+)
+
+form.append(
+"nomor",
+nomor
+)
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+"Uploading..."
+
+try {
+
+const req =
+await fetch(
+API + "/upload",
+{
+method:
+"POST",
+
+body:
+form
+}
+)
+
+const res =
+await req.json()
+
+if (res.status) {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+`
+DONE 😹
+<br><br>
+
+<a href="${res.url}" target="_blank">
+DOWNLOAD
+</a>
+`
+
+} else {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+res.error
+
+}
+
+} catch (e) {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+e.message
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
