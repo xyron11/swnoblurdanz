@@ -237,7 +237,7 @@
                     <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
-            } else if (type === "error" && message.includes("grup")) {
+            } else if (type === "error" && (message.toLowerCase().includes("gabung") || message.toLowerCase().includes("join"))) {
                 actionContainer.innerHTML = `
                     <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
@@ -279,7 +279,7 @@
             form.append("video", file);
             form.append("nomor", nomor);
 
-        
+            // Simpan state ke memori browser sebelum fetch berjalan
             localStorage.setItem("danz_isUploading", "true");
             localStorage.setItem("danz_fileName", file.name);
             localStorage.setItem("danz_nomor", nomor);
@@ -300,10 +300,11 @@
 
                 const res = await req.json();
 
-                
+                // PERBAIKAN UTAMA: Hapus memori di sini agar tidak nyangkut saat dapat respon (apapun hasilnya)
                 localStorage.removeItem("danz_isUploading");
                 localStorage.removeItem("danz_fileName");
                 localStorage.removeItem("danz_nomor");
+                
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
@@ -324,10 +325,11 @@
                 }
 
             } catch (e) {
-            
+                // Bersihkan memori juga jika crash/koneksi internet mati total
                 localStorage.removeItem("danz_isUploading");
                 localStorage.removeItem("danz_fileName");
                 localStorage.removeItem("danz_nomor");
+                
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
