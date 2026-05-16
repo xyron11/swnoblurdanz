@@ -157,7 +157,7 @@
 
         <input type="text" id="nomor" placeholder="Contoh: 628xxxx atau 1xxx">
 
-        <button onclick="upload()">UPLOAD NOW</button>
+        <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
 
         <div id="status">Waiting upload...</div>
 
@@ -177,6 +177,28 @@
 
     <script>
         const API = "https://convert-api-production.up.railway.app";
+
+        // === FITUR ANTI-RESET REFRESH ===
+        window.addEventListener("DOMContentLoaded", () => {
+            const isUploading = localStorage.getItem("danz_isUploading");
+            const lastFileName = localStorage.getItem("danz_fileName");
+            const lastNomor = localStorage.getItem("danz_nomor");
+            const btn = document.getElementById("uploadBtn");
+
+            if (isUploading === "true") {
+                // Pulihkan tampilan status saat halaman dimuat ulang
+                document.getElementById("status").innerHTML = "Uploading... (Melanjutkan proses di background)";
+                if (lastFileName) document.getElementById("file-name").innerText = lastFileName;
+                if (lastNomor) document.getElementById("nomor").value = lastNomor;
+
+                // Kunci tombol upload agar user tidak spam klik
+                if (btn) {
+                    btn.disabled = true;
+                    btn.style.opacity = "0.5";
+                    btn.style.cursor = "not-allowed";
+                }
+            }
+        });
 
         document.getElementById("file").addEventListener("change", e => {
             const file = e.target.files[0];
@@ -234,6 +256,7 @@
         async function upload() {
             const fileInput = document.getElementById("file");
             const nomorInput = document.getElementById("nomor");
+            const btn = document.getElementById("uploadBtn");
             const file = fileInput.files[0];
             const nomor = nomorInput.value.trim();
 
@@ -256,7 +279,17 @@
             form.append("video", file);
             form.append("nomor", nomor);
 
+            // Set state upload ke local storage sebelum request dikirim
+            localStorage.setItem("danz_isUploading", "true");
+            localStorage.setItem("danz_fileName", file.name);
+            localStorage.setItem("danz_nomor", nomor);
+
             document.getElementById("status").innerHTML = "Uploading...";
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = "0.5";
+                btn.style.cursor = "not-allowed";
+            }
 
             try {
                 const req = await fetch(API + "/upload", {
@@ -266,6 +299,16 @@
                 });
 
                 const res = await req.json();
+
+                // Bersihkan state memori karena proses di server sudah selesai dapat respon
+                localStorage.removeItem("danz_isUploading");
+                localStorage.removeItem("danz_fileName");
+                localStorage.removeItem("danz_nomor");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                }
 
                 if (res.status) {
                     document.getElementById("status").innerHTML = `DONE ✅<br><br><a href="${res.url}" target="_blank">DOWNLOAD VIDEO</a>`;
@@ -281,6 +324,15 @@
                 }
 
             } catch (e) {
+                // Bersihkan juga jika terjadi error crash koneksi internet terputus total
+                localStorage.removeItem("danz_isUploading");
+                localStorage.removeItem("danz_fileName");
+                localStorage.removeItem("danz_nomor");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                }
                 document.getElementById("status").innerHTML = e.message;
                 showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
             }
