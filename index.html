@@ -104,36 +104,6 @@
             height: 45px;
             padding: 0;
             box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            text-align: center;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Loading Spinner CSS Bawaan Baru */
-        .loading-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top: 3px solid #00ffaa;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         @keyframes pulseIcon {
@@ -182,7 +152,7 @@
             <div class="icon">
                 <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20230%20%5B30A68CC%5D.png">
             </div>
-            <p id="file-name">Tap to choose video</p>
+            <p id="file-name">Tap di sini buat masukin video</p>
             <input type="file" id="file" accept="video/*" hidden>
         </label>
 
@@ -190,7 +160,7 @@
 
         <div class="cf-turnstile" data-sitekey="0x4AAAAAADQlj_kkJ1cpQ9ur" id="cfWidget" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
 
-        <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
+        <button id="uploadBtn" onclick="upload()">UPLOAD</button>
 
         <div id="status">Waiting upload...</div>
 
@@ -222,7 +192,7 @@
 
         document.getElementById("file").addEventListener("change", e => {
             const file = e.target.files[0];
-            document.getElementById("file-name").innerText = file ? file.name : "Tap to choose video";
+            document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
         });
 
         function toggleMenu() {
@@ -252,15 +222,14 @@
             titleEl.innerText = title;
             textEl.innerText = message;
 
-            const lowerMsg = message.toLowerCase();
             if (type === "success") {
                 actionContainer.innerHTML = `
                     <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
-            } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
+            } else if (type === "error" && (message.toLowerCase().includes("gabung") || message.toLowerCase().includes("join"))) {
                 actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">CEK GROUP</a>
+                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
                 `;
             } else {
@@ -284,12 +253,12 @@
             const turnstileResponse = turnstile.getResponse();
 
             if (!file) {
-                showCustomModal("warning", "Video Kosong", "Silakan pilih berkas video terlebih dahulu sebelum menekan tombol upload.");
+                showCustomModal("warning", "Video Kosong", "Video lu mana bre masukin dulu");
                 return;
             }
 
             if (!nomor) {
-                showCustomModal("warning", "Nomor Kosong", "Kolom nomor WhatsApp tidak boleh kosong. Harap isi data terlebih dahulu.");
+                showCustomModal("warning", "Nomor Kosong", "Nomor wa mu mana, isi dulu euy");
                 return;
             }
 
@@ -299,7 +268,7 @@
             }
 
             if (!turnstileResponse) {
-                showCustomModal("warning", "Verifikasi Diperlukan", "Harap selesaikan verifikasi Cloudflare di atas tombol upload terlebih dahulu.");
+                showCustomModal("warning", "Pencet dulu verifikasi Cloudflare di atas tombol upload");
                 return;
             }
 
@@ -309,17 +278,10 @@
 
             isCurrentlyUploading = true;
             document.getElementById("status").innerHTML = "Uploading...";
-            
             if (btn) {
                 btn.disabled = true;
-                btn.style.opacity = "0.8";
+                btn.style.opacity = "0.5";
                 btn.style.cursor = "not-allowed";
-                btn.innerHTML = `
-                    <div class="loading-container">
-                        <div class="spinner"></div>
-                        <span>UPLOADING...</span>
-                    </div>
-                `;
             }
 
             const token = btoa("DANZZ");
@@ -344,15 +306,14 @@
                     btn.disabled = false;
                     btn.style.opacity = "1";
                     btn.style.cursor = "pointer";
-                    btn.innerHTML = "UPLOAD NOW";
                 }
 
                 if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE ✅`;
+                    document.getElementById("status").innerHTML = `DONE COY`;
                     
                     fileInput.value = "";
                     nomorInput.value = "";
-                    document.getElementById("file-name").innerText = "Tap to choose video";
+                    document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
                     
                     showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya.");
                 } else {
@@ -370,7 +331,6 @@
                     btn.disabled = false;
                     btn.style.opacity = "1";
                     btn.style.cursor = "pointer";
-                    btn.innerHTML = "UPLOAD NOW";
                 }
                 document.getElementById("status").innerHTML = e.message;
                 showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
