@@ -178,13 +178,10 @@
     <script>
         const API = "https://convert-api-production.up.railway.app";
         
-        // Variable status penanda internal (bukan localstorage yang bikin nyangkut)
         let isCurrentlyUploading = false;
 
-        // === FITUR AUTO PROTEKSI REFRESH / KELUAR HALAMAN ===
         window.addEventListener("beforeunload", (e) => {
             if (isCurrentlyUploading) {
-                // Memicu browser menampilkan dialog konfirmasi bawaan HP/Laptop
                 e.preventDefault();
                 e.returnValue = "Proses upload video sedang berjalan. Apakah Anda yakin ingin keluar?";
             }
@@ -269,7 +266,6 @@
             form.append("video", file);
             form.append("nomor", nomor);
 
-            // Aktifkan proteksi halaman & kunci tombol
             isCurrentlyUploading = true;
             document.getElementById("status").innerHTML = "Uploading...";
             if (btn) {
@@ -278,16 +274,19 @@
                 btn.style.cursor = "not-allowed";
             }
 
+            const token = btoa("DANZZ");
+
             try {
                 const req = await fetch(API + "/upload", {
                     method: "POST",
-                    headers: { authorization: "DANZZ" },
+                    headers: { 
+                        "authorization": "Bearer " + token 
+                    },
                     body: form
                 });
 
                 const res = await req.json();
 
-                // Matikan proteksi karena data sudah beres diproses backend
                 isCurrentlyUploading = false;
                 if (btn) {
                     btn.disabled = false;
@@ -309,7 +308,6 @@
                 }
 
             } catch (e) {
-                // Matikan proteksi jika terjadi crash internal internet mati
                 isCurrentlyUploading = false;
                 if (btn) {
                     btn.disabled = false;
