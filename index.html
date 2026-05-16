@@ -104,6 +104,36 @@
             height: 45px;
             padding: 0;
             box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Loading Spinner CSS Bawaan Baru */
+        .loading-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.2);
+            border-top: 3px solid #00ffaa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         @keyframes pulseIcon {
@@ -222,14 +252,15 @@
             titleEl.innerText = title;
             textEl.innerText = message;
 
+            const lowerMsg = message.toLowerCase();
             if (type === "success") {
                 actionContainer.innerHTML = `
                     <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
-            } else if (type === "error" && (message.toLowerCase().includes("gabung") || message.toLowerCase().includes("join"))) {
+            } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
                 actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
+                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
                 `;
             } else {
@@ -278,10 +309,17 @@
 
             isCurrentlyUploading = true;
             document.getElementById("status").innerHTML = "Uploading...";
+            
             if (btn) {
                 btn.disabled = true;
-                btn.style.opacity = "0.5";
+                btn.style.opacity = "0.8";
                 btn.style.cursor = "not-allowed";
+                btn.innerHTML = `
+                    <div class="loading-container">
+                        <div class="spinner"></div>
+                        <span>UPLOADING...</span>
+                    </div>
+                `;
             }
 
             const token = btoa("DANZZ");
@@ -306,6 +344,7 @@
                     btn.disabled = false;
                     btn.style.opacity = "1";
                     btn.style.cursor = "pointer";
+                    btn.innerHTML = "UPLOAD NOW";
                 }
 
                 if (res.status) {
@@ -331,6 +370,7 @@
                     btn.disabled = false;
                     btn.style.opacity = "1";
                     btn.style.cursor = "pointer";
+                    btn.innerHTML = "UPLOAD NOW";
                 }
                 document.getElementById("status").innerHTML = e.message;
                 showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
