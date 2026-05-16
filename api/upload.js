@@ -12,6 +12,15 @@ return res.status(405).end()
 
 try {
 
+const chunks = []
+
+for await (const chunk of req) {
+chunks.push(chunk)
+}
+
+const body =
+Buffer.concat(chunks)
+
 const response =
 await fetch(
 "https://convert-api-production.up.railway.app/upload",
@@ -19,17 +28,20 @@ await fetch(
 method: "POST",
 
 headers: {
-authorization: "DANZZ"
+authorization: "DANZZ",
+"content-type":
+req.headers["content-type"]
 },
 
-body: req
+body
 }
 )
 
 const data =
 await response.text()
 
-res.status(200).send(data)
+res.status(response.status)
+.send(data)
 
 } catch (e) {
 
