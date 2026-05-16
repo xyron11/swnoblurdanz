@@ -96,8 +96,7 @@ UPLOAD
 
 <script>
 
-const API =
-"https://convert-api-production.up.railway.app"
+const API = "/api"
 
 async function upload() {
 
@@ -188,10 +187,17 @@ API + "/upload",
 method:
 "POST",
 
-headers: {
-authorization:
-"DANZZ"
-},
+const req =
+await fetch(
+API + "/upload",
+{
+method:
+"POST",
+
+body:
+form
+}
+)
 
 body:
 form
