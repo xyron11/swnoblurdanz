@@ -155,7 +155,7 @@
             <input type="file" id="file" accept="video/*" hidden>
         </label>
 
-        <input type="text" id="nomor" placeholder="628xxxx">
+        <input type="text" id="nomor" placeholder="Contoh: 628xxxx atau 1xxx">
 
         <button onclick="upload()">UPLOAD NOW</button>
 
@@ -215,6 +215,11 @@
                     <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
+            } else if (type === "error" && message.includes("grup")) {
+                actionContainer.innerHTML = `
+                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
+                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
+                `;
             } else {
                 actionContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">Kembali</button>`;
             }
@@ -242,13 +247,8 @@
                 return;
             }
 
-            if (!nomor.startsWith("62")) {
-                showCustomModal("error", "Format Salah", "Format nomor ponsel tidak valid. Gunakan kode negara awal 62 (contoh: 6281xxxx).");
-                return;
-            }
-
-            if (nomor.length < 10) {
-                showCustomModal("error", "Nomor Tidak Valid", "Digit nomor terlalu pendek. Pastikan nomor WhatsApp yang dimasukkan sudah benar.");
+            if (isNaN(nomor)) {
+                showCustomModal("error", "Format Salah", "Input nomor harus berupa angka saja tanpa simbol ataupun spasi.");
                 return;
             }
 
@@ -274,7 +274,7 @@
                     nomorInput.value = "";
                     document.getElementById("file-name").innerText = "Tap to choose video";
                     
-                    showCustomModal("success", "Upload Berhasil!", "Video Anda telah sukses dikompresi menjadi HD.");
+                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya.");
                 } else {
                     document.getElementById("status").innerHTML = res.error;
                     showCustomModal("error", "Gagal Memproses", res.error);
