@@ -7,6 +7,7 @@
     <title>DanzClean</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
         .modal-overlay {
             position: fixed;
@@ -155,7 +156,9 @@
             <input type="file" id="file" accept="video/*" hidden>
         </label>
 
-        <input type="text" id="nomor" placeholder="Contoh: 628xxxx atau 1xxx">
+        <input type="text" id="nomor" placeholder="Contoh: 628xxxx">
+
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAADQlj_kkJ1cpQ9ur" id="cfWidget" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
 
         <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
 
@@ -247,6 +250,8 @@
             const file = fileInput.files[0];
             const nomor = nomorInput.value.trim();
 
+            const turnstileResponse = turnstile.getResponse();
+
             if (!file) {
                 showCustomModal("warning", "Video Kosong", "Silakan pilih berkas video terlebih dahulu sebelum menekan tombol upload.");
                 return;
@@ -259,6 +264,11 @@
 
             if (isNaN(nomor)) {
                 showCustomModal("error", "Format Salah", "Input nomor harus berupa angka saja tanpa simbol ataupun spasi.");
+                return;
+            }
+
+            if (!turnstileResponse) {
+                showCustomModal("warning", "Verifikasi Diperlukan", "Harap selesaikan verifikasi Cloudflare di atas tombol upload terlebih dahulu.");
                 return;
             }
 
@@ -288,6 +298,10 @@
                 const res = await req.json();
 
                 isCurrentlyUploading = false;
+                if (typeof turnstile !== "undefined") {
+                    turnstile.reset();
+                }
+
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
@@ -295,7 +309,7 @@
                 }
 
                 if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE ✅<br><br><a href="${res.url}" target="_blank">DOWNLOAD VIDEO</a>`;
+                    document.getElementById("status").innerHTML = `DONE ✅`;
                     
                     fileInput.value = "";
                     nomorInput.value = "";
@@ -309,6 +323,10 @@
 
             } catch (e) {
                 isCurrentlyUploading = false;
+                if (typeof turnstile !== "undefined") {
+                    turnstile.reset();
+                }
+
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
