@@ -279,7 +279,7 @@
             form.append("video", file);
             form.append("nomor", nomor);
 
-            // Set state upload ke local storage sebelum request dikirim
+        
             localStorage.setItem("danz_isUploading", "true");
             localStorage.setItem("danz_fileName", file.name);
             localStorage.setItem("danz_nomor", nomor);
@@ -300,7 +300,7 @@
 
                 const res = await req.json();
 
-                // Bersihkan state memori karena proses di server sudah selesai dapat respon
+                
                 localStorage.removeItem("danz_isUploading");
                 localStorage.removeItem("danz_fileName");
                 localStorage.removeItem("danz_nomor");
@@ -324,7 +324,7 @@
                 }
 
             } catch (e) {
-                // Bersihkan juga jika terjadi error crash koneksi internet terputus total
+            
                 localStorage.removeItem("danz_isUploading");
                 localStorage.removeItem("danz_fileName");
                 localStorage.removeItem("danz_nomor");
