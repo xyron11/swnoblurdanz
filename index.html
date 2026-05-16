@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -10,6 +9,39 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <style>
+        body {
+            background-color: #05081c;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 440px;
+            margin: 100px auto 40px auto;
+            padding: 30px 24px;
+            background: linear-gradient(135deg, #0f1330, #070a1e);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container input[type="text"],
+        .container button,
+        .container .upload-box,
+        .container .cf-turnstile {
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -115,7 +147,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Loading Spinner CSS Bawaan Baru */
         .loading-container {
             display: flex;
             align-items: center;
@@ -261,7 +292,7 @@
                 `;
             } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
                 actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">CEK GROUP</a>
+                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
                 `;
             } else {
