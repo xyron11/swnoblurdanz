@@ -2,325 +2,241 @@
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DanzClean</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 8, 28, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
 
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
-        }
+<meta charset="UTF-8">
 
-        .modal-card {
-            background: linear-gradient(135deg, #13193e, #0b0f2a);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 30px 24px;
-            width: 85%;
-            max-width: 360px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(61, 108, 255, 0.15);
-            transform: scale(0.7);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
-        .modal-overlay.show .modal-card {
-            transform: scale(1);
-        }
+<title>Converter</title>
 
-        .modal-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            display: inline-block;
-            animation: pulseIcon 2s infinite ease-in-out;
-        }
+<style>
 
-        .modal-title {
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-family: 'Poppins', sans-serif;
-        }
+body{
+background:#0f0f0f;
+color:white;
+font-family:sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+margin:0;
+}
 
-        .modal-text {
-            color: #9ea7d6;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 24px;
-            font-family: 'Poppins', sans-serif;
-        }
+.box{
+background:#1b1b1b;
+padding:30px;
+border-radius:20px;
+width:330px;
+text-align:center;
+}
 
-        .modal-btn {
-            background: linear-gradient(135deg, #3d6cff, #1e45c7);
-            color: #ffffff;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 32px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 12px rgba(61, 108, 255, 0.3);
-            transition: all 0.2s ease;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+background:#5865f2;
+color:white;
+font-size:16px;
+margin-top:15px;
+cursor:pointer;
+}
 
-        .modal-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 2px 6px rgba(61, 108, 255, 0.2);
-        }
+input{
+margin-top:15px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#2a2a2a;
+color:white;
+box-sizing:border-box;
+}
 
-        .modal-btn-group {
-            background: linear-gradient(135deg, #00ffaa, #00b377);
-            color: #05081c;
-            margin-top: 10px;
-            display: inline-block;
-            text-decoration: none;
-            line-height: 45px;
-            height: 45px;
-            padding: 0;
-            box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
-        }
+#status{
+margin-top:15px;
+word-break:break-all;
+}
 
-        @keyframes pulseIcon {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-    </style>
+a{
+color:#00ff99;
+}
+
+</style>
+
 </head>
 
 <body>
 
-    <div class="topbar">
-        <div class="menu-btn dashboard-menu" onclick="toggleMenu()">☰</div>
-    </div>
+<div class="box">
 
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box">
-                <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20231%20%5B93ADA1D%5D.png">
-            </div>
-        </div>
-        <a href="/">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Picsart_26-05-16_18-37-06-405.png"> Dashboard
-        </a>
-        <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20227%20%5B6DBBE35%5D.png"> Channel WhatsApp
-        </a>
-        <a href="/creator">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20228%20%5B8DED6AA%5D.png"> Creator
-        </a>
-        <a href="/stats">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png"> Statistik
-        </a>
-    </div>
+<h2>
+DANZZ STATUS 
+</h2>
 
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+<input
+type="file"
+id="file"
+accept="video/*">
 
-    <div class="container">
-        <div class="logo">
-            <h1>DanzClean</h1>
-            <p>HD Status Uploader</p>
-        </div>
+<input
+type="text"
+id="nomor"
+placeholder="628xxxx">
 
-        <label for="file" class="upload-box">
-            <div class="icon">
-                <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20230%20%5B30A68CC%5D.png">
-            </div>
-            <p id="file-name">Tap to choose video</p>
-            <input type="file" id="file" accept="video/*" hidden>
-        </label>
+<button onclick="upload()">
+UPLOAD
+</button>
 
-        <input type="text" id="nomor" placeholder="Contoh: 628xxxx atau 1xxx">
+<div id="status"></div>
 
-        <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
+</div>
 
-        <div id="status">Waiting upload...</div>
+<script>
 
-        <div class="footer">DanzClean</div>
-    </div>
+const API =
+"https://convert-api-production.up.railway.app"
 
-    <div class="modal-overlay" id="customModal">
-        <div class="modal-card">
-            <div class="modal-icon" id="modalIcon">⚠️</div>
-            <div class="modal-title" id="modalTitle">Perhatian</div>
-            <div class="modal-text" id="modalText">Pesan peringatan sistem akan muncul di sini.</div>
-            <div id="modalActionContainer">
-                <button class="modal-btn" onclick="closeModal()">Kembali</button>
-            </div>
-        </div>
-    </div>
+async function upload() {
 
-    <script>
-        const API = "https://convert-api-production.up.railway.app";
-        
-        // Variable status penanda internal (bukan localstorage yang bikin nyangkut)
-        let isCurrentlyUploading = false;
+const file =
+document
+.getElementById(
+"file"
+)
+.files[0]
 
-        // === FITUR AUTO PROTEKSI REFRESH / KELUAR HALAMAN ===
-        window.addEventListener("beforeunload", (e) => {
-            if (isCurrentlyUploading) {
-                // Memicu browser menampilkan dialog konfirmasi bawaan HP/Laptop
-                e.preventDefault();
-                e.returnValue = "Proses upload video sedang berjalan. Apakah Anda yakin ingin keluar?";
-            }
-        });
+const nomor =
+document
+.getElementById(
+"nomor"
+)
+.value.trim()
 
-        document.getElementById("file").addEventListener("change", e => {
-            const file = e.target.files[0];
-            document.getElementById("file-name").innerText = file ? file.name : "Tap to choose video";
-        });
+if (!file) {
 
-        function toggleMenu() {
-            document.getElementById("sidebar").classList.toggle("active");
-            document.getElementById("overlay").classList.toggle("active");
-            document.body.classList.toggle("sidebar-open"); 
-        }
+alert(
+"Pilih video dulu"
+)
 
-        function showCustomModal(type, title, message) {
-            const modal = document.getElementById("customModal");
-            const iconEl = document.getElementById("modalIcon");
-            const titleEl = document.getElementById("modalTitle");
-            const textEl = document.getElementById("modalText");
-            const actionContainer = document.getElementById("modalActionContainer");
+return
 
-            if (type === "success") {
-                iconEl.innerText = "✅";
-                iconEl.style.animation = "pulseIcon 1.5s infinite ease-in-out";
-            } else if (type === "error") {
-                iconEl.innerText = "❌";
-                iconEl.style.animation = "none";
-            } else {
-                iconEl.innerText = "⚠️";
-                iconEl.style.animation = "none";
-            }
+}
 
-            titleEl.innerText = title;
-            textEl.innerText = message;
+if (!nomor) {
 
-            if (type === "success") {
-                actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
-                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
-                `;
-            } else if (type === "error" && (message.toLowerCase().includes("gabung") || message.toLowerCase().includes("join"))) {
-                actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
-                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
-                `;
-            } else {
-                actionContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">Kembali</button>`;
-            }
+alert(
+"Isi nomor dulu"
+)
 
-            modal.classList.add("show");
-        }
+return
 
-        function closeModal() {
-            document.getElementById("customModal").classList.remove("show");
-        }
+}
 
-        async function upload() {
-            const fileInput = document.getElementById("file");
-            const nomorInput = document.getElementById("nomor");
-            const btn = document.getElementById("uploadBtn");
-            const file = fileInput.files[0];
-            const nomor = nomorInput.value.trim();
+if (
+!nomor.startsWith("62")
+) {
 
-            if (!file) {
-                showCustomModal("warning", "Video Kosong", "Silakan pilih berkas video terlebih dahulu sebelum menekan tombol upload.");
-                return;
-            }
+alert(
+"Nomor harus awalan 62"
+)
 
-            if (!nomor) {
-                showCustomModal("warning", "Nomor Kosong", "Kolom nomor WhatsApp tidak boleh kosong. Harap isi data terlebih dahulu.");
-                return;
-            }
+return
 
-            if (isNaN(nomor)) {
-                showCustomModal("error", "Format Salah", "Input nomor harus berupa angka saja tanpa simbol ataupun spasi.");
-                return;
-            }
+}
 
-            const form = new FormData();
-            form.append("video", file);
-            form.append("nomor", nomor);
+if (
+nomor.length < 10
+) {
 
-            // Aktifkan proteksi halaman & kunci tombol
-            isCurrentlyUploading = true;
-            document.getElementById("status").innerHTML = "Uploading...";
-            if (btn) {
-                btn.disabled = true;
-                btn.style.opacity = "0.5";
-                btn.style.cursor = "not-allowed";
-            }
+alert(
+"Nomor tidak valid"
+)
 
-            try {
-                const req = await fetch(API + "/upload", {
-                    method: "POST",
-                    headers: { authorization: "DANZZ" },
-                    body: form
-                });
+return
 
-                const res = await req.json();
+}
 
-                // Matikan proteksi karena data sudah beres diproses backend
-                isCurrentlyUploading = false;
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                }
+const form =
+new FormData()
 
-                if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE ✅<br><br><a href="${res.url}" target="_blank">DOWNLOAD VIDEO</a>`;
-                    
-                    fileInput.value = "";
-                    nomorInput.value = "";
-                    document.getElementById("file-name").innerText = "Tap to choose video";
-                    
-                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya.");
-                } else {
-                    document.getElementById("status").innerHTML = res.error;
-                    showCustomModal("error", "Gagal Memproses", res.error);
-                }
+form.append(
+"video",
+file
+)
 
-            } catch (e) {
-                // Matikan proteksi jika terjadi crash internal internet mati
-                isCurrentlyUploading = false;
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                }
-                document.getElementById("status").innerHTML = e.message;
-                showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
-            }
-        }
-    </script>
+form.append(
+"nomor",
+nomor
+)
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+"Uploading..."
+
+try {
+
+const req =
+await fetch(
+API + "/upload",
+{
+method:
+"POST",
+
+body:
+form
+}
+)
+
+const res =
+await req.json()
+
+if (res.status) {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+`
+DONE 
+<br><br>
+
+<a href="${res.url}" target="_blank">
+DOWNLOAD
+</a>
+`
+
+} else {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+res.error
+
+}
+
+} catch (e) {
+
+document
+.getElementById(
+"status"
+)
+.innerHTML =
+e.message
+
+}
+
+}
+
+</script>
 
 </body>
 </html>
