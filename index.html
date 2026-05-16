@@ -177,26 +177,16 @@
 
     <script>
         const API = "https://convert-api-production.up.railway.app";
+        
+        // Variable status penanda internal (bukan localstorage yang bikin nyangkut)
+        let isCurrentlyUploading = false;
 
-        // === FITUR ANTI-RESET REFRESH ===
-        window.addEventListener("DOMContentLoaded", () => {
-            const isUploading = localStorage.getItem("danz_isUploading");
-            const lastFileName = localStorage.getItem("danz_fileName");
-            const lastNomor = localStorage.getItem("danz_nomor");
-            const btn = document.getElementById("uploadBtn");
-
-            if (isUploading === "true") {
-                // Pulihkan tampilan status saat halaman dimuat ulang
-                document.getElementById("status").innerHTML = "Uploading... (Melanjutkan proses di background)";
-                if (lastFileName) document.getElementById("file-name").innerText = lastFileName;
-                if (lastNomor) document.getElementById("nomor").value = lastNomor;
-
-                // Kunci tombol upload agar user tidak spam klik
-                if (btn) {
-                    btn.disabled = true;
-                    btn.style.opacity = "0.5";
-                    btn.style.cursor = "not-allowed";
-                }
+        // === FITUR AUTO PROTEKSI REFRESH / KELUAR HALAMAN ===
+        window.addEventListener("beforeunload", (e) => {
+            if (isCurrentlyUploading) {
+                // Memicu browser menampilkan dialog konfirmasi bawaan HP/Laptop
+                e.preventDefault();
+                e.returnValue = "Proses upload video sedang berjalan. Apakah Anda yakin ingin keluar?";
             }
         });
 
@@ -279,11 +269,8 @@
             form.append("video", file);
             form.append("nomor", nomor);
 
-            // Simpan state ke memori browser sebelum fetch berjalan
-            localStorage.setItem("danz_isUploading", "true");
-            localStorage.setItem("danz_fileName", file.name);
-            localStorage.setItem("danz_nomor", nomor);
-
+            // Aktifkan proteksi halaman & kunci tombol
+            isCurrentlyUploading = true;
             document.getElementById("status").innerHTML = "Uploading...";
             if (btn) {
                 btn.disabled = true;
@@ -300,11 +287,8 @@
 
                 const res = await req.json();
 
-                // PERBAIKAN UTAMA: Hapus memori di sini agar tidak nyangkut saat dapat respon (apapun hasilnya)
-                localStorage.removeItem("danz_isUploading");
-                localStorage.removeItem("danz_fileName");
-                localStorage.removeItem("danz_nomor");
-                
+                // Matikan proteksi karena data sudah beres diproses backend
+                isCurrentlyUploading = false;
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
@@ -325,11 +309,8 @@
                 }
 
             } catch (e) {
-                // Bersihkan memori juga jika crash/koneksi internet mati total
-                localStorage.removeItem("danz_isUploading");
-                localStorage.removeItem("danz_fileName");
-                localStorage.removeItem("danz_nomor");
-                
+                // Matikan proteksi jika terjadi crash internal internet mati
+                isCurrentlyUploading = false;
                 if (btn) {
                     btn.disabled = false;
                     btn.style.opacity = "1";
