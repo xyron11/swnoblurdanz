@@ -378,5 +378,35 @@
         }
     </script>
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        (function() {
+            const config = {
+                apiKey: "AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
+                authDomain: "danzzclean.firebaseapp.com",
+                databaseURL: "https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "danzzclean",
+                storageBucket: "danzzclean.firebasestorage.app",
+                messagingSenderId: "254872462958",
+                appId: "1:254872462958:web:a7964353bb5afa6678287f"
+            };
+            if (!firebase.apps.length) {
+                firebase.initializeApp(config);
+            }
+            const db = firebase.database();
+            const ref = db.ref("total_visitors");
+            
+            const key = "danzclean_visitor_main";
+            if (!localStorage.getItem(key)) {
+                ref.transaction((curr) => (curr || 0) + 1, (err, comm) => {
+                    if (comm) localStorage.setItem(key, "true");
+                });
+            }
+        })();
+    </script>
+
+    
+
 </body>
 </html>
