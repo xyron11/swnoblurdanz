@@ -302,8 +302,15 @@
                 return;
             }
 
-            if (isNaN(nomor)) {
-                showCustomModal("error", "Format Salah", "Input nomor harus berupa angka saja tanpa simbol ataupun spasi.");
+            const nomorBersih = nomor.replace(/\D/g, "");
+
+            if (nomorBersih.length < 9 || nomorBersih.length > 15) {
+                showCustomModal("error", "Format Salah", "nomor WA salah bre, periksa lagi angkanya.");
+                return;
+            }
+
+            if (nomorBersih.startsWith("0")) {
+                showCustomModal("error", "Gunakan Kode Negara", "Gunakan kode negara bre, ubah angka depan 0 jadi 62 atau kode negara lu.");
                 return;
             }
 
@@ -314,7 +321,8 @@
 
             const form = new FormData();
             form.append("video", file);
-            form.append("nomor", nomor);
+            form.append("nomor", nomorBersih); 
+
 
             isCurrentlyUploading = true;
             document.getElementById("status").innerHTML = "Uploading...";
