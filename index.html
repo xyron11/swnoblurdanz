@@ -358,14 +358,10 @@
                 `;
             }
 
-            const token = btoa("DANZZ");
-
             try {
-                const req = await fetch(API + "/upload", {
+                
+                const req = await fetch(API + "/api/upload", {
                     method: "POST",
-                    headers: { 
-                        "authorization": "Bearer " + token 
-                    },
                     body: form
                 });
 
