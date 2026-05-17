@@ -1,3 +1,17 @@
 {
-  "cleanUrls": true
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i)(curl|wget|python|go-http-client|postman|sqlmap|nikto|scrapy|aiohttp|httpx|node-fetch|dirsearch|libwww|java)"
+        }
+      ],
+      "destination": "https://http.cat/403",
+      "permanent": false
+    }
+  ]
 }
