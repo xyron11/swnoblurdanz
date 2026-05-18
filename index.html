@@ -1,458 +1,199 @@
-<!DOCTYPE html>
-<html lang="id">
+const express = require("express")
+const multer = require("multer")
+const cors = require("cors")
+const fs = require("fs")
+const axios = require("axios")
+const { exec } = require("child_process")
+const path = require("path")
+const FormData = require("form-data")
+const app = express()
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DanzClean</title>
+app.use(cors({
+    origin: ["https://danzclean.arisu.biz.id"],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "authorization"]
+}))
+
+app.options("*", cors())
+app.use(express.json())
+
+if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
+if (!fs.existsSync("public")) fs.mkdirSync("public");
+
+app.use("/video", express.static(path.join(__dirname, "public")))
+
+const upload = multer({ dest: "uploads/" })
+
+global.results = []
+
+app.get("/", (req, res) => {
+    res.send("API READY")
+})
+
+app.get("/results", (req, res) => {
+    const data = [...global.results]
+    global.results = []
+    res.json(data)
+})
+
+app.post("/api/upload", upload.single("video"), async (req, res) => {
+    const file = req.file
+    const nomor = req.body.nomor
+
+    try {
+        if (!file) return res.json({ status: false, error: "File kosong" })
+        if (!nomor) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
+            return res.json({ status: false, error: "Nomor kosong" })
+        }
+
+        const form = new FormData()
+        form.append("video", fs.createReadStream(file.path), {
+            filename: file.originalname,
+            contentType: file.mimetype
+        })
+        form.append("nomor", nomor)
+
+        const tokenTokenan = `Bearer ${Buffer.from("DANZZ").toString("base64")}`;
+        const targetPort = process.env.PORT || 3000; 
+
+        const responUtama = await axios.post(`http://127.0.0.1:${targetPort}/upload`, form, {
+            headers: {
+                ...form.getHeaders(),
+                "authorization": tokenTokenan
+            },
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+        })
+
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
+        return res.json(responUtama.data)
+
+    } catch (error) {
+        if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path)
+        console.log("[DanzClean Proxy Error]: ", error.message)
+        return res.json({ status: false, error: "Gagal menjembatani request: " + error.message })
+    }
+})
+
+const dapatkanDurasiVideo = (filePath) => {
+    return new Promise((resolve, reject) => {
+        exec(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nocreval=1 "${filePath}"`, (err, stdout) => {
+            if (err) return resolve(30);
+            const durasi = parseFloat(stdout.trim());
+            resolve(isNaN(durasi) ? 30 : durasi);
+        });
+    });
+};
+
+app.post("/upload", upload.single("video"), async (req, res) => {
+    const authHeader = req.headers.authorization;
+    const tokenDiharapkan = `Bearer ${Buffer.from("DANZZ").toString("base64")}`;
+
+    if (!authHeader || authHeader !== tokenDiharapkan) {
+        return res.status(403).json({ status: false, error: "Forbidden" })
+    }
+
+    const file = req.file
     
-    <meta name="description" content="DanzClean - HD Status Uploader untuk WhatsApp gratis dan cepat.">
-    <meta property="og:title" content="DanzClean - HD Status Uploader">
-    <meta property="og:description" content="Upload video status WhatsApp tanpa pecah, jernih, dan cepat.">
-    <meta property="og:image" content="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20233%20%5BEB85C59%5D.png">
-    <meta property="og:type" content="website">
+    // === FIX 1: AMBIL INPUT DAN PAKSA JADI STRING MURNI ANGKA (MENCEGAH REQ.BODY TERBACA NUMBER) ===
+    let nomor = req.body.nomor ? String(req.body.nomor).replace(/[^0-9]/g, "").trim() : "";
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <style>
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(5, 8, 28, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+    try {
+        if (!file) return res.json({ status: false, error: "File kosong" })
+        if (!nomor) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
+            return res.json({ status: false, error: "Nomor kosong" })
         }
 
-        .modal-overlay.show {
-            opacity: 1;
-            pointer-events: auto;
+        // === FIX 2: VALIDASI DATA DATABASE (DENGAN RECOVERY CADANGAN FILE LOKAL JIKA GITHUB ERROR) ===
+        let members = [];
+        try {
+            const github = await axios.get("https://raw.githubusercontent.com/xyron11/cekverif/main/verify.json", { timeout: 4000 });
+            members = github.data;
+        } catch (e) {
+            console.log("[DanzClean] Gagal mengambil data GitHub, mencoba membaca verify.json lokal...");
+            if (fs.existsSync("./verify.json")) {
+                members = JSON.parse(fs.readFileSync("./verify.json", "utf8") || "[]");
+            }
         }
 
-        .modal-card {
-            background: linear-gradient(135deg, #13193e, #0b0f2a);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 30px 24px;
-            width: 85%;
-            max-width: 360px;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(61, 108, 255, 0.15);
-            transform: scale(0.7);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        // Pastikan format isi array database semuanya dikonversi ke String angka bersih
+        const daftarMemberSesuai = Array.isArray(members) 
+            ? members.map(m => String(m).replace(/[^0-9]/g, "").trim()) 
+            : [];
+
+        // Pengecekan kecocokan data nomor
+        if (!daftarMemberSesuai.includes(nomor)) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
+            return res.json({
+                status: false,
+                error: "Nomor tidak ada di grup mohon nomor yang anda pakai harus masuk group dulu, bisa anda pencet tombol join group untuk masuk ke group",
+                join: "https://chat.whatsapp.com/BVtogIjS1hAD0qOMhJ3f6a"
+            })
         }
 
-        .modal-overlay.show .modal-card {
-            transform: scale(1);
+        const ext = file.originalname.split(".").pop().toLowerCase()
+        const allow = ["mp4", "mov", "mkv", "avi", "webm", "m4v"]
+
+        if (!allow.includes(ext)) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
+            return res.json({ status: false, error: "Hanya file video" })
         }
 
-        .modal-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            display: inline-block;
-            animation: pulseIcon 2s infinite ease-in-out;
-        }
-
-        .modal-title {
-            color: #ffffff;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .modal-text {
-            color: #9ea7d6;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 24px;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .modal-btn {
-            background: linear-gradient(135deg, #3d6cff, #1e45c7);
-            color: #ffffff;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 32px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            box-shadow: 0 4px 12px rgba(61, 108, 255, 0.3);
-            transition: all 0.2s ease;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .modal-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 2px 6px rgba(61, 108, 255, 0.2);
-        }
-
-        .modal-btn-group {
-            background: linear-gradient(135deg, #00ffaa, #00b377);
-            color: #05081c;
-            margin-top: 10px;
-            display: inline-block;
-            text-decoration: none;
-            line-height: 45px;
-            height: 45px;
-            padding: 0;
-            box-shadow: 0 4px 12px rgba(0, 255, 170, 0.3);
-            border-radius: 14px;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            text-align: center;
-            font-family: 'Poppins', sans-serif;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .loading-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.2);
-            border-top: 3px solid #00ffaa;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        input[disabled] {
-            background: rgba(255, 255, 255, 0.02) !important;
-            color: rgba(255, 255, 255, 0.3) !important;
-            border-color: rgba(255, 255, 255, 0.03) !important;
-            cursor: not-allowed;
-            transition: all 0.3s ease;
-        }
-
-        .upload-box {
-            transition: all 0.3s ease;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes pulseIcon {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="topbar">
-        <div class="menu-btn dashboard-menu" onclick="toggleMenu()">☰</div>
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-box">
-                <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20231%20%5B93ADA1D%5D.png">
-            </div>
-        </div>
-        <a href="/">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Picsart_26-05-16_18-37-06-405.png"> Dashboard
-        </a>
-        <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20227%20%5B6DBBE35%5D.png"> Channel WhatsApp
-        </a>
-        <a href="/creator">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20228%20%5B8DED6AA%5D.png"> Creator
-        </a>
-        <a href="/stats">
-            <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png"> Statistik
-        </a>
-    </div>
-
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-    <div class="container">
-        <div class="logo">
-            <h1>DanzClean</h1>
-            <p>HD Status Uploader</p>
-        </div>
-
-        <label for="file" class="upload-box">
-            <div class="icon">
-                <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20230%20%5B30A68CC%5D.png">
-            </div>
-            <p id="file-name">Tap di sini buat masukin video</p>
-            <input type="file" id="file" accept="video/*" hidden>
-        </label>
-
-        <input type="text" id="nomor" placeholder="Contoh: 628xxxx">
-
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAADQlj_kkJ1cpQ9ur" id="cfWidget" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
-
-        <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
-
-        <div id="status">Waiting upload...</div>
-
-        <div class="footer">DanzClean</div>
-    </div>
-
-    <div class="modal-overlay" id="customModal">
-        <div class="modal-card">
-            <div class="modal-icon" id="modalIcon">⚠️</div>
-            <div class="modal-title" id="modalTitle">Perhatian</div>
-            <div class="modal-text" id="modalText">Pesan peringatan sistem akan muncul di sini.</div>
-            <div id="modalActionContainer">
-                <button class="modal-btn" onclick="closeModal()">Kembali</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const API = "https://convert-api-production.up.railway.app";
+        const outputFilename = `${Date.now()}_HD_DanzClean.mp4`
+        const normalized = path.join(__dirname, "public", outputFilename)
         
-        let isCurrentlyUploading = false;
+        const durasiVideo = await dapatkanDurasiVideo(file.path);
+        
+        let bitrateIdeal = Math.floor(113246208 / durasiVideo); 
+        
+        if (bitrateIdeal > 4000000) bitrateIdeal = 4000000; 
+        if (bitrateIdeal < 1200000) bitrateIdeal = 1200000; 
+        
+        const targetBitrateKbps = `${Math.floor(bitrateIdeal / 1000)}k`;
 
-        window.addEventListener("beforeunload", (e) => {
-            if (isCurrentlyUploading) {
-                e.preventDefault();
-                e.returnValue = "Proses upload video sedang berjalan. Apakah Anda yakin ingin keluar?";
-            }
-        });
+        console.log(`[DanzClean] Memproses video dengan target bitrate: ${targetBitrateKbps}`);
+        const perintahFfmpeg = `ffmpeg -i "${file.path}" -vf "scale='if(gte(iw,ih),-2,720)':'if(gte(iw,ih),720,-2)',hqdn3d=2.0:2.0:5.0:5.0,unsharp=3:3:0.4:3:3:0.4" -r 60 -c:v libx264 -preset faster -crf 17 -aq-mode 3 -colorspace bt709 -color_trc bt709 -color_primaries bt709 -maxrate 6M -bufsize 6M -pix_fmt yuv420p -threads 2 -c:a aac -b:a 128k -movflags +faststart "${normalized}"`
+        
+        await new Promise((resolve, reject) => {
+            exec(perintahFfmpeg, (err) => {
+                if (err) return reject(err)
+                resolve()
+            })
+        })
 
-        document.getElementById("file").addEventListener("change", e => {
-            const file = e.target.files[0];
-            document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
-        });
+        if (fs.existsSync(file.path)) fs.unlinkSync(file.path)
 
-        function toggleMenu() {
-            document.getElementById("sidebar").classList.toggle("active");
-            document.getElementById("overlay").classList.toggle("active");
-            document.body.classList.toggle("sidebar-open"); 
-        }
+        const domainPenyedia = req.get("host")
+        const protocolPenyedia = req.protocol
+        const resultUrl = `${protocolPenyedia}://${domainPenyedia}/video/${outputFilename}`
 
-        function showCustomModal(type, title, message) {
-            const modal = document.getElementById("customModal");
-            const iconEl = document.getElementById("modalIcon");
-            const titleEl = document.getElementById("modalTitle");
-            const textEl = document.getElementById("modalText");
-            const actionContainer = document.getElementById("modalActionContainer");
+        global.results.push({
+            url: resultUrl,
+            nomor: nomor,
+            time: Date.now()
+        })
 
-            if (type === "success") {
-                iconEl.innerText = "✅";
-                iconEl.style.animation = "pulseIcon 1.5s infinite ease-in-out";
-            } else if (type === "error") {
-                iconEl.innerText = "❌";
-                iconEl.style.animation = "none";
-            } else {
-                iconEl.innerText = "⚠️";
-                iconEl.style.animation = "none";
-            }
+        res.json({
+            status: true,
+            url: resultUrl
+        })
 
-            titleEl.innerText = title;
-            textEl.innerText = message;
+    } catch (e) {
+        console.log(e)
+        if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path)
+        res.json({
+            status: false,
+            error: "Gagal memproses HD video: " + e.message
+        })
+    }
+})
 
-            const lowerMsg = message.toLowerCase();
-            if (type === "success") {
-                actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
-                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
-                `;
-            } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
-                titleEl.innerText = "Nomor lu gada di group";
-                actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/K45zBgrVkd69egYZEB7piU" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
-                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
-                `;
-            } else {
-                actionContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">Kembali</button>`;
-            }
+app.use((err, req, res, next) => {
+    res.status(500).json({ status: false, error: "Internal Server Error" })
+})
 
-            modal.classList.add("show");
-        }
-
-        function closeModal() {
-            document.getElementById("customModal").classList.remove("show");
-        }
-
-        async function upload() {
-            const fileInput = document.getElementById("file");
-            const nomorInput = document.getElementById("nomor");
-            const uploadBox = document.querySelector(".upload-box");
-            const btn = document.getElementById("uploadBtn");
-            const file = fileInput.files[0];
-            const nomor = nomorInput.value.trim();
-
-            const turnstileResponse = turnstile.getResponse();
-
-            if (!file) {
-                showCustomModal("warning", "Video Kosong", "Mana video nya euy, masukin dulu video nya");
-                return;
-            }
-
-            if (!nomor) {
-                showCustomModal("warning", "Nomor Kosong", "Nomor wa mu mana, isi dulu euy");
-                return;
-            }
-
-            const nomorBersih = nomor.replace(/\D/g, "");
-
-            if (nomorBersih.length < 9 || nomorBersih.length > 15) {
-                showCustomModal("error", "Format Salah", "nomor WA salah bre, periksa lagi angkanya.");
-                return;
-            }
-
-            if (nomorBersih.startsWith("0")) {
-                showCustomModal("error", "Gunakan Kode Negara", "Gunakan kode negara bre, ubah angka depan 0 jadi 62 atau kode negara lu.");
-                return;
-            }
-
-            if (!turnstileResponse) {
-                showCustomModal("warning", "Verifikasi Diperlukan", "Verifikasi Cloudflare Dulu bre yang di atas tombol upload");
-                return;
-            }
-
-            const form = new FormData();
-            form.append("video", file);
-            form.append("nomor", nomorBersih); 
-
-            isCurrentlyUploading = true;
-            document.getElementById("status").innerHTML = "Uploading...";
-            
-            if (nomorInput) nomorInput.disabled = true;
-            if (fileInput) fileInput.disabled = true;
-            if (uploadBox) {
-                uploadBox.style.pointerEvents = "none";
-                uploadBox.style.opacity = "0.5";
-                uploadBox.style.filter = "grayscale(50%)";
-            }
-
-            if (btn) {
-                btn.disabled = true;
-                btn.style.opacity = "0.8";
-                btn.style.cursor = "not-allowed";
-                btn.innerHTML = `
-                    <div class="loading-container">
-                        <div class="spinner"></div>
-                        <span>UPLOADING...</span>
-                    </div>
-                `;
-            }
-
-            try {
-                
-                const req = await fetch(API + "/api/upload", {
-                    method: "POST",
-                    body: form
-                });
-
-                const res = await req.json();
-
-                isCurrentlyUploading = false;
-                if (typeof turnstile !== "undefined") {
-                    turnstile.reset();
-                }
-
-                if (nomorInput) nomorInput.disabled = false;
-                if (fileInput) fileInput.disabled = false;
-                if (uploadBox) {
-                    uploadBox.style.pointerEvents = "auto";
-                    uploadBox.style.opacity = "1";
-                    uploadBox.style.filter = "none";
-                }
-
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                    btn.innerHTML = "UPLOAD NOW";
-                }
-
-                if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE COY`;
-                    
-                    fileInput.value = "";
-                    nomorInput.value = "";
-                    document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
-                    
-                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya.");
-                } else {
-                    document.getElementById("status").innerHTML = res.error;
-                    showCustomModal("error", "Gagal Memproses", res.error);
-                }
-
-            } catch (e) {
-                isCurrentlyUploading = false;
-                if (typeof turnstile !== "undefined") {
-                    turnstile.reset();
-                }
-
-                if (nomorInput) nomorInput.disabled = false;
-                if (fileInput) fileInput.disabled = false;
-                if (uploadBox) {
-                    uploadBox.style.pointerEvents = "auto";
-                    uploadBox.style.opacity = "1";
-                    uploadBox.style.filter = "none";
-                }
-
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                    btn.innerHTML = "UPLOAD NOW";
-                }
-                document.getElementById("status").innerHTML = e.message;
-                showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
-            }
-        }
-    </script>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        (function() {
-            const config = {
-                apiKey: "AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
-                authDomain: "danzzclean.firebaseapp.com",
-                databaseURL: "https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "danzzclean",
-                storageBucket: "danzzclean.firebasestorage.app",
-                messagingSenderId: "254872462958",
-                appId: "1:254872462958:web:a7964353bb5afa6678287f"
-            };
-            if (!firebase.apps.length) {
-                firebase.initializeApp(config);
-            }
-            const db = firebase.database();
-            const ref = db.ref("total_visitors");
-            
-            const key = "danzclean_visitor_main";
-            if (!localStorage.getItem(key)) {
-                ref.transaction((curr) => (curr || 0) + 1, (err, comm) => {
-                    if (comm) localStorage.setItem(key, "true");
-                });
-            }
-        })();
-    </script>
-
-</body>
-</html>
+app.listen(process.env.PORT || 3000, () => {
+    console.log("API READY")
+})
