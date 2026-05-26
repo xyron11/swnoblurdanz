@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Perbaikan danzclean</title>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+<link
+rel="stylesheet"
+href="style.css">
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+</head>
+
+<body>
+
+<div
+class="sidebar"
+id="sidebar">
+
+<div class="sidebar-header">
+
+<div class="logo-box">
+
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20231%20%5B93ADA1D%5D.png">
+
+</div>
+
+</div>
+
+<a href="/?owner=danzclean_owner_X92ka">
+
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Picsart_26-05-16_18-37-06-405.png">
+
+Dashboard
+
+</a>
+
+<a href="/maintenance.html">
+
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png">
+
+Perbaikan
+
+</a>
+
+</div>
+
+<div class="topbar">
+
+<div
+class="menu-btn"
+onclick="toggleMenu()">
+
+☰
+
+</div>
+
+</div>
+
+<div
+class="overlay"
+id="overlay"
+onclick="toggleMenu()">
+</div>
+
+<div class="maintenance-page">
+
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+
+<div class="maintenance-card">
+
+<div class="icon">
+🛠️
+</div>
+
+<div class="maintenance-title">
+Perbaikan<br>Danzclean
+</div>
+
+<div class="desc">
+perbaikan untuk danzclean
+</div>
+
+<input
+type="file"
+id="imageFile"
+accept="image/*"
+style="display:none;">
+
+<label
+for="imageFile"
+class="upload-image-btn">
+
+ Upload Foto
+
+</label>
+
+<img
+id="previewImage"
+class="preview-image"
+style="display:none;">
+
+<textarea
+id="message"
+class="maintenance-input"
+placeholder="Tulis pesan maintenance..."
+></textarea>
+
+<div
+id="status"
+class="maintenance-status">
+
+Status: NONAKTIF
+
+</div>
+
+<div class="maintenance-buttons">
+
+<button
+class="btn-active"
+onclick="enableMaintenance()">
+
+AKTIFKAN
+
+</button>
+
+<button
+class="btn-disable"
+onclick="disableMaintenance()">
+
+NONAKTIFKAN
+
+</button>
+
+<button
+class="btn-logout"
+onclick="logoutOwner()">
+
+LOGOUT OWNER
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-overlay" id="popupModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">
+✅
+</div>
+
+<div
+class="modal-title"
+id="popupTitle">
+
+Berhasil
+
+</div>
+
+<div
+class="modal-text"
+id="popupText">
+
+Maintenance berhasil diaktifkan
+
+</div>
+
+<button
+class="modal-btn"
+onclick="closePopup()">
+
+OKE
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+function toggleMenu(){
+
+const sidebar =
+document.getElementById("sidebar")
+
+const overlay =
+document.getElementById("overlay")
+
+sidebar.classList.toggle("active")
+
+overlay.classList.toggle("active")
+
+document.body.classList.toggle("sidebar-open")
+
+}
+
+function showPopup(title,text){
+
+document.getElementById("popupTitle").innerText = title
+
+document.getElementById("popupText").innerText = text
+
+document
+.getElementById("popupModal")
+.classList.add("active")
+
+}
+
+function closePopup(){
+
+document
+.getElementById("popupModal")
+.classList.remove("active")
+
+}
+
+function logoutOwner(){
+
+localStorage.removeItem("isOwner")
+
+showPopup(
+"Logout",
+"Logout owner berhasil"
+)
+
+setTimeout(() => {
+
+location.href = "/"
+
+},1000)
+
+}
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
+
+authDomain:
+"danzzclean.firebaseapp.com",
+
+databaseURL:
+"https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+"danzzclean",
+
+storageBucket:
+"danzzclean.firebasestorage.app",
+
+messagingSenderId:
+"254872462958",
+
+appId:
+"1:254872462958:web:a7964353bb5afa6678287f"
+
+}
+
+firebase.initializeApp(firebaseConfig)
+
+const db =
+firebase.database()
+
+const maintenanceRef =
+db.ref("maintenance")
+
+let selectedImage = ""
+
+document
+.getElementById("imageFile")
+.addEventListener("change", function(e){
+
+const file = e.target.files[0]
+
+if(!file) return
+
+const reader = new FileReader()
+
+reader.onload = function(ev){
+
+selectedImage = ev.target.result
+
+const preview =
+document.getElementById("previewImage")
+
+preview.src = selectedImage
+
+preview.style.display = "block"
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+function enableMaintenance(){
+
+const message =
+document
+.getElementById("message")
+.value
+.trim()
+
+maintenanceRef.set({
+
+enabled:true,
+
+message:
+message ||
+"Website sedang diperbaiki",
+
+image:
+selectedImage || ""
+
+}).then(() => {
+
+showPopup(
+"Berhasil",
+"Maintenance berhasil diaktifkan ✅"
+)
+
+document.getElementById("message").value = ""
+
+selectedImage = ""
+
+const preview =
+document.getElementById("previewImage")
+
+preview.style.display = "none"
+
+preview.src = ""
+
+document.getElementById("imageFile").value = ""
+
+})
+
+}
+
+function disableMaintenance(){
+
+maintenanceRef.set({
+
+enabled:false,
+
+message:"",
+image:""
+
+}).then(() => {
+
+showPopup(
+"Berhasil",
+"Maintenance berhasil dinonaktifkan ❌"
+)
+
+})
+
+selectedImage = ""
+
+document.getElementById("previewImage").style.display = "none"
+
+document.getElementById("imageFile").value = ""
+
+}
+
+maintenanceRef.on("value", snap => {
+
+const data =
+snap.val()
+
+const status =
+document.getElementById("status")
+
+const input =
+document.getElementById("message")
+
+const preview =
+document.getElementById("previewImage")
+
+if(data){
+
+input.value = data.message || ""
+
+if(data.image){
+
+selectedImage = data.image
+
+preview.src = data.image
+
+preview.style.display = "block"
+
+}else{
+
+preview.style.display = "none"
+
+}
+
+if(data.enabled){
+
+status.innerHTML =
+"Status: AKTIF"
+
+}else{
+
+status.innerHTML =
+"Status: NONAKTIF"
+
+}
+
+}
+
+})
+
+</script>
+
+</body>
+</html>
