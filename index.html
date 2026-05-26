@@ -3,6 +3,11 @@
 <html lang="id">
 
 <head>
+<style>
+body{
+display:none;
+}
+</style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DanzClean</title>
@@ -188,6 +193,13 @@
         <a href="/stats">
             <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png"> Statistik
         </a>
+        <a href="/maintenance.html" id="maintenanceBtn" style="display:none;">
+    Perbaikan
+</a>
+
+<a href="#" id="logoutOwnerBtn" style="display:none;">
+    Logout Owner
+</a>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -454,6 +466,146 @@
             }
         })();
     </script>
+<script>
+const OWNER_KEY = "danzclean_owner_X92ka";
+
+const params = new URLSearchParams(window.location.search);
+
+if (params.get("owner") === OWNER_KEY) {
+    localStorage.setItem("isOwner", "true");
+}
+
+const isOwner = localStorage.getItem("isOwner");
+
+if (isOwner === "true") {
+
+    const btn = document.getElementById("maintenanceBtn");
+    const logoutBtn = document.getElementById("logoutOwnerBtn");
+
+    if (btn) {
+        btn.style.display = "flex";
+    }
+
+    if (logoutBtn) {
+
+        logoutBtn.style.display = "flex";
+
+        logoutBtn.onclick = () => {
+
+            localStorage.removeItem("isOwner");
+
+            alert("Logout owner berhasil");
+
+            location.href = "/";
+        };
+    }
+}
+</script>
+
+<script>
+
+document.body.style.display = "none";
+
+const maintenanceRef =
+firebase.database().ref("maintenance");
+
+maintenanceRef.once("value")
+.then(snap => {
+
+const data = snap.val();
+
+const isOwner =
+localStorage.getItem("isOwner");
+
+if(data && data.enabled === true && isOwner !== "true"){
+
+document.body.innerHTML = `
+
+<div class="maintenance-page">
+
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+<div class="line"></div>
+
+<div class="maintenance-card">
+
+${data.image ? `
+
+<div class="maintenance-icon">
+🚧
+</div>
+
+<div class="maintenance-title">
+WEBSITE MAINTENANCE
+</div>
+
+<div class="maintenance-image-wrapper">
+
+<div class="maintenance-image-line"></div>
+
+<img
+src="${data.image}"
+class="maintenance-image">
+
+</div>
+
+<div class="maintenance-desc">
+${data.message || "Website sedang diperbaiki"}
+</div>
+
+<div class="loader">
+
+<div class="loader-line"></div>
+<div class="loader-line"></div>
+
+</div>
+
+` : `
+
+<div class="maintenance-icon">
+🚧
+</div>
+
+<div class="maintenance-title">
+WEBSITE MAINTENANCE
+</div>
+
+<div class="maintenance-desc">
+${data.message || "Website sedang diperbaiki"}
+</div>
+
+<div class="loader">
+
+<div class="loader-line"></div>
+<div class="loader-line"></div>
+
+</div>
+
+`}
+
+</div>
+
+<a
+href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y"
+target="_blank"
+class="channel-btn">
+
+Informasi
+
+</a>
+
+</div>
+
+`;
+
+}
+
+document.body.style.display = "block";
+
+});
+
+</script>
 
 </body>
 </html>
