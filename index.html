@@ -640,12 +640,26 @@ Object.values(data)
 
 if(!reviews.length) return
 
+let lastReviewIndex = -1
+
 function showReview(){
 
-const random =
-reviews[
+let randomIndex
+
+do{
+
+randomIndex =
 Math.floor(Math.random() * reviews.length)
-]
+
+}while(
+reviews.length > 1 &&
+randomIndex === lastReviewIndex
+)
+
+lastReviewIndex = randomIndex
+
+const random =
+reviews[randomIndex]
 
 const div =
 document.createElement("div")
