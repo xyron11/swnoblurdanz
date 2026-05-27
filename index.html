@@ -172,6 +172,7 @@ display:none;
 <body>
 
     <div class="topbar">
+
         <div class="menu-btn dashboard-menu" onclick="toggleMenu()">☰</div>
     </div>
 
@@ -193,6 +194,10 @@ display:none;
         <a href="/stats">
             <img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png"> Statistik
         </a>
+<a href="/rating.html">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20270%20%5BFB81C6E%5D.png">
+Rating
+</a>
         <a href="/maintenance.html" id="maintenanceBtn" style="display:none;">
     Perbaikan
 </a>
@@ -604,6 +609,98 @@ Informasi
 document.body.style.display = "block";
 
 });
+
+</script>
+
+<!-- FLOAT REVIEW -->
+
+
+<div class="rating-float-track" id="ratingTrack"></div>
+
+<script>
+
+const ratingTrack =
+document.getElementById("ratingTrack")
+
+const reviewDb =
+firebase.database()
+
+reviewDb.ref("ratings")
+.on("value", snap => {
+
+const data = snap.val()
+
+if(!data) return
+
+const reviews =
+Object.values(data)
+.filter(v => (v.star === 5 || v.star === 4) && v.comment)
+
+if(!reviews.length) return
+
+function showReview(){
+
+const random =
+reviews[
+Math.floor(Math.random() * reviews.length)
+]
+
+const div =
+document.createElement("div")
+
+div.className = "rating-item"
+
+div.onclick = () => {
+location.href = "/rating.html"
+}
+
+div.innerHTML = `
+
+<div class="rating-user">
+
+<img
+src="${
+random.photo ||
+'https://ui-avatars.com/api/?name=' +
+encodeURIComponent(random.name || 'User') +
+'&background=4c7dff&color=fff'
+}"
+class="rating-avatar">
+
+<div class="rating-user-info">
+
+<div class="rating-username">
+${random.name || 'Pengguna'}
+</div>
+
+<div class="rating-item-stars">
+★★★★★
+</div>
+
+</div>
+</div>
+
+<div class="rating-item-text">
+${random.comment}
+</div>
+
+`
+
+ratingTrack.appendChild(div)
+
+setTimeout(()=>{
+
+div.remove()
+
+},4500)
+
+}
+
+showReview()
+
+setInterval(showReview,7000)
+
+})
 
 </script>
 
