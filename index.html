@@ -625,6 +625,8 @@ document.getElementById("ratingTrack")
 const reviewDb =
 firebase.database()
 
+let reviewLoopStarted = false
+
 reviewDb.ref("ratings")
 .on("value", snap => {
 
@@ -696,27 +698,46 @@ div.remove()
 
 }
 
-let isShowingReview = false
 
 function startReviewLoop(){
 
-if(isShowingReview) return
+const existing =
+document.querySelector(".rating-item")
 
-isShowingReview = true
+if(existing){
+
+setTimeout(startReviewLoop, 1000)
+
+return
+
+}
 
 showReview()
 
 setTimeout(() => {
 
-isShowingReview = false
+const item =
+document.querySelector(".rating-item")
 
-startReviewLoop()
+if(item){
 
-}, 6500)
+item.remove()
 
 }
 
+}, 4500)
+
+setTimeout(startReviewLoop, 6500)
+
+}
+
+if(!reviewLoopStarted){
+
+reviewLoopStarted = true
+
 startReviewLoop()
+
+}
 
 })
 
