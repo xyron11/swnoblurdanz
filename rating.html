@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Rating DanzClean</title>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+<link
+rel="stylesheet"
+href="style.css">
+
+<style>
+
+
+
+</style>
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+</head>
+
+<body>
+<div id="pageLoader"></div>
+<div class="topbar">
+
+<div
+class="menu-btn"
+onclick="toggleMenu()">
+
+☰
+
+</div>
+
+</div>
+
+<div
+class="sidebar"
+id="sidebar">
+
+<div class="sidebar-header">
+
+<div class="logo-box">
+
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20231%20%5B93ADA1D%5D.png">
+
+</div>
+
+</div>
+
+<a href="/">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Picsart_26-05-16_18-37-06-405.png">
+Dashboard
+</a>
+
+<a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20227%20%5B6DBBE35%5D.png">
+Channel WhatsApp
+</a>
+
+<a href="/creator.html">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20228%20%5B8DED6AA%5D.png">
+Creator
+</a>
+
+<a href="/stats.html">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png">
+Statistik
+</a>
+
+<a href="/rating.html">
+<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20270%20%5BFB81C6E%5D.png">
+Rating
+</a>
+
+</div>
+
+<div
+class="overlay"
+id="overlay"
+onclick="toggleMenu()"></div>
+
+<div class="rating-page">
+
+<div class="rating-card">
+
+<div class="playstore-title">
+Beri rating website ini
+</div>
+
+<div class="playstore-sub">
+Sampaikan pendapat Anda tentang DanzClean
+</div>
+
+<div class="rating-summary">
+
+<div class="rating-summary-left">
+
+<div class="rating-big" id="averageRating">
+0.0
+</div>
+
+<div class="rating-stars-big" id="averageStars">
+☆☆☆☆☆
+</div>
+
+<div class="rating-total" id="totalReviews">
+0 ulasan
+</div>
+
+</div>
+
+<div class="rating-bars">
+
+<div class="rating-bar-row">
+<span>5</span>
+<div class="bar">
+<div id="bar5"></div>
+</div>
+</div>
+
+<div class="rating-bar-row">
+<span>4</span>
+<div class="bar">
+<div id="bar4"></div>
+</div>
+</div>
+
+<div class="rating-bar-row">
+<span>3</span>
+<div class="bar">
+<div id="bar3"></div>
+</div>
+</div>
+
+<div class="rating-bar-row">
+<span>2</span>
+<div class="bar">
+<div id="bar2"></div>
+</div>
+</div>
+
+<div class="rating-bar-row">
+<span>1</span>
+<div class="bar">
+<div id="bar1"></div>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<div id="ratingTopContainer">
+
+<div class="playstore-stars">
+
+<span onclick="openReview(1)">☆</span>
+<span onclick="openReview(2)">☆</span>
+<span onclick="openReview(3)">☆</span>
+<span onclick="openReview(4)">☆</span>
+<span onclick="openReview(5)">☆</span>
+
+</div>
+
+</div>
+
+</div>
+
+<div
+id="reviewForm"
+class="review-form"
+style="display:none;">
+
+<input
+type="text"
+id="name"
+placeholder="Nama kamu"
+class="rating-input">
+
+<textarea
+id="comment"
+placeholder="Tulis ulasan..."
+class="rating-textarea"></textarea>
+
+<button
+class="rating-btn"
+onclick="sendReview()">
+
+POSTING
+
+</button>
+
+</div>
+
+<div class="review-section-title">
+Ulasan Pengguna
+</div>
+
+<div id="reviewList"></div>
+
+</div>
+
+<div
+class="review-modal"
+id="reviewModal">
+
+<div class="review-modal-card">
+
+<div class="review-modal-header">
+
+<div
+class="review-back-btn"
+onclick="closeEditModal()">
+
+←
+
+</div>
+
+<div class="review-modal-title">
+Edit ulasan
+</div>
+
+</div>
+
+<div class="modal-stars">
+
+<span onclick="setModalStar(1)">☆</span>
+<span onclick="setModalStar(2)">☆</span>
+<span onclick="setModalStar(3)">☆</span>
+<span onclick="setModalStar(4)">☆</span>
+<span onclick="setModalStar(5)">☆</span>
+
+</div>
+
+<input
+type="text"
+id="editName"
+placeholder="Nama kamu"
+class="rating-input">
+
+<textarea
+id="editComment"
+placeholder="Tulis ulasan..."
+class="rating-textarea"></textarea>
+
+<button
+class="rating-btn"
+onclick="saveEditReview()">
+
+KIRIM
+
+</button>
+
+<button
+class="delete-review-main"
+onclick="deleteReview()">
+
+HAPUS ULASAN
+
+</button>
+
+</div>
+
+</div>
+
+<input
+type="file"
+id="profileInput"
+accept="image/*"
+style="display:none;">
+
+<div
+class="profile-crop-modal"
+id="profileModal">
+
+<div class="crop-header">
+
+<div
+class="review-back-btn"
+onclick="closeProfileModal()">
+
+✕
+
+</div>
+
+<div class="crop-title">
+Foto Profil
+</div>
+
+<div
+class="crop-btn"
+onclick="saveProfilePhoto()">
+
+Simpan
+
+</div>
+
+</div>
+
+<div class="crop-body">
+
+<div class="crop-container">
+
+<img id="cropImage">
+
+</div>
+
+</div>
+
+<div class="crop-footer">
+
+<div
+class="crop-action"
+onclick="rotateCrop()">
+
+↻
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function toggleMenu(){
+
+document
+.getElementById("sidebar")
+.classList.toggle("active")
+
+document
+.getElementById("overlay")
+.classList.toggle("active")
+
+}
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
+
+authDomain:
+"danzzclean.firebaseapp.com",
+
+databaseURL:
+"https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+"danzzclean",
+
+storageBucket:
+"danzzclean.firebasestorage.app",
+
+messagingSenderId:
+"254872462958",
+
+appId:
+"1:254872462958:web:a7964353bb5afa6678287f"
+
+}
+
+if(!firebase.apps.length){
+
+firebase.initializeApp(firebaseConfig)
+
+}
+
+const db = firebase.database()
+
+let deviceId =
+localStorage.getItem("ratingDevice")
+
+if(!deviceId){
+
+deviceId =
+Math.random()
+.toString(36)
+.substring(2)
+
+localStorage.setItem(
+"ratingDevice",
+deviceId
+)
+
+}
+
+let selectedStar = 5
+let modalStar = 5
+let cropper = null
+
+function updateStars(star){
+
+const stars =
+document.querySelectorAll(".playstore-stars span")
+
+stars.forEach((el,index)=>{
+
+if(index < star){
+
+el.innerHTML = "★"
+el.classList.add("active")
+
+}else{
+
+el.innerHTML = "☆"
+el.classList.remove("active")
+
+}
+
+})
+
+}
+
+function openReview(star){
+
+selectedStar = star
+
+updateStars(star)
+
+document
+.getElementById("reviewForm")
+.style.display = "block"
+
+window.scrollTo({
+
+top:400,
+behavior:"smooth"
+
+})
+
+}
+
+function sendReview(){
+
+const name =
+document
+.getElementById("name")
+.value
+.trim()
+
+const comment =
+document
+.getElementById("comment")
+.value
+.trim()
+
+if(!name || !comment){
+
+showPopup("Isi dulu bre")
+return
+
+}
+
+db.ref("ratings/" + deviceId)
+.once("value")
+.then(old=>{
+
+const oldData = old.val() || {}
+
+db.ref("ratings/" + deviceId)
+.set({
+
+name:name,
+comment:comment,
+star:selectedStar,
+photo:oldData.photo || "",
+time:Date.now()
+
+})
+.then(()=>{
+
+document
+.getElementById("reviewForm")
+.style.display = "none"
+
+})
+
+})
+
+}
+
+function openEditModal(){
+
+db.ref("ratings/" + deviceId)
+.once("value")
+.then(snap=>{
+
+const data = snap.val()
+
+if(!data) return
+
+document
+.getElementById("reviewModal")
+.classList.add("active")
+
+document
+.getElementById("editName")
+.value =
+data.name || ""
+
+document
+.getElementById("editComment")
+.value =
+data.comment || ""
+
+modalStar = data.star || 5
+
+updateModalStars(modalStar)
+
+})
+
+}
+
+function closeEditModal(){
+
+document
+.getElementById("reviewModal")
+.classList.remove("active")
+
+}
+
+function setModalStar(star){
+
+modalStar = star
+
+updateModalStars(star)
+
+}
+
+function updateModalStars(star){
+
+const stars =
+document.querySelectorAll(".modal-stars span")
+
+stars.forEach((el,index)=>{
+
+if(index < star){
+
+el.innerHTML = "★"
+el.classList.add("active")
+
+}else{
+
+el.innerHTML = "☆"
+el.classList.remove("active")
+
+}
+
+})
+
+}
+
+function saveEditReview(){
+
+const name =
+document
+.getElementById("editName")
+.value
+.trim()
+
+const comment =
+document
+.getElementById("editComment")
+.value
+.trim()
+
+if(!name || !comment){
+
+showPopup("Isi dulu bre")
+return
+
+}
+
+db.ref("ratings/" + deviceId)
+.update({
+
+name:name,
+comment:comment,
+star:modalStar
+
+})
+.then(()=>{
+
+closeEditModal()
+
+})
+
+}
+
+function deleteReview(){
+
+if(!confirm("Hapus ulasan lu?")) return
+
+db.ref("ratings/" + deviceId)
+.remove()
+.then(()=>{
+
+closeEditModal()
+
+document
+.getElementById("reviewForm")
+.style.display = "none"
+
+/* RESET INPUT */
+document.getElementById("name").value = ""
+document.getElementById("comment").value = ""
+
+document.getElementById("editName").value = ""
+document.getElementById("editComment").value = ""
+
+selectedStar = 0
+modalStar = 0
+
+updateStars(0)
+updateModalStars(0)
+
+document.getElementById(
+"ratingTopContainer"
+).style.display = "block"
+
+})
+
+}
+
+function changeProfilePhoto(){
+
+document
+.getElementById("profileInput")
+.click()
+
+}
+
+document
+.getElementById("profileInput")
+.addEventListener("change", e => {
+
+const file = e.target.files[0]
+
+if(!file) return
+
+const reader = new FileReader()
+
+reader.onload = function(ev){
+
+document
+.getElementById("profileModal")
+.classList.add("active")
+
+const image =
+document.getElementById("cropImage")
+
+image.src = ev.target.result
+
+if(cropper){
+
+cropper.destroy()
+
+}
+
+cropper = new Cropper(image, {
+
+aspectRatio:1,
+
+viewMode:1,
+
+dragMode:"move",
+
+background:false,
+
+autoCropArea:1,
+
+responsive:true,
+
+guides:false,
+
+center:false,
+
+highlight:false,
+
+cropBoxMovable:true,
+
+cropBoxResizable:false,
+
+toggleDragModeOnDblclick:false
+
+})
+
+}
+
+reader.readAsDataURL(file)
+
+})
+
+function closeProfileModal(){
+
+document
+.getElementById("profileModal")
+.classList.remove("active")
+
+if(cropper){
+
+cropper.destroy()
+cropper = null
+
+}
+
+}
+
+function rotateCrop(){
+
+if(!cropper) return
+
+cropper.rotate(90)
+
+}
+
+function saveProfilePhoto(){
+
+if(!cropper) return
+
+const croppedPhoto =
+cropper
+.getCroppedCanvas({
+
+width:400,
+height:400,
+imageSmoothingQuality:"high"
+
+})
+.toDataURL("image/jpeg",0.9)
+
+db.ref("ratings/" + deviceId)
+.update({
+
+photo:croppedPhoto
+
+})
+.then(()=>{
+
+closeProfileModal()
+
+})
+
+}
+
+db.ref("ratings")
+.on("value", snap => {
+
+document.getElementById(
+"pageLoader"
+).style.display = "none"
+
+const data = snap.val()
+
+const list =
+document.getElementById("reviewList")
+
+list.innerHTML = ""
+
+if(!data){
+
+document.getElementById("averageRating").innerHTML = "0.0"
+
+document.getElementById("averageStars").innerHTML =
+"☆☆☆☆☆"
+
+document.getElementById("totalReviews").innerHTML =
+"0 ulasan"
+
+document.getElementById(
+"ratingTopContainer"
+).style.display = "block"
+
+return
+
+}
+
+let entries =
+Object.entries(data)
+
+const total =
+entries.length
+
+let star5 = 0
+let star4 = 0
+let star3 = 0
+let star2 = 0
+let star1 = 0
+
+let totalStar = 0
+let hasMyReview = false
+
+entries.forEach(([id,item])=>{
+
+totalStar += item.star
+
+if(item.star === 5) star5++
+if(item.star === 4) star4++
+if(item.star === 3) star3++
+if(item.star === 2) star2++
+if(item.star === 1) star1++
+
+})
+
+const avg =
+(totalStar / total).toFixed(1)
+
+document.getElementById("averageRating").innerHTML =
+avg
+
+const rounded =
+Math.round(avg)
+
+document.getElementById("averageStars").innerHTML =
+"★".repeat(rounded) +
+"☆".repeat(5 - rounded)
+
+document.getElementById("totalReviews").innerHTML =
+`${total} ulasan`
+
+document.getElementById("bar5").style.width =
+`${(star5 / total) * 100}%`
+
+document.getElementById("bar4").style.width =
+`${(star4 / total) * 100}%`
+
+document.getElementById("bar3").style.width =
+`${(star3 / total) * 100}%`
+
+document.getElementById("bar2").style.width =
+`${(star2 / total) * 100}%`
+
+document.getElementById("bar1").style.width =
+`${(star1 / total) * 100}%`
+
+entries.sort((a,b)=>{
+
+if(a[0] === deviceId) return -1
+
+if(b[0] === deviceId) return 1
+
+return b[1].time - a[1].time
+
+})
+
+entries.forEach(([id,item]) => {
+
+const isMine =
+id === deviceId
+
+if(isMine){
+hasMyReview = true
+}
+
+list.innerHTML += `
+
+<div class="review-card ${isMine ? 'my-review-card' : ''}">
+
+<div class="review-header">
+
+<div class="review-avatar">
+
+${item.photo
+
+? `<img src="${item.photo}" class="avatar-img">`
+
+: item.name.charAt(0).toUpperCase()
+
+}
+
+${isMine ? `
+
+<div
+class="edit-avatar-btn"
+onclick="changeProfilePhoto()">
+
+✎
+
+</div>
+
+` : ``}
+
+</div>
+
+<div class="review-info">
+
+<div class="review-name-row">
+
+<div class="review-name">
+${item.name}
+</div>
+
+${isMine ? `
+
+<div class="review-tag">
+Review Anda
+</div>
+
+` : ``}
+
+</div>
+
+<div class="review-stars-row">
+
+${"★".repeat(item.star)}
+
+</div>
+
+${isMine ? `
+
+<div
+class="edit-review-text"
+onclick="openEditModal()">
+
+Edit ulasan Anda
+
+</div>
+
+` : ``}
+
+</div>
+
+</div>
+
+<div class="review-comment">
+
+${item.comment}
+
+</div>
+
+</div>
+
+`
+
+})
+
+document.getElementById(
+"ratingTopContainer"
+).style.display =
+hasMyReview ? "none" : "block"
+
+})
+function showPopup(text){
+
+document.getElementById(
+"popupText"
+).innerHTML = text
+
+document.getElementById(
+"customPopup"
+).classList.add("show")
+
+}
+
+function closePopup(){
+
+document.getElementById(
+"customPopup"
+).classList.remove("show")
+
+}
+</script>
+<div class="custom-popup" id="customPopup">
+
+<div class="custom-popup-card">
+
+<div class="custom-popup-text" id="popupText">
+Isi dulu bre
+</div>
+
+<button
+class="custom-popup-btn"
+onclick="closePopup()">
+
+OK
+
+</button>
+
+</div>
+
+</div>
+</body>
+</html>
