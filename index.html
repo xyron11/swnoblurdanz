@@ -696,9 +696,27 @@ div.remove()
 
 }
 
+let isShowingReview = false
+
+function startReviewLoop(){
+
+if(isShowingReview) return
+
+isShowingReview = true
+
 showReview()
 
-setInterval(showReview,7000)
+setTimeout(() => {
+
+isShowingReview = false
+
+startReviewLoop()
+
+}, 6500)
+
+}
+
+startReviewLoop()
 
 })
 
