@@ -628,7 +628,8 @@ firebase.database()
 let reviewLoopStarted = false
 
 reviewDb.ref("ratings")
-.on("value", snap => {
+.once("value")
+.then(snap => {
 
 const data = snap.val()
 
@@ -641,8 +642,15 @@ Object.values(data)
 if(!reviews.length) return
 
 let lastReviewIndex = -1
+let usedIndexes = []
 
 function showReview(){
+
+if(usedIndexes.length >= reviews.length){
+
+usedIndexes = []
+
+}
 
 let randomIndex
 
@@ -652,9 +660,10 @@ randomIndex =
 Math.floor(Math.random() * reviews.length)
 
 }while(
-reviews.length > 1 &&
-randomIndex === lastReviewIndex
+usedIndexes.includes(randomIndex)
 )
+
+usedIndexes.push(randomIndex)
 
 lastReviewIndex = randomIndex
 
