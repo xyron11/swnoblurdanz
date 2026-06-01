@@ -249,7 +249,7 @@ Rating
     </div>
 
     <script>
-        const API = "convert-api-production.up.railway.app";
+        const API = "https://convert-api-production.up.railway.app";
         
         let isCurrentlyUploading = false;
 
@@ -382,11 +382,14 @@ Rating
             try {
                 
                 const req = await fetch(API + "/api/upload", {
-                    method: "POST",
-                    body: form
-                });
+    method: "POST",
+    body: form
+});
 
-                const res = await req.json();
+const text = await req.text();
+console.log("Response:", text);
+
+const res = JSON.parse(text);
 
                 isCurrentlyUploading = false;
                 if (typeof turnstile !== "undefined") {
