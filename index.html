@@ -7,6 +7,8 @@
 body{
 display:none;
 }
+<script src="https://unpkg.com/@dotlottie/player-component@2.7.1/dist/dotlottie-player.mjs" type="module"></script>
+
 </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -371,7 +373,7 @@ if (btn) {
     btn.disabled = true;
     btn.style.opacity = "1"; 
     btn.innerHTML = `
-        <span id="btnProgressText">MENGIRIM FILE... (30%)</span>
+        <span id="btnProgressText">PROSES... (30%)</span>
         <div class="btn-progress-container">
             <div class="progress-track">
                 <div class="progress-fill" id="btnProgressBar" style="width: 30%;"></div>
@@ -382,7 +384,7 @@ if (btn) {
 
 
             try {
-                // Kirim file ke server (Hanya butuh waktu 1-2 detik untuk upload mentah)
+
                 const req = await fetch(API + "/api/upload", {
                     method: "POST",
                     body: form
@@ -600,109 +602,61 @@ if (isOwner === "true") {
 </script>
 
 <script>
-
 document.body.style.display = "none";
 
-const maintenanceRef =
-firebase.database().ref("maintenance");
+const maintenanceRef = firebase.database().ref("maintenance");
 
 maintenanceRef.once("value")
 .then(snap => {
+    const data = snap.val();
+    const isOwner = localStorage.getItem("isOwner");
 
-const data = snap.val();
-
-const isOwner =
-localStorage.getItem("isOwner");
-
-if(data && data.enabled === true && isOwner !== "true"){
-
-document.body.innerHTML = `
-
-<div class="maintenance-page">
-
-<div class="line"></div>
-<div class="line"></div>
-<div class="line"></div>
-<div class="line"></div>
-
-<div class="maintenance-card">
-
-${data.image ? `
-
-<div class="maintenance-icon">
-🚧
-</div>
-
-<div class="maintenance-title">
-WEBSITE MAINTENANCE
-</div>
-
-<div class="maintenance-image-wrapper">
-
-<div class="maintenance-image-line"></div>
-
-<img
-src="${data.image}"
-class="maintenance-image">
-
-</div>
-
-<div class="maintenance-desc">
-${data.message || "Website sedang diperbaiki"}
-</div>
-
-<div class="loader">
-
-<div class="loader-line"></div>
-<div class="loader-line"></div>
-
-</div>
-
-` : `
-
-<div class="maintenance-icon">
-🚧
-</div>
-
-<div class="maintenance-title">
-WEBSITE MAINTENANCE
-</div>
-
-<div class="maintenance-desc">
-${data.message || "Website sedang diperbaiki"}
-</div>
-
-<div class="loader">
-
-<div class="loader-line"></div>
-<div class="loader-line"></div>
-
-</div>
-
-`}
-
-</div>
-
-<a
-href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y"
-target="_blank"
-class="channel-btn">
-
-Informasi
-
-</a>
-
-</div>
-
-`;
-
-}
-
-document.body.style.display = "block";
-
+    if (data && data.enabled === true && isOwner !== "true") {
+        
+        document.body.innerHTML = `
+        <div class="maintenance-page">
+            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+            <div class="maintenance-card">
+                <div class="maintenance-icon">🚧</div>
+                <div class="maintenance-title">WEBSITE MAINTENANCE</div>
+                ${data.image ? `
+                <div class="maintenance-image-wrapper">
+                    <div class="maintenance-image-line"></div>
+                    <img src="${data.image}" class="maintenance-image">
+                </div>` : ''}
+                <div class="maintenance-desc">${data.message || "Website sedang diperbaiki"}</div>
+                <div class="loader"><div class="loader-line"></div><div class="loader-line"></div></div>
+            </div>
+            <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank" class="channel-btn">Informasi</a>
+        </div>`;
+    } else {
+        
+        setTimeout(() => {
+            const donationPopup = document.getElementById("donationPopup");
+            if (donationPopup) {
+                donationPopup.classList.add("show");
+            }
+        }, 1500);
+    }
+    
+    
+    document.body.style.display = "block";
+})
+.catch(err => {
+    
+    console.error("Firebase error:", err);
+    document.body.style.display = "block";
 });
 
+
+function closeDonationPopup() {
+    const donationPopup = document.getElementById("donationPopup");
+    if (donationPopup) {
+        donationPopup.classList.remove("show");
+    }
+}
 </script>
+
 
 <!-- FLOAT REVIEW -->
 
@@ -846,6 +800,8 @@ setTimeout(startReviewLoop, 6500)
 
 }
 
+}
+
 if(!reviewLoopStarted){
 
 reviewLoopStarted = true
@@ -856,7 +812,32 @@ startReviewLoop()
 
 })
 
+
 </script>
+
+    <div class="popup-overlay" id="donationPopup">
+        <div class="popup-card">
+            <button class="popup-close-btn" onclick="closeDonationPopup()">✕</button>
+            <div class="popup-title">Dukung DanzClean! ✨</div>
+            <div class="popup-desc">Bantu danzclean menjaga server tetap menyala dan gratis dengan berdonasi sukarela melalui tombol di bawah ini</div>
+
+            <div class="popup-video-container" style="background: #111a3a; border: none; box-shadow: none; display: flex; justify-content: center; align-items: center; height: 200px; margin: 15px 0; overflow: hidden; border-radius: 14px;">
+                <video 
+                    src="https://files.catbox.moe/xvqfio.mp4" 
+                    autoplay 
+                    loop 
+                    muted 
+                    playsinline 
+                    style="width: 100%; height: 100%; object-fit: contain;">
+                </video>
+            </div>
+
+
+
+
+            <a href="https://saweria.co/Danztsuyoi" target="_blank" class="popup-donate-btn">DONASI</a>
+        </div>
+    </div>
 
 </body>
 </html>
