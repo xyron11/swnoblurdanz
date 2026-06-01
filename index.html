@@ -380,51 +380,106 @@ Rating
             }
 
             try {
-                
+                // Kirim file ke server (Hanya butuh waktu 1-2 detik untuk upload mentah)
                 const req = await fetch(API + "/api/upload", {
-    method: "POST",
-    body: form
-});
+                    method: "POST",
+                    body: form
+                });
 
-const text = await req.text();
-console.log("Response:", text);
+                const text = await req.text();
+                console.log("Response:", text);
+                const res = JSON.parse(text);
 
-const res = JSON.parse(text);
-
-                isCurrentlyUploading = false;
-                if (typeof turnstile !== "undefined") {
-                    turnstile.reset();
-                }
-
-                if (nomorInput) nomorInput.disabled = false;
-                if (fileInput) fileInput.disabled = false;
-                if (uploadBox) {
-                    uploadBox.style.pointerEvents = "auto";
-                    uploadBox.style.opacity = "1";
-                    uploadBox.style.filter = "none";
-                }
-
-                if (btn) {
-                    btn.disabled = false;
-                    btn.style.opacity = "1";
-                    btn.style.cursor = "pointer";
-                    btn.innerHTML = "UPLOAD NOW";
-                }
-
-                if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE COY`;
+                // Jika server sukses menerima file dan memberikan ID proses background
+                if (res.status && res.id) {
+                    document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
                     
-                    fileInput.value = "";
-                    nomorInput.value = "";
-                    document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
                     
-                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
-                } else {
+                    const intervalCek = setInterval(async () => {
+                        try {
+                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
+                            const statusData = await cekReq.json();
+
+                            if (statusData.status === "proses") {
+                                
+                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+                            } 
+                            else if (statusData.status === "selesai") {
+                                clearInterval(intervalCek); 
+                                isCurrentlyUploading = false;
+                                if (typeof turnstile !== "undefined") turnstile.reset();
+                                if (nomorInput) nomorInput.disabled = false;
+                                if (fileInput) fileInput.disabled = false;
+                                if (uploadBox) {
+                                    uploadBox.style.pointerEvents = "auto";
+                                    uploadBox.style.opacity = "1";
+                                    uploadBox.style.filter = "none";
+                                }
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.style.opacity = "1";
+                                    btn.style.cursor = "pointer";
+                                    btn.innerHTML = "UPLOAD NOW";
+                                }
+
+                                
+                                document.getElementById("status").innerHTML = `DONE COY`;
+                                fileInput.value = "";
+                                nomorInput.value = "";
+                                document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
+                                
+                                
+                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                            } 
+                            else if (statusData.status === "error") {
+                                clearInterval(intervalCek);
+                                throw new Error(statusData.message);
+                            }
+                        } catch (errCek) {
+                            clearInterval(intervalCek);
+                            isCurrentlyUploading = false;
+                            if (typeof turnstile !== "undefined") turnstile.reset();
+                            if (nomorInput) nomorInput.disabled = false;
+                            if (fileInput) fileInput.disabled = false;
+                            if (uploadBox) {
+                                uploadBox.style.pointerEvents = "auto";
+                                uploadBox.style.opacity = "1";
+                                uploadBox.style.filter = "none";
+                            }
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.style.opacity = "1";
+                                btn.style.cursor = "pointer";
+                                btn.innerHTML = "UPLOAD NOW";
+                            }
+                            document.getElementById("status").innerHTML = errCek.message;
+                            showCustomModal("error", "Gagal Memproses", errCek.message);
+                        }
+                    }, 2000); 
+
+                } else if (!res.status) {
+                    
+                    isCurrentlyUploading = false;
+                    if (typeof turnstile !== "undefined") turnstile.reset();
+                    if (nomorInput) nomorInput.disabled = false;
+                    if (fileInput) fileInput.disabled = false;
+                    if (uploadBox) {
+                        uploadBox.style.pointerEvents = "auto";
+                        uploadBox.style.opacity = "1";
+                        uploadBox.style.filter = "none";
+                    }
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                        btn.style.cursor = "pointer";
+                        btn.innerHTML = "UPLOAD NOW";
+                    }
                     document.getElementById("status").innerHTML = res.error;
                     showCustomModal("error", "Gagal Memproses", res.error);
                 }
 
             } catch (e) {
+
                 isCurrentlyUploading = false;
                 if (typeof turnstile !== "undefined") {
                     turnstile.reset();
