@@ -382,11 +382,23 @@ Rating
             try {
                 
                 const req = await fetch(API + "/api/upload", {
-                    method: "POST",
-                    body: form
-                });
+    method: "POST",
+    body: form
+});
 
-                const res = await req.json();
+if (!req.ok) {
+    throw new Error(`HTTP ${req.status}`);
+}
+
+const text = await req.text();
+
+let res;
+
+try {
+    res = JSON.parse(text);
+} catch {
+    throw new Error("Response bukan JSON: " + text.substring(0, 100));
+}
 
                 isCurrentlyUploading = false;
                 if (typeof turnstile !== "undefined") {
@@ -442,7 +454,13 @@ Rating
                     btn.innerHTML = "UPLOAD NOW";
                 }
                 document.getElementById("status").innerHTML = e.message;
-                showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
+                console.error("UPLOAD ERROR:", e);
+
+showCustomModal(
+    "error",
+    "Masalah Jaringan",
+    e.message
+);
             }
         }
     </script>
