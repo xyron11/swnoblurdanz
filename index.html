@@ -424,18 +424,41 @@ try {
                     btn.innerHTML = "UPLOAD NOW";
                 }
 
-                if (res.status) {
-                    document.getElementById("status").innerHTML = `DONE COY`;
-                    
-                    fileInput.value = "";
-                    nomorInput.value = "";
-                    document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
-                    
-                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
-                } else {
-                    document.getElementById("status").innerHTML = res.error;
-                    showCustomModal("error", "Gagal Memproses", res.error);
-                }
+                if (res.status && res.processing) {
+
+    document.getElementById("status").innerHTML =
+        "Video sedang diproses...";
+
+    cekHasil(res.nomor);
+
+} else if (res.status) {
+
+    document.getElementById("status").innerHTML =
+        "DONE COY";
+
+    fileInput.value = "";
+    nomorInput.value = "";
+    document.getElementById("file-name").innerText =
+        "Tap di sini buat masukin video";
+
+    showCustomModal(
+        "success",
+        "Upload Berhasil!",
+        "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit"
+    );
+
+} else {
+
+    document.getElementById("status").innerHTML =
+        res.error;
+
+    showCustomModal(
+        "error",
+        "Gagal Memproses",
+        res.error
+    );
+
+}
 
             } catch (e) {
                 isCurrentlyUploading = false;
@@ -476,6 +499,59 @@ showCustomModal(
 );
             }
         }
+        
+        async function cekHasil(nomor) {
+
+    const interval = setInterval(async () => {
+
+        try {
+
+            const req = await fetch(
+                API + "/results?nomor=" +
+                encodeURIComponent(nomor)
+            );
+
+            const res = await req.json();
+
+            if (res.status === "done") {
+
+                clearInterval(interval);
+
+                document.getElementById("status").innerHTML =
+                    "DONE COY";
+
+                showCustomModal(
+                    "success",
+                    "Upload Berhasil!",
+                    "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit"
+                );
+
+            }
+
+            if (res.status === "failed") {
+
+                clearInterval(interval);
+
+                document.getElementById("status").innerHTML =
+                    res.error;
+
+                showCustomModal(
+                    "error",
+                    "Gagal Memproses",
+                    res.error
+                );
+
+            }
+
+        } catch (e) {
+
+            clearInterval(interval);
+
+        }
+
+    }, 3000);
+
+}
     </script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
