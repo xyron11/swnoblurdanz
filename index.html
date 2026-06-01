@@ -367,17 +367,19 @@ Rating
                 uploadBox.style.filter = "grayscale(50%)";
             }
 
-            if (btn) {
-                btn.disabled = true;
-                btn.style.opacity = "0.8";
-                btn.style.cursor = "not-allowed";
-                btn.innerHTML = `
-                    <div class="loading-container">
-                        <div class="spinner"></div>
-                        <span>UPLOADING...</span>
-                    </div>
-                `;
-            }
+if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = "1"; 
+    btn.innerHTML = `
+        <div class="btn-progress-container">
+            <span class="btn-progress-text" id="btnProgressText">MENGIRIM FILE... (30%)</span>
+            <div class="progress-track">
+                <div class="progress-fill" id="btnProgressBar" style="width: 30%;"></div>
+            </div>
+        </div>
+    `;
+}
+
 
             try {
                 // Kirim file ke server (Hanya butuh waktu 1-2 detik untuk upload mentah)
@@ -390,23 +392,46 @@ Rating
                 console.log("Response:", text);
                 const res = JSON.parse(text);
 
-                // Jika server sukses menerima file dan memberikan ID proses background
-                if (res.status && res.id) {
-                    document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
-                    
-                    
-                    const intervalCek = setInterval(async () => {
+
+if (res.status && res.id) {
+    document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
+
+
+    const pBar = document.getElementById("btnProgressBar");
+    const pText = document.getElementById("btnProgressText");
+    if (pBar) pBar.style.width = "60%";
+    if (pText) pText.innerText = "MERENDER VIDEO HD... (60%)";
+
+    const intervalCek = setInterval(async () => {
+
                         try {
                             const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
                             const statusData = await cekReq.json();
 
                             if (statusData.status === "proses") {
-                                
-                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
-                            } 
+    document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+
+
+    const pBar = document.getElementById("btnProgressBar");
+    const pText = document.getElementById("btnProgressText");
+    if (pBar) pBar.style.width = "85%";
+    if (pText) pText.innerText = "KOMPRESI HD SEDANG BERJALAN... (85%)";
+} 
+
                             else if (statusData.status === "selesai") {
-                                clearInterval(intervalCek); 
-                                isCurrentlyUploading = false;
+    
+    const pBar = document.getElementById("btnProgressBar");
+    const pText = document.getElementById("btnProgressText");
+    if (pBar) pBar.style.width = "100%";
+    if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
+
+
+    await new Promise(r => setTimeout(r, 600));
+
+    clearInterval(intervalCek); // Hentikan nge-ping server karena sudah selesai
+
+    isCurrentlyUploading = false;
+
                                 if (typeof turnstile !== "undefined") turnstile.reset();
                                 if (nomorInput) nomorInput.disabled = false;
                                 if (fileInput) fileInput.disabled = false;
