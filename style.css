@@ -223,6 +223,8 @@ input {
 }
 
 button {
+    position: relative; /* WAJIB: Mengunci bar pelangi agar tetap di dalam lantai tombol */
+    overflow: hidden;   /* WAJIB: Memotong sudut pelangi agar tidak luber keluar dari border tumpul tombol */
     width: 100%;
     height: 68px;
     border: none;
@@ -2594,6 +2596,7 @@ line-height:1.25;
 .btn-progress-text {
     display: none;
 }
+
 
 
 .progress-fill {
