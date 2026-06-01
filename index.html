@@ -398,9 +398,10 @@ if (res.status && res.id) {
 
 
     const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-    if (pBar) pBar.style.width = "60%";
-if (pText) pText.innerHTML = `MERENDER VIDEO HD... (60%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 60%;"></div></div></div>`;
+const pText = document.getElementById("btnProgressText");
+if (pBar) pBar.style.width = "60%";
+if (pText) pText.innerText = "MERENDER VIDEO HD... (60%)"; 
+
 
 
     const intervalCek = setInterval(async () => {
@@ -413,19 +414,21 @@ if (pText) pText.innerHTML = `MERENDER VIDEO HD... (60%)<div class="btn-progress
     document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
 
 
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-    if (pBar) pBar.style.width = "85%";
-if (pText) pText.innerHTML = `KOMPRESI HD SEDANG BERJALAN... (85%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 85%;"></div></div></div>`;
+    const pBar2 = document.getElementById("btnProgressBar");
+const pText2 = document.getElementById("btnProgressText");
+if (pBar2) pBar2.style.width = "85%";
+if (pText2) pText2.innerText = "KOMPRESI HD SEDANG BERJALAN... (85%)";
+
 
 } 
 
                             else if (statusData.status === "selesai") {
     
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-    if (pBar) pBar.style.width = "100%";
-if (pText) pText.innerHTML = `SELESAI RENDERING! (100%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 100%;"></div></div></div>`;
+    const pBar3 = document.getElementById("btnProgressBar");
+const pText3 = document.getElementById("btnProgressText");
+if (pBar3) pBar3.style.width = "100%";
+if (pText3) pText3.innerText = "SELESAI RENDERING! (100%)";
+
 
 
 
