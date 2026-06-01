@@ -386,18 +386,22 @@ Rating
     body: form
 });
 
-if (!req.ok) {
-    throw new Error(`HTTP ${req.status}`);
-}
+console.log("STATUS:", req.status);
 
-const text = await req.text();
+const raw = await req.text();
+
+console.log("RAW RESPONSE:", raw);
+
+if (!req.ok) {
+    throw new Error(`HTTP ${req.status}\n${raw}`);
+}
 
 let res;
 
 try {
-    res = JSON.parse(text);
+    res = JSON.parse(raw);
 } catch {
-    throw new Error("Response bukan JSON: " + text.substring(0, 100));
+    throw new Error("Response bukan JSON:\n" + raw);
 }
 
                 isCurrentlyUploading = false;
@@ -453,13 +457,22 @@ try {
                     btn.style.cursor = "pointer";
                     btn.innerHTML = "UPLOAD NOW";
                 }
-                document.getElementById("status").innerHTML = e.message;
                 console.error("UPLOAD ERROR:", e);
+
+let pesan = e.message;
+
+if (e.stack) {
+    pesan += "\n\n" + e.stack;
+}
+
+document.getElementById("status").innerHTML = pesan;
+
+alert(pesan);
 
 showCustomModal(
     "error",
     "Masalah Jaringan",
-    e.message
+    pesan
 );
             }
         }
