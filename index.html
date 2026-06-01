@@ -371,8 +371,8 @@ if (btn) {
     btn.disabled = true;
     btn.style.opacity = "1"; 
     btn.innerHTML = `
+        <span id="btnProgressText">MENGIRIM FILE... (30%)</span>
         <div class="btn-progress-container">
-            <span class="btn-progress-text" id="btnProgressText">MENGIRIM FILE... (30%)</span>
             <div class="progress-track">
                 <div class="progress-fill" id="btnProgressBar" style="width: 30%;"></div>
             </div>
@@ -400,7 +400,8 @@ if (res.status && res.id) {
     const pBar = document.getElementById("btnProgressBar");
     const pText = document.getElementById("btnProgressText");
     if (pBar) pBar.style.width = "60%";
-    if (pText) pText.innerText = "MERENDER VIDEO HD... (60%)";
+if (pText) pText.innerHTML = `MERENDER VIDEO HD... (60%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 60%;"></div></div></div>`;
+
 
     const intervalCek = setInterval(async () => {
 
@@ -415,7 +416,8 @@ if (res.status && res.id) {
     const pBar = document.getElementById("btnProgressBar");
     const pText = document.getElementById("btnProgressText");
     if (pBar) pBar.style.width = "85%";
-    if (pText) pText.innerText = "KOMPRESI HD SEDANG BERJALAN... (85%)";
+if (pText) pText.innerHTML = `KOMPRESI HD SEDANG BERJALAN... (85%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 85%;"></div></div></div>`;
+
 } 
 
                             else if (statusData.status === "selesai") {
@@ -423,7 +425,8 @@ if (res.status && res.id) {
     const pBar = document.getElementById("btnProgressBar");
     const pText = document.getElementById("btnProgressText");
     if (pBar) pBar.style.width = "100%";
-    if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
+if (pText) pText.innerHTML = `SELESAI RENDERING! (100%)<div class="btn-progress-container"><div class="progress-track"><div class="progress-fill" id="btnProgressBar" style="width: 100%;"></div></div></div>`;
+
 
 
     await new Promise(r => setTimeout(r, 600));
