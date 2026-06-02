@@ -2320,242 +2320,147 @@ height:100%;
 background:#020b3f;
 z-index:99999;
 }
-.rating-float-track{
-position:fixed;
+/* ==========================================================
+   GANTI SEMUA KODE PALING BAWAH FILE DENGAN BLOK KODE INI
+   (EFEK TRANSPARAN BLUR & KECIL DI POJOK KANAN ATAS)
+   ========================================================== */
 
-top:78px;
-right:10px;
-transition:.25s ease;
-z-index:7000;
-
-display:flex;
-flex-direction:column;
-
-gap:10px;
-
-pointer-events:none;
-
-overflow:hidden;
+.rating-float-track {
+    position: fixed;
+    top: 78px !important;      /* Posisi atas untuk desktop */
+    bottom: auto !important;   /* Mematikan reset bottom */
+    right: 10px !important;    /* Merapat ke kanan */
+    left: auto !important;     /* Mematikan reset left */
+    transform: none !important;
+    transition: .25s ease;
+    z-index: 7000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    width: 165px;              /* Ukuran box kecil proporsional */
+    overflow: visible;
 }
 
-.rating-item{
-cursor:pointer;
-pointer-events:auto;
-
-transition:
-transform .2s ease,
-opacity .2s ease;
-
-width:165px;
-
-padding:10px;
-
-border-radius:18px;
-
-background:
-rgba(8,12,35,.34);
-
-border:
-1px solid rgba(255,255,255,.08);
-
-backdrop-filter:blur(22px);
-
--webkit-backdrop-filter:blur(22px);
-
-box-shadow:
-0 8px 24px rgba(0,0,0,.22),
-0 0 18px rgba(76,125,255,.08);
-
-animation:
-reviewSlide 4s cubic-bezier(.22,1,.36,1) forwards;
-
-opacity:0;
-
-transform:
-translateX(120%)
-scale(.92);
-
-position:relative;
-
-overflow:hidden;
+.rating-item {
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform .2s ease, opacity .2s ease;
+    width: 100%;               /* Mengikuti lebar track 165px */
+    padding: 10px;             /* Padding pas tidak terlalu lebar */
+    border-radius: 14px;       
+    
+    /* EFEK TRANSPARAN BLUR (GLASSMORPHISM) */
+    background: rgba(18, 24, 63, 0.45) !important; /* Menggunakan rgba transparan */
+    border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Border tipis semi-transparan */
+    backdrop-filter: blur(14px) saturate(160%) !important; /* Efek blur tembus pandang */
+    -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
+    
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    animation: reviewSlideRight 4.5s cubic-bezier(.22, 1, .36, 1) forwards;
+    opacity: 0;
+    position: relative;
+    overflow: hidden;
 }
 
-.rating-item:active{
-transform:scale(.96);
-}
-.rating-item::before{
-content:'';
-
-position:absolute;
-
-top:-40px;
-right:-40px;
-
-width:90px;
-height:90px;
-
-background:
-radial-gradient(
-circle,
-rgba(76,125,255,.22),
-transparent 70%);
-
-filter:blur(10px);
-
-pointer-events:none;
+.rating-item:active {
+    transform: scale(.96);
 }
 
-.rating-user{
-display:flex;
-
-align-items:center;
-
-gap:9px;
-
-margin-bottom:7px;
-
-position:relative;
-z-index:2;
+.rating-item::before {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle, rgba(76, 125, 255, .15), transparent 70%);
+    filter: blur(10px);
+    pointer-events: none;
 }
 
-.rating-avatar{
-width:36px;
-height:36px;
-
-border-radius:50%;
-
-object-fit:cover;
-
-border:
-1.5px solid rgba(255,255,255,.14);
-
-box-shadow:
-0 0 12px rgba(76,125,255,.12);
-
-flex-shrink:0;
+.rating-user {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 4px;
 }
 
-.rating-user-info{
-flex:1;
-
-min-width:0;
+.rating-avatar {
+    width: 28px;               /* Ukuran avatar kecil */
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, .2);
+    flex-shrink: 0;
 }
 
-.rating-username{
-font-size:13px;
-font-weight:700;
-
-color:white;
-
-margin-bottom:1px;
-
-white-space:nowrap;
-overflow:hidden;
-text-overflow:ellipsis;
+.rating-user-info {
+    flex: 1;
+    min-width: 0;
 }
 
-.rating-item-stars{
-font-size:11px;
-
-color:#ffd95c;
-
-letter-spacing:1px;
+.rating-username {
+    font-size: 11px;           /* Ukuran text username */
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.rating-item-text{
-
-position:relative;
-z-index:2;
-
-font-size:11px;
-
-line-height:1.3;
-
-color:rgba(220,227,255,.92);
-
-word-break:break-word;
-
-display:-webkit-box;
-
--webkit-line-clamp:2;
-
--webkit-box-orient:vertical;
-
-overflow:hidden;
+.rating-item-stars {
+    font-size: 8px;            /* Ukuran bintang kecil */
+    color: #ffd95c;
+    letter-spacing: 0.5px;
 }
 
-@keyframes reviewSlide{
-
-0%{
-opacity:0;
-
-transform:
-translateX(120%)
-scale(.92);
+.rating-item-text {
+    font-size: 10px;           /* Ukuran teks chat ulasan */
+    line-height: 1.3;
+    color: rgba(255, 255, 255, 0.85);
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;     /* Dikunci maksimal 2 baris agar tidak kepanjangan */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-10%{
-opacity:1;
-
-transform:
-translateX(0)
-scale(1);
+@keyframes reviewSlideRight {
+    0% {
+        opacity: 0;
+        transform: translateX(40px) scale(.95);
+    }
+    12% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    88% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(40px) scale(.95);
+    }
 }
 
-78%{
-opacity:1;
+@media(max-width: 480px) {
+    .rating-float-track {
+        top: 40px !important;  /* Pas di samping tombol menu hamburger pas layar HP */
+        right: 8px !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: 158px;          /* Lebar box kecil sesuai gambar kedua */
+    }
 
-transform:
-translateX(0)
-scale(1);
+    .rating-item {
+        padding: 8px;
+    }
 }
 
-100%{
-opacity:0;
-
-transform:
-translateX(120%)
-scale(.92);
-}
-
-}
-
-@media(max-width:480px){
-
-.rating-float-track{
-top:40px;
-right:8px;
-}
-
-.rating-item{
-width:158px;
-
-padding:9px;
-
-border-radius:16px;
-}
-
-.rating-avatar{
-width:34px;
-height:34px;
-}
-
-.rating-username{
-font-size:12px;
-}
-
-.rating-item-stars{
-font-size:10px;
-}
-
-.rating-item-text{
-font-size:10px;
-line-height:1.25;
-}
-
-}
-
-
+/* Bagian bawah ini adalah kode bawaan progress bar & popup donasi kamu yang diamankan */
 .btn-progress-container {
     position: absolute;
     bottom: 0;
@@ -2569,7 +2474,6 @@ line-height:1.25;
     margin: 0;
 }
 
-
 .progress-track {
     width: 100%;
     height: 5px;
@@ -2577,7 +2481,6 @@ line-height:1.25;
     overflow: hidden;
     position: relative;
 }
-
 
 .progress-fill {
     height: 100%;
@@ -2597,25 +2500,6 @@ line-height:1.25;
     display: none;
 }
 
-
-
-.progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #ff007f, #7f00ff, #00f0ff, #00ffaa, #ff007f);
-    background-size: 400% 100%;
-    border-radius: 20px;
-    animation: moveGradient 3s linear infinite;
-    transition: width 0.4s ease;
-}
-
-
-@keyframes moveGradient {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 400% 50%; }
-}
-
-
 .btn-progress-text {
     font-size: 12px;
     font-weight: 700;
@@ -2624,7 +2508,6 @@ line-height:1.25;
     color: #ffffff;
     text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
-
 
 .popup-overlay {
     position: fixed;
@@ -2667,7 +2550,6 @@ line-height:1.25;
     transform: scale(1) translateY(0);
 }
 
-
 .popup-close-btn {
     position: absolute;
     top: 16px;
@@ -2692,7 +2574,6 @@ line-height:1.25;
     border-color: rgba(255, 99, 132, 0.3);
 }
 
-
 .popup-title {
     font-size: 20px;
     font-weight: 800;
@@ -2709,7 +2590,6 @@ line-height:1.25;
     margin-bottom: 18px;
     padding: 0 10px;
 }
-
 
 .popup-video-container {
     width: 100%;
@@ -2728,7 +2608,6 @@ line-height:1.25;
     object-fit: cover;
     display: block;
 }
-
 
 .popup-donate-btn {
     display: block;
