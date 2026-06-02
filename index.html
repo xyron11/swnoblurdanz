@@ -7,9 +7,8 @@
 body{
 display:none;
 }
-<script src="https://unpkg.com/@dotlottie/player-component@2.7.1/dist/dotlottie-player.mjs" type="module"></script>
-
 </style>
+<script src="https://unpkg.com/@dotlottie/player-component@2.7.1/dist/dotlottie-player.mjs" type="module"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DanzClean - Upload Status WhatsApp HD Tanpa Blur</title>
@@ -768,49 +767,31 @@ div.remove()
 }
 
 
-function startReviewLoop(){
+    function startReviewLoop(){
+        const existing = document.querySelector(".rating-item");
+        if(existing){
+            setTimeout(startReviewLoop, 1000);
+            return;
+        }
 
-const existing =
-document.querySelector(".rating-item")
+        showReview();
 
-if(existing){
+        setTimeout(() => {
+            const item = document.querySelector(".rating-item");
+            if(item){
+                item.remove();
+            }
+        }, 4500);
 
-setTimeout(startReviewLoop, 1000)
+        setTimeout(startReviewLoop, 6500);
+    }
 
-return
+    if(!reviewLoopStarted){
+        reviewLoopStarted = true;
+        startReviewLoop();
+    }
+}); 
 
-}
-
-showReview()
-
-setTimeout(() => {
-
-const item =
-document.querySelector(".rating-item")
-
-if(item){
-
-item.remove()
-
-}
-
-}, 4500)
-
-setTimeout(startReviewLoop, 6500)
-
-}
-
-}
-
-if(!reviewLoopStarted){
-
-reviewLoopStarted = true
-
-startReviewLoop()
-
-}
-
-})
 
 
 </script>
