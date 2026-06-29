@@ -386,6 +386,8 @@ Rating
                     body: form
                 });
 
+                if (!req.ok) throw new Error(`HTTP ${req.status}`);
+
                 const res = await req.json();
                 if (!res.status) throw new Error(res.error);
 
@@ -396,7 +398,7 @@ Rating
                 suksesChunk = true; 
             } catch (e) {
                 pemicuRetry++;
-                document.getElementById("status").innerHTML = `Koneksi drop! Mengulang potongan ${chunkIndex + 1} (Percobaan ${pemicuRetry}/5)...`;
+                document.getElementById("status").innerHTML = `Gagal: ${e.message}. Mengulang potongan ${chunkIndex + 1} (Percobaan ${pemicuRetry}/5)...`;
                 await new Promise(r => setTimeout(r, 2000)); 
             }
         }
@@ -404,7 +406,7 @@ Rating
         if (!suksesChunk) {
             isCurrentlyUploading = false;
             resetFormState(fileInput, nomorInput, uploadBox, btn);
-            return showCustomModal("error", "Upload Gagal", "Koneksi internet terlalu buruk. Upload dibatalkan.");
+            return showCustomModal("error", "Upload Gagal", "Koneksi internet terlalu buruk atau rute API salah. Upload dibatalkan.");
         }
     }
 }
