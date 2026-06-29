@@ -22,10 +22,9 @@ display:none;
     <meta property="og:image" content="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20233%20%5BEB85C59%5D.png">
     <meta property="og:type" content="website">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tus-js-client/3.1.1/tus.min.js"></script>
     <style>
 
         .modal-overlay {
@@ -318,174 +317,230 @@ Rating
         }
 
         async function upload() {
-    const fileInput = document.getElementById("file");
-    const nomorInput = document.getElementById("nomor");
-    const uploadBox = document.querySelector(".upload-box");
-    const btn = document.getElementById("uploadBtn");
-    const file = fileInput.files[0];
-    const nomor = nomorInput.value.trim();
+            const fileInput = document.getElementById("file");
+            const nomorInput = document.getElementById("nomor");
+            const uploadBox = document.querySelector(".upload-box");
+            const btn = document.getElementById("uploadBtn");
+            const file = fileInput.files[0];
+            const nomor = nomorInput.value.trim();
 
-    const turnstileResponse = turnstile.getResponse();
+            const turnstileResponse = turnstile.getResponse();
 
-    if (!file) {
-        showCustomModal("warning", "Video Kosong", "Mana video nya euy, masukin dulu video nya");
-        return;
-    }
-
-    if (!nomor) {
-        showCustomModal("warning", "Nomor Kosong", "Nomor wa mu mana, isi dulu euy");
-        return;
-    }
-
-    const nomorBersih = nomor.replace(/\D/g, "");
-
-    if (nomorBersih.length < 9 || nomorBersih.length > 15) {
-        showCustomModal("error", "Format Salah", "nomor WA salah bre, periksa lagi angkanya.");
-        return;
-    }
-
-    if (nomorBersih.startsWith("0")) {
-        showCustomModal("error", "Gunakan Kode Negara", "Gunakan kode negara bre, ubah angka depan 0 jadi 62 atau kode negara lu.");
-        return;
-    }
-
-    if (!turnstileResponse) {
-        showCustomModal("warning", "Verifikasi Diperlukan", "Verifikasi Cloudflare Dulu bre yang di atas tombol upload");
-        return;
-    }
-
-    isCurrentlyUploading = true;
-    document.getElementById("status").innerHTML = "Menghubungkan ke jalur aman...";
-    
-    if (nomorInput) nomorInput.disabled = true;
-    if (fileInput) fileInput.disabled = true;
-    if (uploadBox) {
-        uploadBox.style.pointerEvents = "none";
-        uploadBox.style.opacity = "0.5";
-        uploadBox.style.filter = "grayscale(50%)";
-    }
-
-    if (btn) {
-        btn.disabled = true;
-        btn.style.opacity = "1"; 
-        btn.innerHTML = `
-            <span id="btnProgressText">MENGIRIM... (0%)</span>
-            <div class="btn-progress-container">
-                <div class="progress-track">
-                    <div class="progress-fill" id="btnProgressBar" style="width: 0%;"></div>
-                </div>
-            </div>
-        `;
-    }
-
-    const upload = new tus.Upload(file, {
-        endpoint: API + "/files",
-        retryDelays: [0, 3000, 5000, 10000, 20000],
-        metadata: {
-            filename: file.name,
-            filetype: file.type,
-            nomor: nomorBersih
-        },
-        onError: function (error) {
-            console.log("Tus Error:", error);
-            isCurrentlyUploading = false;
-            resetFormLengkap();
-            document.getElementById("status").innerHTML = "Upload gagal karena masalah jaringan.";
-            showCustomModal("error", "Jaringan Terputus", "Koneksi internet lu gak stabil bre, coba ganti provider/kuota.");
-        },
-        onProgress: function (bytesUploaded, bytesTotal) {
-            var percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(0);
-            var mappedProgress = Math.floor((percentage / 100) * 60);
-
-            document.getElementById("status").innerHTML = `Mengirim file ke server: ${percentage}%`;
-            
-            const pBar = document.getElementById("btnProgressBar");
-            const pText = document.getElementById("btnProgressText");
-            if (pBar) pBar.style.width = `${mappedProgress}%`;
-            if (pText) pText.innerText = `MENGIRIM VIDEO... (${mappedProgress}%)`;
-        },
-        onSuccess: function () {
-            const fileUrlParts = upload.url.split('/');
-            const videoId = fileUrlParts[fileUrlParts.length - 1];
-
-            document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
-            
-            const pBar = document.getElementById("btnProgressBar");
-            const pText = document.getElementById("btnProgressText");
-            if (pBar) pBar.style.width = "70%";
-            if (pText) pText.innerText = "MASUK ANTREAN HD... (70%)"; 
-
-            cekProgressRenderTus(videoId);
-        }
-    });
-
-    upload.start();
-}
-
-function cekProgressRenderTus(videoId) {
-    const intervalCek = setInterval(async () => {
-        try {
-            const cekReq = await fetch(`${API}/api/progress?id=${videoId}`);
-            const statusData = await cekReq.json();
-
-            if (statusData.status === "proses") {
-                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
-                
-                const pBar = document.getElementById("btnProgressBar");
-                const pText = document.getElementById("btnProgressText");
-                if (pBar) pBar.style.width = "85%";
-                if (pText) pText.innerText = "KOMPRESI HD SEDANG BERJALAN... (85%)";
-            } 
-            else if (statusData.status === "selesai") {
-                const pBar = document.getElementById("btnProgressBar");
-                const pText = document.getElementById("btnProgressText");
-                if (pBar) pBar.style.width = "100%";
-                if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
-
-                await new Promise(r => setTimeout(r, 600));
-                clearInterval(intervalCek);
-                isCurrentlyUploading = false;
-                resetFormLengkap();
-                
-                document.getElementById("status").innerHTML = `DONE COY`;
-                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
-            } 
-            else if (statusData.status === "error") {
-                clearInterval(intervalCek);
-                throw new Error(statusData.message);
+            if (!file) {
+                showCustomModal("warning", "Video Kosong", "Mana video nya euy, masukin dulu video nya");
+                return;
             }
-        } catch (errCek) {
-            clearInterval(intervalCek);
-            isCurrentlyUploading = false;
-            resetFormLengkap();
-            document.getElementById("status").innerHTML = errCek.message;
-            showCustomModal("error", "Gagal Memproses", errCek.message);
+
+            if (!nomor) {
+                showCustomModal("warning", "Nomor Kosong", "Nomor wa mu mana, isi dulu euy");
+                return;
+            }
+
+            const nomorBersih = nomor.replace(/\D/g, "");
+
+            if (nomorBersih.length < 9 || nomorBersih.length > 15) {
+                showCustomModal("error", "Format Salah", "nomor WA salah bre, periksa lagi angkanya.");
+                return;
+            }
+
+            if (nomorBersih.startsWith("0")) {
+                showCustomModal("error", "Gunakan Kode Negara", "Gunakan kode negara bre, ubah angka depan 0 jadi 62 atau kode negara lu.");
+                return;
+            }
+
+            if (!turnstileResponse) {
+                showCustomModal("warning", "Verifikasi Diperlukan", "Verifikasi Cloudflare Dulu bre yang di atas tombol upload");
+                return;
+            }
+
+            const form = new FormData();
+            form.append("video", file);
+            form.append("nomor", nomorBersih); 
+
+            isCurrentlyUploading = true;
+            document.getElementById("status").innerHTML = "Uploading...";
+            
+            if (nomorInput) nomorInput.disabled = true;
+            if (fileInput) fileInput.disabled = true;
+            if (uploadBox) {
+                uploadBox.style.pointerEvents = "none";
+                uploadBox.style.opacity = "0.5";
+                uploadBox.style.filter = "grayscale(50%)";
+            }
+
+if (btn) {
+    btn.disabled = true;
+    btn.style.opacity = "1"; 
+    btn.innerHTML = `
+        <span id="btnProgressText">PROSES... (30%)</span>
+        <div class="btn-progress-container">
+            <div class="progress-track">
+                <div class="progress-fill" id="btnProgressBar" style="width: 30%;"></div>
+            </div>
+        </div>
+    `;
+}
+
+
+            try {
+                // Membuat token otentikasi Base64 langsung di browser
+                const tokenTokenan = "Bearer " + btoa("DANZZ"); 
+
+                // Diubah langsung ke /upload dan ditambahkan header Authorization
+                const req = await fetch(API + "/upload", {
+                    method: "POST",
+                    body: form,
+                    headers: {
+                        "Authorization": tokenTokenan
+                    }
+                });
+
+                const text = await req.text();
+                console.log("Response:", text);
+                const res = JSON.parse(text);
+
+
+if (res.status && res.id) {
+    document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
+
+
+    const pBar = document.getElementById("btnProgressBar");
+const pText = document.getElementById("btnProgressText");
+if (pBar) pBar.style.width = "60%";
+if (pText) pText.innerText = "MERENDER VIDEO HD... (60%)"; 
+
+
+
+    const intervalCek = setInterval(async () => {
+
+                        try {
+                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
+                            const statusData = await cekReq.json();
+
+                            if (statusData.status === "proses") {
+    document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+
+
+    const pBar2 = document.getElementById("btnProgressBar");
+const pText2 = document.getElementById("btnProgressText");
+if (pBar2) pBar2.style.width = "85%";
+if (pText2) pText2.innerText = "KOMPRESI HD SEDANG BERJALAN... (85%)";
+
+
+} 
+
+                            else if (statusData.status === "selesai") {
+    
+    const pBar3 = document.getElementById("btnProgressBar");
+const pText3 = document.getElementById("btnProgressText");
+if (pBar3) pBar3.style.width = "100%";
+if (pText3) pText3.innerText = "SELESAI RENDERING! (100%)";
+
+
+
+
+    await new Promise(r => setTimeout(r, 600));
+
+    clearInterval(intervalCek); // Hentikan nge-ping server karena sudah selesai
+
+    isCurrentlyUploading = false;
+
+                                if (typeof turnstile !== "undefined") turnstile.reset();
+                                if (nomorInput) nomorInput.disabled = false;
+                                if (fileInput) fileInput.disabled = false;
+                                if (uploadBox) {
+                                    uploadBox.style.pointerEvents = "auto";
+                                    uploadBox.style.opacity = "1";
+                                    uploadBox.style.filter = "none";
+                                }
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.style.opacity = "1";
+                                    btn.style.cursor = "pointer";
+                                    btn.innerHTML = "UPLOAD NOW";
+                                }
+
+                                
+                                document.getElementById("status").innerHTML = `DONE COY`;
+                                fileInput.value = "";
+                                nomorInput.value = "";
+                                document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
+                                
+                                
+                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                            } 
+                            else if (statusData.status === "error") {
+                                clearInterval(intervalCek);
+                                throw new Error(statusData.message);
+                            }
+                        } catch (errCek) {
+                            clearInterval(intervalCek);
+                            isCurrentlyUploading = false;
+                            if (typeof turnstile !== "undefined") turnstile.reset();
+                            if (nomorInput) nomorInput.disabled = false;
+                            if (fileInput) fileInput.disabled = false;
+                            if (uploadBox) {
+                                uploadBox.style.pointerEvents = "auto";
+                                uploadBox.style.opacity = "1";
+                                uploadBox.style.filter = "none";
+                            }
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.style.opacity = "1";
+                                btn.style.cursor = "pointer";
+                                btn.innerHTML = "UPLOAD NOW";
+                            }
+                            document.getElementById("status").innerHTML = errCek.message;
+                            showCustomModal("error", "Gagal Memproses", errCek.message);
+                        }
+                    }, 2000); 
+
+                } else if (!res.status) {
+                    
+                    isCurrentlyUploading = false;
+                    if (typeof turnstile !== "undefined") turnstile.reset();
+                    if (nomorInput) nomorInput.disabled = false;
+                    if (fileInput) fileInput.disabled = false;
+                    if (uploadBox) {
+                        uploadBox.style.pointerEvents = "auto";
+                        uploadBox.style.opacity = "1";
+                        uploadBox.style.filter = "none";
+                    }
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.style.opacity = "1";
+                        btn.style.cursor = "pointer";
+                        btn.innerHTML = "UPLOAD NOW";
+                    }
+                    document.getElementById("status").innerHTML = res.error;
+                    showCustomModal("error", "Gagal Memproses", res.error);
+                }
+
+            } catch (e) {
+
+                isCurrentlyUploading = false;
+                if (typeof turnstile !== "undefined") {
+                    turnstile.reset();
+                }
+
+                if (nomorInput) nomorInput.disabled = false;
+                if (fileInput) fileInput.disabled = false;
+                if (uploadBox) {
+                    uploadBox.style.pointerEvents = "auto";
+                    uploadBox.style.opacity = "1";
+                    uploadBox.style.filter = "none";
+                }
+
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = "1";
+                    btn.style.cursor = "pointer";
+                    btn.innerHTML = "UPLOAD NOW";
+                }
+                document.getElementById("status").innerHTML = e.message;
+                showCustomModal("error", "Masalah Jaringan", "Terjadi kegagalan koneksi: " + e.message);
+            }
         }
-    }, 2000);
-}
-
-function resetFormLengkap() {
-    const nomorInput = document.getElementById("nomor");
-    const fileInput = document.getElementById("file");
-    const uploadBox = document.querySelector(".upload-box");
-    const btn = document.getElementById("uploadBtn");
-
-    if (typeof turnstile !== "undefined") turnstile.reset();
-    if (nomorInput) { nomorInput.disabled = false; nomorInput.value = ""; }
-    if (fileInput) { fileInput.disabled = false; fileInput.value = ""; }
-    if (uploadBox) {
-        uploadBox.style.pointerEvents = "auto";
-        uploadBox.style.opacity = "1";
-        uploadBox.style.filter = "none";
-    }
-    if (btn) {
-        btn.disabled = false;
-        btn.style.opacity = "1";
-        btn.style.cursor = "pointer";
-        btn.innerHTML = "UPLOAD NOW";
-    }
-    document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
-}
     </script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
