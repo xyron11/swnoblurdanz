@@ -12,6 +12,7 @@ display:none;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DanzClean - Upload Status WhatsApp HD Tanpa Blur</title>
+<link rel="manifest" href="/manifest.json">
 
 <meta name="description" content="DanzClean adalah tools upload Status WhatsApp HD tanpa blur. Upload video status WA dengan kualitas jernih, gratis, cepat, dan mudah digunakan.">
 
@@ -795,4 +796,16 @@ div.remove()
     </div>
 
 </body>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+      navigator.serviceWorker.register("/sw.js").then(function(reg) {
+        console.log("Service Worker terdaftar aman bre!", reg.scope);
+      }).catch(function(err) {
+        console.log("Gagal daftar Service Worker:", err);
+      });
+    });
+  }
+</script>
+
 </html>
