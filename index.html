@@ -413,12 +413,12 @@ Rating
                 const res = JSON.parse(xhr.responseText);
 
                 if (res.status && res.id) {
-                    document.getElementById("status").innerHTML = "Menunggu antrean & merender video HD...";
+                    document.getElementById("status").innerHTML = "Menunggu antrean & PROSES HD...";
 
                     const pBar = document.getElementById("btnProgressBar");
                     const pText = document.getElementById("btnProgressText");
                     if (pBar) pBar.style.width = "96%";
-                    if (pText) pText.innerText = "MERENDER VIDEO HD... (96%)"; 
+                    if (pText) pText.innerText = "PROSES HD... (96%)"; 
 
                     const intervalCek = setInterval(async () => {
                         try {
