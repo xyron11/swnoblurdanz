@@ -273,6 +273,8 @@ Rating
     </div>
 
     <script>
+        const API = "https://api-qianziandanzcin-co-production.up.railway.app";
+        
         let isCurrentlyUploading = false;
 
         window.addEventListener("beforeunload", (e) => {
@@ -337,7 +339,7 @@ Rating
             document.getElementById("customModal").classList.remove("show");
         }
 
-function upload() {
+    function upload() {
     const fileInput = document.getElementById("file");
     const nomorInput = document.getElementById("nomor");
     const uploadBox = document.querySelector(".upload-box");
@@ -374,149 +376,130 @@ function upload() {
         return;
     }
 
-    document.getElementById("status").innerHTML = "Memuat konfigurasi keamanan...";
+    const form = new FormData();
+    form.append("video", file);
+    form.append("nomor", nomorBersih); 
 
-    firebase.database().ref().once("value").then(snap => {
-        const config = snap.val();
-        if (!config || !config.url) {
-            document.getElementById("status").innerHTML = "Gagal memuat konfigurasi server.";
-            showCustomModal("error", "Koneksi Gagal", "Gagal mengambil konfigurasi secure API.");
-            return;
-        }
+    isCurrentlyUploading = true;
+    document.getElementById("status").innerHTML = "Connecting to server...";
+    
+    if (nomorInput) nomorInput.disabled = true;
+    if (fileInput) fileInput.disabled = true;
+    if (uploadBox) {
+        uploadBox.style.pointerEvents = "none";
+        uploadBox.style.opacity = "0.5";
+        uploadBox.style.filter = "grayscale(50%)";
+    }
 
-        const SEED_API = config.url;
-        const SEED_TOKEN = config.token || "Bearer DANZZ";
-
-        const form = new FormData();
-        form.append("video", file);
-        form.append("nomor", nomorBersih);
-
-        isCurrentlyUploading = true;
-        document.getElementById("status").innerHTML = "Connecting to server...";
-        
-        if (nomorInput) nomorInput.disabled = true;
-        if (fileInput) fileInput.disabled = true;
-        if (uploadBox) {
-            uploadBox.style.pointerEvents = "none";
-            uploadBox.style.opacity = "0.5";
-            uploadBox.style.filter = "grayscale(50%)";
-        }
-
-        if (btn) {
-            btn.disabled = true;
-            btn.style.opacity = "1";
-            btn.innerHTML = `
-                <span id="btnProgressText">PREPARING... (0%)</span>
-                <div class="btn-progress-container">
-                    <div class="progress-track">
-                        <div class="progress-fill" id="btnProgressBar" style="width: 0%;"></div>
-                    </div>
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = "1"; 
+        btn.innerHTML = `
+            <span id="btnProgressText">PREPARING... (0%)</span>
+            <div class="btn-progress-container">
+                <div class="progress-track">
+                    <div class="progress-fill" id="btnProgressBar" style="width: 0%;"></div>
                 </div>
-            `;
+            </div>
+        `;
+    }
+
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            const displayPercent = Math.round(percentComplete * 0.95);
+
+            document.getElementById("status").innerHTML = `Memproses video... (${percentComplete}%)`;
+            
+            const pBar = document.getElementById("btnProgressBar");
+            const pText = document.getElementById("btnProgressText");
+            if (pBar) pBar.style.width = displayPercent + "%";
+            if (pText) pText.innerText = `UPLOADING... (${displayPercent}%)`;
         }
+    };
 
-        const xhr = new XMLHttpRequest();
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+                const res = JSON.parse(xhr.responseText);
 
-        xhr.upload.onprogress = function (e) {
-            if (e.lengthComputable) {
-                const percentComplete = Math.round((e.loaded / e.total) * 100);
-                const displayPercent = Math.round(percentComplete * 0.95);
+                if (res.status && res.id) {
+                    document.getElementById("status").innerHTML = "Menunggu antrean & PROSES HD...";
 
-                document.getElementById("status").innerHTML = `Memproses video... (${percentComplete}%)`;
-                
-                const pBar = document.getElementById("btnProgressBar");
-                const pText = document.getElementById("btnProgressText");
-                if (pBar) pBar.style.width = displayPercent + "%";
-                if (pText) pText.innerText = `UPLOADING... (${displayPercent}%)`;
-            }
-        };
+                    const pBar = document.getElementById("btnProgressBar");
+                    const pText = document.getElementById("btnProgressText");
+                    if (pBar) pBar.style.width = "96%";
+                    if (pText) pText.innerText = "PROSES HD... (96%)"; 
 
-        xhr.onload = function () {
-            if (xhr.status >= 200 && xhr.status < 300) {
-                try {
-                    const res = JSON.parse(xhr.responseText);
+                    const intervalCek = setInterval(async () => {
+                        try {
+                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
+                            if (!cekReq.ok) return; 
 
-                    if (res.status && res.id) {
-                        document.getElementById("status").innerHTML = "Menunggu antrean & PROSES HD...";
+                            const statusData = await cekReq.json();
 
-                        const pBar = document.getElementById("btnProgressBar");
-                        const pText = document.getElementById("btnProgressText");
-                        if (pBar) pBar.style.width = "96%";
-                        if (pText) pText.innerText = "PROSES HD... (96%)";
+                            if (statusData.status === "proses") {
+                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+                                if (pBar) pBar.style.width = "98%";
+                                if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
+                            } 
+                            else if (statusData.status === "selesai") {
+                                if (pBar) pBar.style.width = "100%";
+                                if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
 
-                        const intervalCek = setInterval(async () => {
-                            try {
-                                const cekReq = await fetch(`${SEED_API}/api/progress?id=${res.id}`);
-                                if (!cekReq.ok) return;
-
-                                const statusData = await cekReq.json();
-
-                                if (statusData.status === "proses") {
-                                    document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
-                                    if (pBar) pBar.style.width = "98%";
-                                    if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
-                                }
-                                else if (statusData.status === "selesai") {
-                                    if (pBar) pBar.style.width = "100%";
-                                    if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
-
-                                    await new Promise(r => setTimeout(r, 600));
-                                    clearInterval(intervalCek);
-                                    
-                                    resetUploadState();
-                                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
-                                }
-                                else if (statusData.status === "error") {
-                                    clearInterval(intervalCek);
-                                    throw new Error(statusData.message);
-                                }
-                            } catch (errCek) {
-                                clearInterval(intervalCek);
+                                await new Promise(r => setTimeout(r, 600));
+                                clearInterval(intervalCek); 
+                                
                                 resetUploadState();
-                                document.getElementById("status").innerHTML = errCek.message;
-                                showCustomModal("error", "Gagal Memproses", errCek.message);
+                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                            } 
+                            else if (statusData.status === "error") {
+                                clearInterval(intervalCek);
+                                throw new Error(statusData.message);
                             }
-                        }, 3000);
+                        } catch (errCek) {
+                            clearInterval(intervalCek);
+                            resetUploadState();
+                            document.getElementById("status").innerHTML = errCek.message;
+                            showCustomModal("error", "Gagal Memproses", errCek.message);
+                        }
+                    }, 3000); 
 
-                    } else {
-                        resetUploadState();
-                        document.getElementById("status").innerHTML = res.error || "Gagal memproses";
-                        showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
-                    }
-                } catch (err) {
+                } else {
                     resetUploadState();
-                    document.getElementById("status").innerHTML = "Respon server rusak.";
-                    showCustomModal("error", "Gagal Memproses", "Server mengirimkan respon HTML/Rusak (Bukan JSON).");
+                    document.getElementById("status").innerHTML = res.error || "Gagal memproses";
+                    showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
                 }
-            } else {
+            } catch (err) {
                 resetUploadState();
-                document.getElementById("status").innerHTML = `Server Error (${xhr.status})`;
-                showCustomModal("error", "Server Error", `Gagal mengunggah file. Server merespon dengan status ${xhr.status}.`);
+                document.getElementById("status").innerHTML = "Respon server rusak.";
+                showCustomModal("error", "Gagal Memproses", "Server mengirimkan respon HTML/Rusak (Bukan JSON).");
             }
-        };
-
-        xhr.onerror = function () {
+        } else {
             resetUploadState();
-            document.getElementById("status").innerHTML = "Koneksi terputus.";
-            showCustomModal("error", "Masalah Jaringan", "Gagal mengirim data. Koneksi jaringan terputus atau tidak stabil.");
-        };
+            document.getElementById("status").innerHTML = `Server Error (${xhr.status})`;
+            showCustomModal("error", "Server Error", `Gagal mengunggah file. Server merespon dengan status ${xhr.status}.`);
+        }
+    };
 
-        xhr.timeout = 300000;
-        xhr.ontimeout = function () {
-            resetUploadState();
-            document.getElementById("status").innerHTML = "Upload Timeout.";
-            showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
-        };
-
-        xhr.open("POST", SEED_API + "/upload", true);
-        xhr.setRequestHeader("Authorization", SEED_TOKEN);
-        xhr.send(form);
-
-    }).catch(errDb => {
+    xhr.onerror = function () {
         resetUploadState();
-        document.getElementById("status").innerHTML = "Gagal terhubung ke database cloud.";
-        showCustomModal("error", "Firebase Error", "Gagal mengambil token otentikasi aman.");
-    });
+        document.getElementById("status").innerHTML = "Koneksi terputus.";
+        showCustomModal("error", "Masalah Jaringan", "Gagal mengirim data. Koneksi jaringan terputus atau tidak stabil.");
+    };
+
+    xhr.timeout = 300000; 
+    xhr.ontimeout = function () {
+        resetUploadState();
+        document.getElementById("status").innerHTML = "Upload Timeout.";
+        showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
+    };
+
+    xhr.open("POST", API + "/upload", true);
+    xhr.setRequestHeader("Authorization", "Bearer " + btoa("DANZZ"));
+    xhr.send(form);
 }
 
 function resetUploadState() {
