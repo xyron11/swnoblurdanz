@@ -170,13 +170,14 @@ body.sidebar-open {
 
 .container {
     width: 100%;
-    max-width: 390px;
-    margin: auto;
-    padding: 125px 20px 40px;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 140px 24px 40px; 
     text-align: center;
     position: relative;
     z-index: 1;
 }
+
 
 
 .logo h1 {
@@ -197,6 +198,7 @@ body.sidebar-open {
 
 .upload-box {
     display: block;
+    width: 100%; 
     background: rgba(255, 255, 255, 0.02);
     border: 2px dashed rgba(61, 108, 255, 0.3);
     border-radius: 20px;
@@ -205,6 +207,7 @@ body.sidebar-open {
     margin-bottom: 24px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 .upload-box:hover {
     border-color: var(--accent);
@@ -2627,3 +2630,46 @@ z-index:99999;
     transform: translateY(1px);
 }
 
+/* DESKOP*/
+@media (min-width: 768px) {
+    .container {
+        max-width: 760px !important; 
+        padding: 130px 24px 20px !important;
+    }
+
+    .upload-box {
+        border-radius: 36px !important;
+        padding: 150px 40px !important; 
+        margin-bottom: 45px !important; 
+    }
+
+    .upload-box .icon img {
+        width: 200px !important; 
+        height: 200px !important;
+        margin-bottom: 30px !important;
+    }
+
+    .upload-box p {
+        font-size: 28px !important; 
+        line-height: 1.5 !important;
+    }
+
+    input {
+        padding: 24px 20px !important; 
+        border-radius: 22px !important;
+        font-size: 22px !important;
+        margin-bottom: 45px !important;
+    }
+
+    button, #uploadBtn {
+        padding: 24px !important;
+        border-radius: 22px !important;
+        font-size: 22px !important;
+        letter-spacing: 2px !important;
+        margin-bottom: 30px !important;
+    }
+    
+    .footer {
+        margin-top: 40px !important; 
+    }
+}
