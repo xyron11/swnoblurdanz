@@ -1424,6 +1424,8 @@ button:active, #uploadBtn:active {
     font-weight:700;
 
     color:white;
+    word-break: break-word;
+    white-space: normal;
 }
 
 .review-tag{
