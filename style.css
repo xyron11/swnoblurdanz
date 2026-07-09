@@ -5,12 +5,29 @@
     font-family: 'Poppins', sans-serif;
 }
 
+:root {
+    --bg-dark: #070a13;
+    --card-bg: rgba(18, 24, 47, 0.7);
+    --border-glow: rgba(61, 108, 255, 0.25);
+    --primary: #3d6cff;
+    --primary-glow: rgba(61, 108, 255, 0.4);
+    --accent: #00ffaa;
+    --accent-glow: rgba(0, 255, 170, 0.3);
+    --text-main: #ffffff;
+    --text-muted: #9ea7d6;
+}
+
 body {
-    background: radial-gradient(circle at top, #102060, #020617 40%);
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(61, 108, 255, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 255, 170, 0.06) 0%, transparent 45%);
+    background-attachment: fixed;
+    color: var(--text-main);
     min-height: 100vh;
-    color: white;
     overflow-x: hidden;
 }
+
 
 .topbar {
     position: fixed;
@@ -156,7 +173,11 @@ body.sidebar-open {
     max-width: 390px;
     margin: auto;
     padding: 125px 20px 40px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
 }
+
 
 .logo h1 {
     font-size: 42px;
@@ -175,24 +196,35 @@ body.sidebar-open {
 }
 
 .upload-box {
-    min-height: 240px;
-    padding: 20px;
-    border-radius: 28px;
-    background: linear-gradient(180deg, rgba(18,26,70,.92), rgba(5,10,35,.92));
-    border: 1px solid rgba(255,255,255,.06);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: block;
+    background: rgba(255, 255, 255, 0.02);
+    border: 2px dashed rgba(61, 108, 255, 0.3);
+    border-radius: 20px;
+    padding: 35px 20px;
     cursor: pointer;
-    transition: .3s;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .upload-box:hover {
+    border-color: var(--accent);
+    background: rgba(0, 255, 170, 0.03);
     transform: translateY(-2px);
-    border-color: #4c7dff;
+    box-shadow: 0 10px 20px rgba(0, 255, 170, 0.05);
 }
+
+.upload-box .icon img {
+    width: 56px; 
+    height: 56px;
+    margin-bottom: 12px;
+    filter: drop-shadow(0 0 8px var(--primary-glow));
+    transition: transform 0.3s ease;
+}
+
+.upload-box:hover .icon img {
+    transform: scale(1.1);
+}
+
 
 .icon {
     display: flex;
@@ -210,37 +242,53 @@ body.sidebar-open {
 
 input {
     width: 100%;
-    height: 62px;
-    border: none;
+    background: rgba(5, 8, 28, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px 20px;
+    border-radius: 16px;
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 20px;
     outline: none;
-    border-radius: 22px;
-    padding: 0 22px;
-    font-size: 16px;
-    background: rgba(10, 15, 45, .95);
-    color: white;
-    margin-bottom: 22px;
-    border: 1px solid rgba(255, 255, 255, .04);
+    transition: all 0.3s ease;
 }
 
-button {
-    position: relative; /* WAJIB: Mengunci bar pelangi agar tetap di dalam lantai tombol */
-    overflow: hidden;   /* WAJIB: Memotong sudut pelangi agar tidak luber keluar dari border tumpul tombol */
+input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 15px rgba(61, 108, 255, 0.25);
+    background: rgba(5, 8, 28, 0.8);
+}
+
+button, #uploadBtn {
+    position: relative;
+    overflow: hidden;
     width: 100%;
-    height: 68px;
-    border: none;
-    border-radius: 24px;
-    font-size: 17px;
-    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary), #1e45c7);
     color: white;
+    border: none;
+    padding: 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
-    background: linear-gradient(135deg, #5d8fff, #3763ff);
-    box-shadow: 0 10px 30px rgba(67, 108, 255, .3);
-    transition: .3s;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 20px var(--primary-glow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:hover {
+button:hover, #uploadBtn:hover {
     transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(61, 108, 255, 0.5);
+    filter: brightness(1.1);
 }
+
+button:active, #uploadBtn:active {
+    transform: translateY(0);
+}
+
+
 
 #status {
     margin-top: 22px;
@@ -411,14 +459,7 @@ button:hover {
     }
 }
 
-/* MAINTENANCE PAGE */
 
-html,
-body{
-    min-height:100%;
-    
-    overflow-y:auto;
-}
 
 .maintenance-page{
     width:100%;
@@ -1423,38 +1464,10 @@ body{
 
 /* MOBILE */
 
-@media(max-width:480px){
-
-.playstore-title{
-    font-size:28px;
-}
-
-.playstore-stars span{
-    font-size:46px;
-}
-
-.review-comment{
-    padding-left:0;
-
-    margin-top:14px;
-}
-
-.review-header{
-    align-items:flex-start;
-}
-
-}
 
 
 
-/* REVIEW FORM */
 
-.review-form{
-
-    margin-bottom:28px;
-
-    animation:fadeUp .25s ease;
-}
 
 
 
@@ -1487,23 +1500,6 @@ body{
 
 /* MOBILE FIX */
 
-@media(max-width:480px){
-
-.review-actions{
-    margin-top:14px;
-}
-
-.edit-review-btn2,
-.delete-review-btn{
-
-    width:100%;
-}
-
-.review-tag{
-    font-size:10px;
-}
-
-}
 
 /* EDIT ULASAN TEXT */
 
@@ -2127,26 +2123,23 @@ div{
     transition:.4s ease;
 }
 
-@media(max-width:480px){
 
-.rating-summary{
-    padding:22px 18px;
-    gap:16px;
+@media(max-width: 480px) {
+    .playstore-title { font-size: 28px; }
+    .playstore-stars span { font-size: 46px; }
+    .review-comment { padding-left: 0; margin-top: 14px; }
+    .review-header { align-items: flex-start; }
+    .review-actions, .edit-review-btn2, .delete-review-btn { width: 100%; }
+    .review-actions { margin-top: 14px; }
+    .review-tag { font-size: 10px; }
+    .rating-summary { padding: 22px 18px; gap: 16px; }
+    .rating-big { font-size: 48px; }
+    .rating-stars-big { font-size: 20px; }
+    .bar { height: 13px; }
+    .rating-float-track { top: 40px !important; right: 8px !important; bottom: auto !important; left: auto !important; width: 158px; }
+    .rating-item { padding: 8px; }
 }
 
-.rating-big{
-    font-size:48px;
-}
-
-.rating-stars-big{
-    font-size:20px;
-}
-
-.bar{
-    height:13px;
-}
-
-}
 
 .custom-popup{
 position:fixed;
@@ -2633,3 +2626,4 @@ z-index:99999;
 .popup-donate-btn:active {
     transform: translateY(1px);
 }
+
