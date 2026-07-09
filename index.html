@@ -241,6 +241,18 @@ Rating
                💬 Join Group WhatsApp
             </a>
         </div>
+        
+
+
+<div style="margin: 10px 0 12px 0;">
+    <button id="tutorialBtn" type="button" 
+       style="display: flex; align-items: center; justify-content: center; gap: 6px; background: linear-gradient(135deg, #3d6cff, #6366f1); color: white; height: 36px; border: none; border-radius: 20px; font-weight: bold; font-family: sans-serif; box-shadow: 0 4px 15px rgba(61, 108, 255, 0.35); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; width: 100%; cursor: pointer; transition: transform 0.2s ease;">
+       📖 TUTORIAL
+    </button>
+</div>
+
+
+
 
         <button id="uploadBtn" onclick="upload()">UPLOAD NOW</button>
 
@@ -804,6 +816,36 @@ div.remove()
             <a href="https://saweria.co/Danztsuyoi" target="_blank" class="popup-donate-btn">DONASI</a>
         </div>
     </div>
+    
+    </div> 
+
+    <div class="tutorial-overlay" id="tutorialPopup">
+        <div class="tutorial-card">
+            <button class="tutorial-close-btn" id="closeTutorialBtn">&times;</button>
+            
+            <h3 class="tutorial-title">Cara Pakai danzclean</h3>
+            
+            <div class="tutorial-video-container">
+                <video id="tutorialVideo" controls controlsList="nodownload">
+                    <source src="https://files.catbox.moe/duwzsj.mp4" type="video/mp4">
+                    Browser kamu tidak mendukung pemutar video.
+                </video>
+            </div>
+            
+            <p class="tutorial-desc">
+                <strong>CAPTION:<strong><br>
+                VIDEO:<br>
+                -NO CROP VIDEO SAAT UPLOAD STATUS
+                FOTO:<br>
+                -NO PAKAI FITUR MUSICK DI WA SAAT UPLOAD STATUS
+            </p>
+        </div>
+    </div>
+
+    <script src="tutorial.js"></script>
+
+</body>
+</html>
 
 </body>
 <script>
