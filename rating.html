@@ -568,76 +568,54 @@ el.classList.remove("active")
 
 }
 
-function saveEditReview(){
+let targetEditId = deviceId;
 
-const name =
-document
-.getElementById("editName")
-.value
-.trim()
+function openOwnerEditModal(targetId){
+    targetEditId = targetId || deviceId;
 
-const comment =
-document
-.getElementById("editComment")
-.value
-.trim()
+    db.ref("ratings/" + targetEditId).once("value").then(snap => {
+        const data = snap.val();
+        if(!data) return;
 
-if(!name || !comment){
+        document.getElementById("reviewModal").classList.add("active");
+        document.getElementById("editName").value = data.name || "";
+        document.getElementById("editComment").value = data.comment || "";
 
-showPopup("Isi dulu bre")
-return
-
+        modalStar = data.star || 5;
+        updateModalStars(modalStar);
+    });
 }
 
-db.ref("ratings/" + deviceId)
-.update({
+function saveEditReview(){
+    const name = document.getElementById("editName").value.trim();
+    const comment = document.getElementById("editComment").value.trim();
 
-name:name,
-comment:comment,
-star:modalStar
+    if(!name || !comment){
+        showPopup("Isi dulu bre");
+        return;
+    }
 
-})
-.then(()=>{
-
-closeEditModal()
-
-})
-
+    db.ref("ratings/" + targetEditId).update({
+        name: name,
+        comment: comment,
+        star: modalStar
+    }).then(() => {
+        closeEditModal();
+        showPopup("Ulasan berhasil diperbarui! ✅");
+    });
 }
 
 function deleteReview(){
+    if(!confirm("Yakin mau hapus ulasan ini bre?")) return;
 
-if(!confirm("Hapus ulasan lu?")) return
+    db.ref("ratings/" + targetEditId).remove().then(() => {
+        closeEditModal();
 
-db.ref("ratings/" + deviceId)
-.remove()
-.then(()=>{
+        document.getElementById("editName").value = "";
+        document.getElementById("editComment").value = "";
 
-closeEditModal()
-
-document
-.getElementById("reviewForm")
-.style.display = "none"
-
-/* RESET INPUT */
-document.getElementById("name").value = ""
-document.getElementById("comment").value = ""
-
-document.getElementById("editName").value = ""
-document.getElementById("editComment").value = ""
-
-selectedStar = 0
-modalStar = 0
-
-updateStars(0)
-updateModalStars(0)
-
-document.getElementById(
-"ratingTopContainer"
-).style.display = "block"
-
-})
-
+        showPopup("Ulasan berhasil dihapus! 🗑️");
+    });
 }
 
 function changeProfilePhoto(){
@@ -761,203 +739,108 @@ closeProfileModal()
 
 }
 
-db.ref("ratings")
-.on("value", snap => {
-
-document.getElementById(
-"pageLoader"
-).style.display = "none"
-
-const data = snap.val()
-
-const list =
-document.getElementById("reviewList")
-
-list.innerHTML = ""
-
-if(!data){
-
-document.getElementById("averageRating").innerHTML = "0.0"
-
-document.getElementById("averageStars").innerHTML =
-"☆☆☆☆☆"
-
-document.getElementById("totalReviews").innerHTML =
-"0 ulasan"
-
-document.getElementById(
-"ratingTopContainer"
-).style.display = "block"
-
-return
-
-}
-
-let entries =
-Object.entries(data)
-
-const total =
-entries.length
-
-let star5 = 0
-let star4 = 0
-let star3 = 0
-let star2 = 0
-let star1 = 0
-
-let totalStar = 0
-let hasMyReview = false
-
-entries.forEach(([id,item])=>{
-
-totalStar += item.star
-
-if(item.star === 5) star5++
-if(item.star === 4) star4++
-if(item.star === 3) star3++
-if(item.star === 2) star2++
-if(item.star === 1) star1++
-
-})
-
-const avg =
-(totalStar / total).toFixed(1)
-
-document.getElementById("averageRating").innerHTML =
-avg
-
-const rounded =
-Math.round(avg)
-
-document.getElementById("averageStars").innerHTML =
-"★".repeat(rounded) +
-"☆".repeat(5 - rounded)
-
-document.getElementById("totalReviews").innerHTML =
-`${total} ulasan`
-
-document.getElementById("bar5").style.width =
-`${(star5 / total) * 100}%`
-
-document.getElementById("bar4").style.width =
-`${(star4 / total) * 100}%`
-
-document.getElementById("bar3").style.width =
-`${(star3 / total) * 100}%`
-
-document.getElementById("bar2").style.width =
-`${(star2 / total) * 100}%`
-
-document.getElementById("bar1").style.width =
-`${(star1 / total) * 100}%`
-
-entries.sort((a,b)=>{
-
-if(a[0] === deviceId) return -1
-
-if(b[0] === deviceId) return 1
-
-return b[1].time - a[1].time
-
-})
-
-entries.forEach(([id,item]) => {
-
-const isMine =
-id === deviceId
-
-if(isMine){
-hasMyReview = true
-}
-
-list.innerHTML += `
-
-<div class="review-card ${isMine ? 'my-review-card' : ''}">
-
-<div class="review-header">
-
-<div class="review-avatar">
-
-${item.photo
-
-? `<img src="${item.photo}" class="avatar-img">`
-
-: item.name.charAt(0).toUpperCase()
-
-}
-
-${isMine ? `
-
-<div
-class="edit-avatar-btn"
-onclick="changeProfilePhoto()">
-
-✎
-
-</div>
-
-` : ``}
-
-</div>
-
-<div class="review-info">
-
-<div class="review-name-row">
-
-<div class="review-name">
-${item.name}
-</div>
-
-${isMine ? `
-
-<div class="review-tag">
-Review Anda
-</div>
-
-` : ``}
-
-</div>
-
-<div class="review-stars-row">
-
-${"★".repeat(item.star)}
-
-</div>
-
-${isMine ? `
-
-<div
-class="edit-review-text"
-onclick="openEditModal()">
-
-Edit ulasan Anda
-
-</div>
-
-` : ``}
-
-</div>
-
-</div>
-
-<div class="review-comment">
-
-${item.comment}
-
-</div>
-
-</div>
-
-`
-
-})
-
-document.getElementById(
-"ratingTopContainer"
-).style.display =
-hasMyReview ? "none" : "block"
-
-})
+db.ref("ratings").on("value", snap => {
+    document.getElementById("pageLoader").style.display = "none";
+    const data = snap.val();
+    const list = document.getElementById("reviewList");
+    list.innerHTML = "";
+
+    const isOwner = localStorage.getItem("isOwner") === "true";
+
+    if(!data){
+        document.getElementById("averageRating").innerHTML = "0.0";
+        document.getElementById("averageStars").innerHTML = "☆☆☆☆☆";
+        document.getElementById("totalReviews").innerHTML = "0 ulasan";
+        document.getElementById("ratingTopContainer").style.display = "block";
+        return;
+    }
+
+    let entries = Object.entries(data);
+    const totalReal = entries.length;
+
+    let star5 = 0, star4 = 0, star3 = 0, star2 = 0, star1 = 0;
+    let totalStarReal = 0;
+    let hasMyReview = false;
+
+    entries.forEach(([id, item]) => {
+        totalStarReal += item.star;
+        if(item.star === 5) star5++;
+        if(item.star === 4) star4++;
+        if(item.star === 3) star3++;
+        if(item.star === 2) star2++;
+        if(item.star === 1) star1++;
+    });
+
+    const baseWeightCount = 10; 
+    const baseWeightStars = 50; 
+
+    const adjustedTotal = totalReal + baseWeightCount;
+    const adjustedSum = totalStarReal + baseWeightStars;
+    
+    const avgCalculated = (adjustedSum / adjustedTotal).toFixed(1);
+    const displayAvg = Math.max(avgCalculated, (totalStarReal / totalReal)).toFixed(1);
+
+    document.getElementById("averageRating").innerHTML = displayAvg;
+
+    const rounded = Math.round(displayAvg);
+    document.getElementById("averageStars").innerHTML = "★".repeat(rounded) + "☆".repeat(5 - rounded);
+    document.getElementById("totalReviews").innerHTML = `${totalReal} ulasan`;
+
+    document.getElementById("bar5").style.width = `${((star5 + 8) / (totalReal + 8)) * 100}%`;
+    document.getElementById("bar4").style.width = `${(star4 / totalReal) * 100}%`;
+    document.getElementById("bar3").style.width = `${(star3 / totalReal) * 100}%`;
+    document.getElementById("bar2").style.width = `${(star2 / totalReal) * 100}%`;
+    document.getElementById("bar1").style.width = `${(star1 / totalReal) * 100}%`;
+
+    entries.sort((a, b) => {
+        if(a[0] === deviceId) return -1;
+        if(b[0] === deviceId) return 1;
+        return b[1].time - a[1].time;
+    });
+
+    entries.forEach(([id, item]) => {
+        const isMine = id === deviceId;
+        if(isMine) hasMyReview = true;
+
+        list.innerHTML += `
+        <div class="review-card ${isMine ? 'my-review-card' : ''}">
+            <div class="review-header">
+                <div class="review-avatar">
+                    ${item.photo 
+                        ? `<img src="${item.photo}" class="avatar-img">` 
+                        : (item.name ? item.name.charAt(0).toUpperCase() : 'U')
+                    }
+                    ${isMine ? `<div class="edit-avatar-btn" onclick="changeProfilePhoto()">✎</div>` : ``}
+                </div>
+
+                <div class="review-info">
+                    <div class="review-name-row">
+                        <div class="review-name">${item.name}</div>
+                        ${isMine ? `<div class="review-tag">Review Anda</div>` : ``}
+                        ${isOwner && !isMine ? `<div class="review-tag" style="background:#ff3b30; color:#fff;">Owner Access</div>` : ``}
+                    </div>
+
+                    <div class="review-stars-row">
+                        ${"★".repeat(item.star)}${"☆".repeat(5 - item.star)}
+                    </div>
+
+                    ${(isMine || isOwner) ? `
+                        <div class="edit-review-text" onclick="openOwnerEditModal('${id}')" style="color:#00ffaa; cursor:pointer; font-size:12px; font-weight:600; margin-top:4px;">
+                            ⚙️ Edit / Hapus Ulasan ${isOwner && !isMine ? '(Owner)' : ''}
+                        </div>
+                    ` : ``}
+                </div>
+            </div>
+
+            <div class="review-comment">
+                ${item.comment}
+            </div>
+        </div>
+        `;
+    });
+
+    document.getElementById("ratingTopContainer").style.display = hasMyReview ? "none" : "block";
+});
 function showPopup(text){
 
 document.getElementById(
