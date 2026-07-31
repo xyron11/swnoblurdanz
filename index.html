@@ -234,13 +234,25 @@ Rating
 
         <div class="cf-turnstile" data-sitekey="0x4AAAAAADQlj_kkJ1cpQ9ur" id="cfWidget" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
 
-        <div style="margin: 10px 0 12px 0;">
-            <a href="https://chat.whatsapp.com/IcazIYACsoUAscuR7XCv6K?s=cl&p=a&mlu=4" 
-               target="_blank" 
-               style="display: flex; align-items: center; justify-content: center; gap: 6px; background-color: #25D366; color: white; height: 36px; text-decoration: none; border-radius: 20px; font-weight: bold; font-family: sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; width: auto;">
-               💬 Join Group WhatsApp
-            </a>
+<div style="margin: 10px 0 12px 0;">
+    <button type="button" id="joinGroupTrigger" class="btn-join-main">
+       💬 JOIN GROUP WHATSAPP
+    </button>
+</div>
+
+
+<div class="group-modal-overlay" id="groupModalOverlay">
+    <div class="group-modal-card">
+        <button type="button" class="group-modal-close" id="closeGroupModal">&times;</button>
+        <div class="group-modal-title">PILIH GROUP WHATSAPP</div>
+        <p class="group-modal-sub">Pilih salah satu grup di bawah untuk bergabung:</p>
+        
+        <div class="group-list-container" id="groupListContainer">
+            
         </div>
+    </div>
+</div>
+
         
 
 
@@ -843,9 +855,48 @@ div.remove()
     </div>
 
     <script src="tutorial.js"></script>
+    
+    <script>
+    
+    const whatsappGroups = [
+        { name: "ILUMINATING STARS 3(UNTUK SWHD)", url: "https://chat.whatsapp.com/ClYy29g7FsX7gNxyrppekF?s=cl&p=a&mlu=4" },
+        { name: "ILUMINATING STARS 4(UNTUK SWHD)", url: "https://chat.whatsapp.com/GKB0FPjIa4QCyEaqnpPHOb?s=cl&p=a&mlu=4" },
+        { name: "GROUP FRIEND(CARI TEMAN/HAVEFUN)", url: "https://chat.whatsapp.com/IcazIYACsoUAscuR7XCv6K" }
+    ];
 
-</body>
-</html>
+    const groupListContainer = document.getElementById("groupListContainer");
+    
+    function renderGroupButtons() {
+        groupListContainer.innerHTML = "";
+        whatsappGroups.forEach(group => {
+            const btn = document.createElement("a");
+            btn.href = group.url;
+            btn.target = "_blank";
+            btn.className = "group-link-btn";
+            btn.innerHTML = `💬 ${group.name}`;
+            groupListContainer.appendChild(btn);
+        });
+    }
+
+    const groupModalOverlay = document.getElementById("groupModalOverlay");
+    const joinGroupTrigger = document.getElementById("joinGroupTrigger");
+    const closeGroupModal = document.getElementById("closeGroupModal");
+
+    joinGroupTrigger.addEventListener("click", () => {
+        renderGroupButtons();
+        groupModalOverlay.classList.add("show");
+    });
+
+    closeGroupModal.addEventListener("click", () => {
+        groupModalOverlay.classList.remove("show");
+    });
+
+    groupModalOverlay.addEventListener("click", (e) => {
+        if (e.target === groupModalOverlay) {
+            groupModalOverlay.classList.remove("show");
+        }
+    });
+</script>
 
 </body>
 <script>
