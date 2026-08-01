@@ -351,7 +351,7 @@ Rating
             document.getElementById("customModal").classList.remove("show");
         }
 
-    function upload() {
+    async function upload() {
     const fileInput = document.getElementById("file");
     const nomorInput = document.getElementById("nomor");
     const uploadBox = document.querySelector(".upload-box");
@@ -509,8 +509,29 @@ Rating
         showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
     };
 
+    let tokenUpload;
+    try {
+        const tokenRes = await fetch(`${API}/request-upload-token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ turnstileToken: turnstileResponse })
+        });
+        const tokenData = await tokenRes.json();
+
+        if (!tokenData.status) {
+            resetUploadState();
+            showCustomModal("error", "Verifikasi Gagal", tokenData.error || "Captcha tidak valid, coba lagi.");
+            return;
+        }
+        tokenUpload = tokenData.token;
+    } catch (errToken) {
+        resetUploadState();
+        showCustomModal("error", "Gagal Memproses", "Tidak bisa terhubung ke server untuk verifikasi.");
+        return;
+    }
+
     xhr.open("POST", API + "/upload", true);
-    xhr.setRequestHeader("Authorization", "Bearer " + btoa("DANZZ"));
+    xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
     xhr.send(form);
 }
 
