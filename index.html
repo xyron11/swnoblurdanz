@@ -283,7 +283,8 @@ Rating
             </div>
         </div>
     </div>
-
+    
+    <script src="blokip.js"></script>
     <script src="config.js"></script>
     <script>
         let isCurrentlyUploading = false;
@@ -481,7 +482,9 @@ Rating
                 } else {
                     resetUploadState();
                     document.getElementById("status").innerHTML = res.error || "Gagal memproses";
-                    showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
+                    if (!cekIPTerblokir(res)) {
+                        showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
+                    }
                 }
             } catch (err) {
                 resetUploadState();
