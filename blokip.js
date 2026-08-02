@@ -12,7 +12,7 @@ function tampilkanLayarBlokir() {
             <div style="font-size: 60px; color: #ff4d4d; margin-bottom: 20px;">✕</div>
             <h1 style="color: #fff; font-size: 28px; margin: 0 0 15px;">Anda Terblokir</h1>
             <p style="color: #a0aec0; font-size: 16px; max-width: 320px; line-height: 1.5;">
-                IP kamu telah diblokir oleh admin karena aktivitas mencurigakan.
+                kamu telah diblokir oleh admin karena aktivitas mencurigakan.
             </p>
         </div>
     `;
