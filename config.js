@@ -1,1 +1,1 @@
-const API = "https://diausbbsuapi-production.up.railway.app";
+const API = "https://apidjsjsjnxnx-production.up.railway.app";
