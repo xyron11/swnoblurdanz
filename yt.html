@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Downloader - DanzClean</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="topbar">
+        <div class="menu-btn" onclick="toggleMenu()">☰</div>
+    </div>
+
+<div class="sidebar" id="sidebar"></div>
+<script src="sidebar.js"></script>
+
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="container" style="padding: 20px; max-width: 600px; margin: 70px auto 0 auto;">
+        <div style="text-align: center;">
+            <h2 style="color: #fff; font-size: 22px; margin-bottom: 20px;">YouTube Downloader</h2>
+            
+            <input type="text" id="ytUrlInput" placeholder="Masukkan Link YouTube..." style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #0c102b; color: #fff; margin-bottom: 15px; box-sizing: border-box; font-size: 14px;">
+            
+            <button onclick="processYoutubeSearch()" style="width: 100%; padding: 14px; border-radius: 12px; border: none; background: #00e676; color: #000; font-weight: bold; font-size: 15px; cursor: pointer; box-shadow: 0 0 15px rgba(0,230,118,0.4);">
+                CARI MEDIA
+            </button>
+            
+            <div id="ytResult" style="margin-top: 25px;"></div>
+        </div>
+    </div>
+
+    <div class="custom-popup" id="customPopup">
+        <div class="custom-popup-card">
+            <div class="custom-popup-text" id="customPopupText"></div>
+            <button class="custom-popup-btn" onclick="closeCustomPopup()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let currentYtUrl = "";
+
+        function showCustomPopup(message) {
+            document.getElementById("customPopupText").innerText = message;
+            document.getElementById("customPopup").classList.add("show");
+        }
+
+        function closeCustomPopup() {
+            document.getElementById("customPopup").classList.remove("show");
+        }
+
+        function toggleMenu(){
+            document.getElementById("sidebar").classList.toggle("active");
+            document.getElementById("overlay").classList.toggle("active");
+        }
+
+        function extractFilename(url) {
+            try {
+                return new URL(url).searchParams.get('n') || 'danzclean_file';
+            } catch {
+                return 'danzclean_file';
+            }
+        }
+
+        // Trigger download native browser (server sudah kirim Content-Disposition: attachment,
+        // jadi browser langsung streaming ke disk tanpa nunggu file utuh ke-load ke memori dulu)
+        function forceDownload(fileUrl, fileName, btnElement) {
+            if (!fileName) fileName = extractFilename(fileUrl);
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "Membuka unduhan...";
+            btnElement.style.opacity = "0.7";
+
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = fileUrl;
+            a.download = fileName;
+            a.rel = 'noopener';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.opacity = "1";
+            }, 1200);
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds) return '';
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function isValidYoutubeUrl(url) {
+            return /youtube\.com|youtu\.be/i.test(url);
+        }
+
+        async function processYoutubeSearch() {
+            const url = document.getElementById("ytUrlInput").value.trim();
+            const resultDiv = document.getElementById("ytResult");
+
+            if (!url) {
+                alert("Masukkan URL YouTube terlebih dahulu!");
+                return;
+            }
+
+            if (!isValidYoutubeUrl(url)) {
+                showCustomPopup("Itu bukan link YouTube!");
+                return;
+            }
+
+            currentYtUrl = url;
+            resultDiv.innerHTML = '<p style="color: #aaa; text-align: center;">Mengambil data video...</p>';
+
+            try {
+                const targetApi = `${YT_API}/ytmp4?url=${encodeURIComponent(url)}`;
+                const response = await fetch(targetApi);
+                const data = await response.json();
+
+                if (!data.status || !data.result) {
+                    resultDiv.innerHTML = `<p style="color: #ff5252; text-align: center;">Gagal mengambil data dari URL tersebut.<br><span style="font-size:11px; opacity:0.8;">${data.error || data.message || ''}</span></p>`;
+                    return;
+                }
+
+                const res = data.result;
+
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(12, 16, 43, 0.9); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 16px; text-align: center;">
+                        ${res.thumbnail ? `<img src="${res.thumbnail}" style="width:100%; border-radius:12px; max-height:250px; object-fit:cover; margin-bottom:12px;">` : ''}
+                        <p style="color: #fff; font-size: 13px; margin-bottom: 4px; line-height: 1.4;">${res.title || 'YouTube Video'}</p>
+                        <p style="color: #888; font-size: 11px; margin-bottom: 15px;">${res.duration ? formatDuration(res.duration) : ''}</p>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="ytMp4Btn" onclick="downloadYoutube('mp4', this)" style="flex:1; background:#00e676; color:#000; padding:12px; border-radius:10px; border:none; font-weight:bold; cursor:pointer;">DOWNLOAD MP4</button>
+                            <button id="ytMp3Btn" onclick="downloadYoutube('mp3', this)" style="flex:1; background:#e91e63; color:#fff; padding:12px; border-radius:10px; border:none; font-weight:bold; cursor:pointer;">DOWNLOAD MP3</button>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error(e);
+                resultDiv.innerHTML = `<p style="color: #ff5252; text-align: center;">Terjadi kesalahan koneksi.<br><span style="font-size:11px; opacity:0.8;">${e.message}</span></p>`;
+            }
+        }
+
+        async function downloadYoutube(format, btnElement) {
+            if (!currentYtUrl) return;
+
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "Memproses...";
+            btnElement.disabled = true;
+
+            try {
+                const endpoint = format === 'mp3' ? 'ytmp3' : 'ytmp4';
+                const targetApi = `${YT_API}/${endpoint}?url=${encodeURIComponent(currentYtUrl)}`;
+                const response = await fetch(targetApi);
+                const data = await response.json();
+
+                if (!data.status || !data.result || !data.result.download) {
+                    alert("Gagal mengambil link download.");
+                    btnElement.innerText = originalText;
+                    btnElement.disabled = false;
+                    return;
+                }
+
+                btnElement.disabled = false;
+                btnElement.innerText = originalText;
+                forceDownload(data.result.download, originalText, btnElement);
+            } catch (e) {
+                console.error(e);
+                alert("Terjadi kesalahan koneksi.");
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
