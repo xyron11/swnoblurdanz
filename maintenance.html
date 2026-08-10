@@ -204,18 +204,6 @@ OKE
 
 <script>
 
-const OWNER_KEY = "danzclean_owner_X92ka";
-
-const paramsCekOwner = new URLSearchParams(window.location.search);
-
-if (paramsCekOwner.get("owner") === OWNER_KEY) {
-    localStorage.setItem("isOwner", "true");
-}
-
-if (localStorage.getItem("isOwner") !== "true") {
-    location.href = "/";
-}
-
 function toggleMenu(){
 
 const sidebar =
@@ -370,14 +358,6 @@ preview.src = ""
 
 document.getElementById("imageFile").value = ""
 
-}).catch(err => {
-
-showPopup(
-"Gagal",
-"Gagal mengaktifkan maintenance: " + err.message +
-" (kemungkinan foto terlalu besar, coba pakai foto yang lebih kecil)"
-)
-
 })
 
 }
@@ -396,13 +376,6 @@ image:""
 showPopup(
 "Berhasil",
 "Maintenance berhasil dinonaktifkan ❌"
-)
-
-}).catch(err => {
-
-showPopup(
-"Gagal",
-"Gagal menonaktifkan maintenance: " + err.message
 )
 
 })
