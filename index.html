@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -608,12 +607,15 @@ if (isOwner === "true") {
 (async function() {
     document.body.style.display = "none";
 
-    const diblokir = await cekIPSaatBuka(); 
+    // 1) CEK IP BLOKIR DULU. Kalau IP diblokir, tampilkan layar blokir dan
+    //    STOP di sini — jangan lanjut cek maintenance, supaya tidak ada proses
+    //    lain yang menimpa (overwrite) layar blokir setelahnya.
+    const diblokir = await cekIPSaatBuka(); // fungsi ini ada di blokip.js
     if (diblokir) {
         return;
     }
 
-
+    // 2) Baru cek status maintenance kalau IP tidak diblokir.
     const maintenanceRef = firebase.database().ref("maintenance");
 
     try {
@@ -654,7 +656,6 @@ if (isOwner === "true") {
 
     document.body.style.display = "block";
 })();
-</script>
 
 
 function closeDonationPopup() {
