@@ -1,5 +1,4 @@
 function tampilkanLayarBlokir() {
-    // Pastikan body kelihatan (kalau sebelumnya di-set display:none oleh script lain)
     document.body.style.display = "block";
     document.body.innerHTML = `
         <div style="
@@ -44,7 +43,4 @@ async function cekIPSaatBuka() {
     }
 }
 
-// CATATAN: fungsi ini SENGAJA tidak lagi auto-jalan sendiri lewat DOMContentLoaded.
-// index.html yang memanggil cekIPSaatBuka() secara berurutan (di-await) SEBELUM
-// mengecek status maintenance, supaya kedua fitur ini tidak rebutan nge-overwrite
-// document.body.innerHTML di saat yang bersamaan.
+
