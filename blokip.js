@@ -1,4 +1,5 @@
 function tampilkanLayarBlokir() {
+    document.body.style.display = "block";
     document.body.innerHTML = `
         <div style="
             position: fixed; top: 0; left: 0;
@@ -33,10 +34,13 @@ async function cekIPSaatBuka() {
         const data = await res.json();
         if (data.blocked) {
             tampilkanLayarBlokir();
+            return true;
         }
+        return false;
     } catch (err) {
-        
+        console.error("Gagal mengecek status blokir IP:", err);
+        return false;
     }
 }
 
-window.addEventListener("DOMContentLoaded", cekIPSaatBuka);
+
