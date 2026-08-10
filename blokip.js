@@ -1,6 +1,4 @@
 function tampilkanLayarBlokir() {
-    // Pastikan body kelihatan (kalau sebelumnya di-set display:none oleh script lain)
-    document.body.style.display = "block";
     document.body.innerHTML = `
         <div style="
             position: fixed; top: 0; left: 0;
@@ -35,16 +33,10 @@ async function cekIPSaatBuka() {
         const data = await res.json();
         if (data.blocked) {
             tampilkanLayarBlokir();
-            return true;
         }
-        return false;
     } catch (err) {
-        console.error("Gagal mengecek status blokir IP:", err);
-        return false;
+        
     }
 }
 
-// CATATAN: fungsi ini SENGAJA tidak lagi auto-jalan sendiri lewat DOMContentLoaded.
-// index.html yang memanggil cekIPSaatBuka() secara berurutan (di-await) SEBELUM
-// mengecek status maintenance, supaya kedua fitur ini tidak rebutan nge-overwrite
-// document.body.innerHTML di saat yang bersamaan.
+window.addEventListener("DOMContentLoaded", cekIPSaatBuka);
