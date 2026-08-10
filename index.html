@@ -605,51 +605,56 @@ if (isOwner === "true") {
 </script>
 
 <script>
-document.body.style.display = "none";
+(async function() {
+    document.body.style.display = "none";
 
-const maintenanceRef = firebase.database().ref("maintenance");
-
-maintenanceRef.once("value")
-.then(snap => {
-    const data = snap.val();
-    const isOwner = localStorage.getItem("isOwner");
-
-    if (data && data.enabled === true && isOwner !== "true") {
-        
-        document.body.innerHTML = `
-        <div class="maintenance-page">
-            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
-            <div class="maintenance-card">
-                <div class="maintenance-icon">🚧</div>
-                <div class="maintenance-title">WEBSITE MAINTENANCE</div>
-                ${data.image ? `
-                <div class="maintenance-image-wrapper">
-                    <div class="maintenance-image-line"></div>
-                    <img src="${data.image}" class="maintenance-image">
-                </div>` : ''}
-                <div class="maintenance-desc">${data.message || "Website sedang diperbaiki"}</div>
-                <div class="loader"><div class="loader-line"></div><div class="loader-line"></div></div>
-            </div>
-            <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank" class="channel-btn">Informasi</a>
-        </div>`;
-    } else {
-        
-        setTimeout(() => {
-            const donationPopup = document.getElementById("donationPopup");
-            if (donationPopup) {
-                donationPopup.classList.add("show");
-            }
-        }, 1500);
+    const diblokir = await cekIPSaatBuka(); 
+    if (diblokir) {
+        return;
     }
-    
-    
+
+
+    const maintenanceRef = firebase.database().ref("maintenance");
+
+    try {
+        const snap = await maintenanceRef.once("value");
+        const data = snap.val();
+        const isOwner = localStorage.getItem("isOwner");
+
+        if (data && data.enabled === true && isOwner !== "true") {
+
+            document.body.innerHTML = `
+            <div class="maintenance-page">
+                <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+                <div class="maintenance-card">
+                    <div class="maintenance-icon">🚧</div>
+                    <div class="maintenance-title">WEBSITE MAINTENANCE</div>
+                    ${data.image ? `
+                    <div class="maintenance-image-wrapper">
+                        <div class="maintenance-image-line"></div>
+                        <img src="${data.image}" class="maintenance-image">
+                    </div>` : ''}
+                    <div class="maintenance-desc">${data.message || "Website sedang diperbaiki"}</div>
+                    <div class="loader"><div class="loader-line"></div><div class="loader-line"></div></div>
+                </div>
+                <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank" class="channel-btn">Informasi</a>
+            </div>`;
+        } else {
+
+            setTimeout(() => {
+                const donationPopup = document.getElementById("donationPopup");
+                if (donationPopup) {
+                    donationPopup.classList.add("show");
+                }
+            }, 1500);
+        }
+    } catch (err) {
+        console.error("Firebase error:", err);
+    }
+
     document.body.style.display = "block";
-})
-.catch(err => {
-    
-    console.error("Firebase error:", err);
-    document.body.style.display = "block";
-});
+})();
+</script>
 
 
 function closeDonationPopup() {
@@ -854,7 +859,7 @@ div.remove()
     <script>
     
     const whatsappGroups = [
-        { name: "ILUMINATING STARS 2(UNTUK SWHD)", url: "https://chat.whatsapp.com/C1cTVYR1lGK60CZNWwIXJi?s=cl&p=a&mlu=4" },
+        { name: "ILUMINATING STARS 3(UNTUK SWHD)", url: "https://chat.whatsapp.com/ClYy29g7FsX7gNxyrppekF?s=cl&p=a&mlu=4" },
         { name: "GROUP FRIEND(CARI TEMAN/HAVEFUN)", url: "https://chat.whatsapp.com/JNMHzerLlO8Kf9sOVqA6zR?s=cl&p=a&mlu=4" }
     ];
 
