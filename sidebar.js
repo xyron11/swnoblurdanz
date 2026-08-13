@@ -8,6 +8,7 @@ const SIDEBAR_MENU = [
       { href: "/tiktok.html", label: "TikTok Downloader" },
       { href: "/instagram.html", label: "Instagram Downloader" },
       { href: "/yt.html", label: "YouTube Downloader" },
+      { href: "/pinterest.html", label: "Pinterest Downloader" },
     ],
   },
   { href: "https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y", icon: "./media/channel.png", label: "Channel WhatsApp", target: "_blank" },
