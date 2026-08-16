@@ -25,12 +25,6 @@ href="style.css">
 
 </style>
 
-<link
-rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css"/>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
@@ -246,64 +240,6 @@ HAPUS ULASAN
 
 </div>
 
-<input
-type="file"
-id="profileInput"
-accept="image/*"
-style="display:none;">
-
-<div
-class="profile-crop-modal"
-id="profileModal">
-
-<div class="crop-header">
-
-<div
-class="review-back-btn"
-onclick="closeProfileModal()">
-
-✕
-
-</div>
-
-<div class="crop-title">
-Foto Profil
-</div>
-
-<div
-class="crop-btn"
-onclick="saveProfilePhoto()">
-
-Simpan
-
-</div>
-
-</div>
-
-<div class="crop-body">
-
-<div class="crop-container">
-
-<img id="cropImage">
-
-</div>
-
-</div>
-
-<div class="crop-footer">
-
-<div
-class="crop-action"
-onclick="rotateCrop()">
-
-↻
-
-</div>
-
-</div>
-
-</div>
-
 <script>
 
 function toggleMenu(){
@@ -351,26 +287,12 @@ firebase.initializeApp(firebaseConfig)
 
 const db = firebase.database()
 
-let deviceId =
-localStorage.getItem("ratingDevice")
-
-if(!deviceId){
-
-deviceId =
-Math.random()
-.toString(36)
-.substring(2)
-
-localStorage.setItem(
-"ratingDevice",
-deviceId
-)
-
-}
+const loggedUserRaw = localStorage.getItem("danzclean_logged_user")
+const currentUser = loggedUserRaw ? JSON.parse(loggedUserRaw) : null
+const userUid = currentUser ? currentUser.uid : null
 
 let selectedStar = 5
 let modalStar = 5
-let cropper = null
 
 function updateStars(star){
 
@@ -397,6 +319,11 @@ el.classList.remove("active")
 
 function openReview(star){
 
+if(!currentUser){
+showPopup("Silakan login terlebih dahulu untuk memberi rating!")
+return
+}
+
 selectedStar = star
 
 updateStars(star)
@@ -404,6 +331,12 @@ updateStars(star)
 document
 .getElementById("reviewForm")
 .style.display = "block"
+
+const nameInput = document.getElementById("name")
+if(currentUser.username){
+nameInput.value = currentUser.username
+nameInput.style.display = "none"
+}
 
 window.scrollTo({
 
@@ -416,56 +349,41 @@ behavior:"smooth"
 
 function sendReview(){
 
-const name =
-document
-.getElementById("name")
-.value
-.trim()
-
-const comment =
-document
-.getElementById("comment")
-.value
-.trim()
-
-if(!name || !comment){
-
-showPopup("Isi dulu bre")
+if(!currentUser){
+showPopup("Silakan login terlebih dahulu!")
 return
-
 }
 
-db.ref("ratings/" + deviceId)
-.once("value")
-.then(old=>{
+const name = document.getElementById("name").value.trim() || currentUser.username || "Pengguna"
+const comment = document.getElementById("comment").value.trim()
 
-const oldData = old.val() || {}
+if(!comment){
+showPopup("Isi dulu ulasannya bre")
+return
+}
 
-db.ref("ratings/" + deviceId)
+const photoUrl = currentUser.photo || "https://ui-avatars.com/api/?name=" + encodeURIComponent(name) + "&background=4c7dff&color=fff"
+
+db.ref("ratings/" + userUid)
 .set({
-
-name:name,
-comment:comment,
-star:selectedStar,
-photo:oldData.photo || "",
-time:Date.now()
-
+name: name,
+comment: comment,
+star: selectedStar,
+photo: photoUrl,
+time: Date.now()
 })
 .then(()=>{
-
-document
-.getElementById("reviewForm")
-.style.display = "none"
-
-})
-
+document.getElementById("reviewForm").style.display = "none"
+showPopup("Rating berhasil dikirim! ✅")
 })
 
 }
 
 function openEditModal(){
 
-db.ref("ratings/" + deviceId)
+if(!userUid) return
+
+db.ref("ratings/" + userUid)
 .once("value")
 .then(snap=>{
 
@@ -534,10 +452,10 @@ el.classList.remove("active")
 
 }
 
-let targetEditId = deviceId;
+let targetEditId = userUid;
 
 function openOwnerEditModal(targetId){
-    targetEditId = targetId || deviceId;
+    targetEditId = targetId || userUid;
 
     db.ref("ratings/" + targetEditId).once("value").then(snap => {
         const data = snap.val();
@@ -582,127 +500,6 @@ function deleteReview(){
 
         showPopup("Ulasan berhasil dihapus! 🗑️");
     });
-}
-
-function changeProfilePhoto(){
-
-document
-.getElementById("profileInput")
-.click()
-
-}
-
-document
-.getElementById("profileInput")
-.addEventListener("change", e => {
-
-const file = e.target.files[0]
-
-if(!file) return
-
-const reader = new FileReader()
-
-reader.onload = function(ev){
-
-document
-.getElementById("profileModal")
-.classList.add("active")
-
-const image =
-document.getElementById("cropImage")
-
-image.src = ev.target.result
-
-if(cropper){
-
-cropper.destroy()
-
-}
-
-cropper = new Cropper(image, {
-
-aspectRatio:1,
-
-viewMode:1,
-
-dragMode:"move",
-
-background:false,
-
-autoCropArea:1,
-
-responsive:true,
-
-guides:false,
-
-center:false,
-
-highlight:false,
-
-cropBoxMovable:true,
-
-cropBoxResizable:false,
-
-toggleDragModeOnDblclick:false
-
-})
-
-}
-
-reader.readAsDataURL(file)
-
-})
-
-function closeProfileModal(){
-
-document
-.getElementById("profileModal")
-.classList.remove("active")
-
-if(cropper){
-
-cropper.destroy()
-cropper = null
-
-}
-
-}
-
-function rotateCrop(){
-
-if(!cropper) return
-
-cropper.rotate(90)
-
-}
-
-function saveProfilePhoto(){
-
-if(!cropper) return
-
-const croppedPhoto =
-cropper
-.getCroppedCanvas({
-
-width:400,
-height:400,
-imageSmoothingQuality:"high"
-
-})
-.toDataURL("image/jpeg",0.9)
-
-db.ref("ratings/" + deviceId)
-.update({
-
-photo:croppedPhoto
-
-})
-.then(()=>{
-
-closeProfileModal()
-
-})
-
 }
 
 db.ref("ratings").on("value", snap => {
@@ -759,13 +556,13 @@ db.ref("ratings").on("value", snap => {
     document.getElementById("bar1").style.width = `${(star1 / totalReal) * 100}%`;
 
     entries.sort((a, b) => {
-        if(a[0] === deviceId) return -1;
-        if(b[0] === deviceId) return 1;
+        if(a[0] === userUid) return -1;
+        if(b[0] === userUid) return 1;
         return b[1].time - a[1].time;
     });
 
     entries.forEach(([id, item]) => {
-        const isMine = id === deviceId;
+        const isMine = id === userUid;
         if(isMine) hasMyReview = true;
 
         list.innerHTML += `
@@ -776,7 +573,6 @@ db.ref("ratings").on("value", snap => {
                         ? `<img src="${item.photo}" class="avatar-img">` 
                         : (item.name ? item.name.charAt(0).toUpperCase() : 'U')
                     }
-                    ${isMine ? `<div class="edit-avatar-btn" onclick="changeProfilePhoto()">✎</div>` : ``}
                 </div>
 
                 <div class="review-info">
