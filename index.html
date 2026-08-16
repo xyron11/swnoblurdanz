@@ -589,50 +589,48 @@ function resetUploadState() {
 <script>
 document.body.style.display = "none";
 
-const maintenanceRef = firebase.database().ref("maintenance");
+cekAkunOwnerFirebase().then(isOwner => {
+    const maintenanceRef = firebase.database().ref("maintenance");
 
-maintenanceRef.once("value")
-.then(snap => {
-    const data = snap.val();
-    const isOwner = localStorage.getItem("isOwner");
+    maintenanceRef.once("value")
+    .then(snap => {
+        const data = snap.val();
 
-    if (data && data.enabled === true && isOwner !== "true") {
+        if (data && data.enabled === true && !isOwner) {
+            
+            document.body.innerHTML = `
+            <div class="maintenance-page">
+                <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+                <div class="maintenance-card">
+                    <div class="maintenance-icon">🚧</div>
+                    <div class="maintenance-title">WEBSITE MAINTENANCE</div>
+                    ${data.image ? `
+                    <div class="maintenance-image-wrapper">
+                        <div class="maintenance-image-line"></div>
+                        <img src="${data.image}" class="maintenance-image">
+                    </div>` : ''}
+                    <div class="maintenance-desc">${data.message || "Website sedang diperbaiki"}</div>
+                    <div class="loader"><div class="loader-line"></div><div class="loader-line"></div></div>
+                </div>
+                <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank" class="channel-btn">Informasi</a>
+            </div>`;
+        } else {
+            
+            setTimeout(() => {
+                const donationPopup = document.getElementById("donationPopup");
+                if (donationPopup) {
+                    donationPopup.classList.add("show");
+                }
+            }, 1500);
+        }
         
-        document.body.innerHTML = `
-        <div class="maintenance-page">
-            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
-            <div class="maintenance-card">
-                <div class="maintenance-icon">🚧</div>
-                <div class="maintenance-title">WEBSITE MAINTENANCE</div>
-                ${data.image ? `
-                <div class="maintenance-image-wrapper">
-                    <div class="maintenance-image-line"></div>
-                    <img src="${data.image}" class="maintenance-image">
-                </div>` : ''}
-                <div class="maintenance-desc">${data.message || "Website sedang diperbaiki"}</div>
-                <div class="loader"><div class="loader-line"></div><div class="loader-line"></div></div>
-            </div>
-            <a href="https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y" target="_blank" class="channel-btn">Informasi</a>
-        </div>`;
-    } else {
-        
-        setTimeout(() => {
-            const donationPopup = document.getElementById("donationPopup");
-            if (donationPopup) {
-                donationPopup.classList.add("show");
-            }
-        }, 1500);
-    }
-    
-    
-    document.body.style.display = "block";
-})
-.catch(err => {
-    
-    console.error("Firebase error:", err);
-    document.body.style.display = "block";
+        document.body.style.display = "block";
+    })
+    .catch(err => {
+        console.error("Firebase error:", err);
+        document.body.style.display = "block";
+    });
 });
-
 
 function closeDonationPopup() {
     const donationPopup = document.getElementById("donationPopup");
