@@ -18,7 +18,7 @@ const SIDEBAR_MENU = [
   { href: "/settingakun.html", icon: "./media/setting.png", label: "Setting" },
 
   { href: "/maintenance.html", label: "Perbaikan", id: "maintenanceBtn", hidden: true, ownerOnly: true },
-  { href: "/blokirakun.html", label: " Blokir Akun", id: "blockAkunBtn", hidden: true, ownerOnly: true },
+  { href: "/Blokirakun.html", label: " Blokir Akun", id: "blockAkunBtn", hidden: true, ownerOnly: true },
   { href: "#", label: "Logout Akun", id: "userLogoutBtn" },
 ];
 
