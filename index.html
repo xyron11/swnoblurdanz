@@ -190,7 +190,7 @@
     </div>
 
     <div class="sidebar" id="sidebar"></div>
-    <script src="akun.js"></script>
+    <script src="Akun.js"></script>
     <script src="sidebar.js"></script>
 
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -624,12 +624,15 @@ maintenanceRef.once("value")
         }, 1500);
     }
     
+    
     document.body.style.display = "block";
 })
 .catch(err => {
+    
     console.error("Firebase error:", err);
     document.body.style.display = "block";
 });
+
 
 function closeDonationPopup() {
     const donationPopup = document.getElementById("donationPopup");
