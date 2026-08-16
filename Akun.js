@@ -1,8 +1,5 @@
 const AKUN_OWNER = [
-    "caisen004@gmail.com",
-    "6285807428724", 
-    "admin",
-    "danzz"
+    "caisen004@gmail.com"
 ];
 
 function cekAkunOwner() {
@@ -15,16 +12,9 @@ function cekAkunOwner() {
         }
 
         const data = JSON.parse(raw);
-
         const email = ((data && data.email) || "").toLowerCase().trim();
-        const username = ((data && data.username) || "").toLowerCase().trim();
-        const phone = ((data && data.phone) || "").toLowerCase().trim();
-        const nomor = ((data && data.nomor) || "").toLowerCase().trim();
 
-        const isOwner = AKUN_OWNER.some(owner => {
-            const target = owner.toLowerCase().trim();
-            return target === email || target === username || target === phone || target === nomor;
-        });
+        const isOwner = AKUN_OWNER.some(e => e.toLowerCase().trim() === email);
 
         if (isOwner) {
             localStorage.setItem("isOwner", "true");
@@ -39,39 +29,5 @@ function cekAkunOwner() {
     }
 }
 
+// Langsung dicek begitu file ini dimuat, sebelum sidebar dirender
 cekAkunOwner();
-
-window.addEventListener("DOMContentLoaded", function() {
-    cekAkunOwner();
-    if (typeof renderSidebar === "function") {
-        renderSidebar();
-    }
-});
-
-window.addEventListener("load", function() {
-    if (typeof firebase === "undefined" || !firebase.database) return;
-
-    try {
-        const raw = localStorage.getItem("danzclean_logged_user");
-        if (!raw) return;
-
-        const data = JSON.parse(raw);
-        if (!data || !data.uid) return;
-
-        const dbPath = data.loginType === "google" ? `users/${data.uid}` : `manual_users/${data.uid}`;
-        
-        firebase.database().ref(dbPath).once("value").then(snap => {
-            if (snap.exists()) {
-                const dbUser = snap.val();
-                const dbRole = (dbUser.role || "").toLowerCase().trim();
-                
-                if (dbRole === "owner") {
-                    localStorage.setItem("isOwner", "true");
-                    if (typeof renderSidebar === "function") {
-                        renderSidebar();
-                    }
-                }
-            }
-        }).catch(function(e) {});
-    } catch (e) {}
-});
