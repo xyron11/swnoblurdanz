@@ -6,6 +6,15 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://danzclean.arisu.biz.id">
 <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+
+<script>
+    (function() {
+        const loggedUser = localStorage.getItem("danzclean_logged_user");
+        if (!loggedUser) {
+            window.location.replace("/danzclean.html"); 
+        }
+    })();
+</script>
     
 <script src="https://unpkg.com/@dotlottie/player-component@2.7.1/dist/dotlottie-player.mjs" type="module"></script>
     <meta charset="UTF-8">
@@ -181,6 +190,7 @@
     </div>
 
     <div class="sidebar" id="sidebar"></div>
+    <script src="akun.js"></script>
     <script src="sidebar.js"></script>
 
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -201,8 +211,7 @@
             
         </label>
 
-        <input type="text" id="nomor" placeholder="Contoh: 628xxxx">
-
+        
 
         <div class="cf-turnstile" data-sitekey="0x4AAAAAADQlj_kkJ1cpQ9ur" id="cfWidget" style="margin-bottom: 20px; display: flex; justify-content: center;"></div>
 
@@ -256,7 +265,7 @@
         </div>
     </div>
     
-    <script src="blokip.js"></script>
+
     <script src="config.js"></script>
     <script>
         let isCurrentlyUploading = false;
@@ -325,11 +334,26 @@
 
     async function upload() {
     const fileInput = document.getElementById("file");
-    const nomorInput = document.getElementById("nomor");
     const uploadBox = document.querySelector(".upload-box");
     const btn = document.getElementById("uploadBtn");
     const file = fileInput.files[0];
-    const nomor = nomorInput.value.trim();
+
+    // Mengambil nomor, email, dan username otomatis dari akun yang login di localStorage
+    const loggedUser = localStorage.getItem("danzclean_logged_user");
+    let nomor = "";
+    let emailAkun = "";
+    let usernameAkun = "";
+
+    if (loggedUser) {
+        try {
+            const userData = JSON.parse(loggedUser);
+            nomor = userData.nomor || userData.phone || userData.username || "";
+            emailAkun = userData.email || "";
+            usernameAkun = userData.username || "";
+        } catch (e) {
+            nomor = loggedUser;
+        }
+    }
 
     const turnstileResponse = turnstile.getResponse();
 
@@ -339,19 +363,15 @@
     }
 
     if (!nomor) {
-        showCustomModal("warning", "Nomor Kosong", "Nomor wa mu mana, isi dulu euy");
+        showCustomModal("error", "Sesi Dikeluarkan", "Sesi login tidak ditemukan. Silakan login kembali.");
+        window.location.replace("/login.html");
         return;
     }
 
     const nomorBersih = nomor.replace(/\D/g, "");
 
     if (nomorBersih.length < 9 || nomorBersih.length > 15) {
-        showCustomModal("error", "Format Salah", "nomor WA salah bre, periksa lagi angkanya.");
-        return;
-    }
-
-    if (nomorBersih.startsWith("0")) {
-        showCustomModal("error", "Gunakan Kode Negara", "Gunakan kode negara bre, ubah angka depan 0 jadi 62 atau kode negara lu.");
+        showCustomModal("error", "Format Akun Salah", "Nomor pada akun Anda tidak valid.");
         return;
     }
 
@@ -362,7 +382,9 @@
 
     const form = new FormData();
     form.append("video", file);
-    form.append("nomor", nomorBersih); 
+    form.append("nomor", nomorBersih);
+    form.append("email", emailAkun);
+    form.append("username", usernameAkun); 
 
     isCurrentlyUploading = true;
     document.getElementById("status").innerHTML = "Connecting to server...";
@@ -454,9 +476,7 @@
                 } else {
                     resetUploadState();
                     document.getElementById("status").innerHTML = res.error || "Gagal memproses";
-                    if (!cekIPTerblokir(res)) {
-                        showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
-                    }
+                    showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
                 }
             } catch (err) {
                 resetUploadState();
@@ -512,13 +532,11 @@
 function resetUploadState() {
     isCurrentlyUploading = false;
     if (typeof turnstile !== "undefined") turnstile.reset();
-    
+
     const fileInput = document.getElementById("file");
-    const nomorInput = document.getElementById("nomor");
     const uploadBox = document.querySelector(".upload-box");
     const btn = document.getElementById("uploadBtn");
-    
-    if (nomorInput) nomorInput.disabled = false;
+
     if (fileInput) {
         fileInput.disabled = false;
         fileInput.value = "";
@@ -536,8 +554,8 @@ function resetUploadState() {
     }
     document.getElementById("status").innerHTML = "Waiting upload...";
     document.getElementById("file-name").innerText = "Tap di sini buat masukin video / foto";
-    if (nomorInput) nomorInput.value = "";
 }
+
 
     </script>
 
@@ -546,13 +564,13 @@ function resetUploadState() {
     <script>
         (function() {
             const config = {
-                apiKey: "AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
-                authDomain: "danzzclean.firebaseapp.com",
-                databaseURL: "https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
-                projectId: "danzzclean",
-                storageBucket: "danzzclean.firebasestorage.app",
-                messagingSenderId: "254872462958",
-                appId: "1:254872462958:web:a7964353bb5afa6678287f"
+                apiKey: "AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
+                authDomain: "danzclean-auth.firebaseapp.com",
+                databaseURL: "https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "danzclean-auth",
+                storageBucket: "danzclean-auth.firebasestorage.app",
+                messagingSenderId: "450022321477",
+                appId: "1:450022321477:web:4d3ee887b935726dd2a22c"
             };
             if (!firebase.apps.length) {
                 firebase.initializeApp(config);
@@ -568,42 +586,7 @@ function resetUploadState() {
             }
         })();
     </script>
-<script>
-const OWNER_KEY = "danzclean_owner_X92ka";
-
-const params = new URLSearchParams(window.location.search);
-
-if (params.get("owner") === OWNER_KEY) {
-    localStorage.setItem("isOwner", "true");
-}
-
-const isOwner = localStorage.getItem("isOwner");
-
-if (isOwner === "true") {
-
-    const btn = document.getElementById("maintenanceBtn");
-    const logoutBtn = document.getElementById("logoutOwnerBtn");
-
-    if (btn) {
-        btn.style.display = "flex";
-    }
-
-    if (logoutBtn) {
-
-        logoutBtn.style.display = "flex";
-
-        logoutBtn.onclick = () => {
-
-            localStorage.removeItem("isOwner");
-
-            alert("Logout owner berhasil");
-
-            location.href = "/";
-        };
-    }
-}
-</script>
-
+    <script src="blockcheck.js"></script>
 <script>
 document.body.style.display = "none";
 
@@ -854,7 +837,7 @@ div.remove()
     <script>
     
     const whatsappGroups = [
-        { name: "ILUMINATING STARS 2(UNTUK SWHD)", url: "https://chat.whatsapp.com/C1cTVYR1lGK60CZNWwIXJi?s=cl&p=a&mlu=4" },
+        { name: "ILUMINATING STARS 3(UNTUK SWHD)", url: "https://chat.whatsapp.com/ClYy29g7FsX7gNxyrppekF?s=cl&p=a&mlu=4" },
         { name: "GROUP FRIEND(CARI TEMAN/HAVEFUN)", url: "https://chat.whatsapp.com/JNMHzerLlO8Kf9sOVqA6zR?s=cl&p=a&mlu=4" }
     ];
 
