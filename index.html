@@ -338,7 +338,6 @@
     const btn = document.getElementById("uploadBtn");
     const file = fileInput.files[0];
 
-    // Mengambil nomor, email, dan username otomatis dari akun yang login di localStorage
     const loggedUser = localStorage.getItem("danzclean_logged_user");
     let nomor = "";
     let emailAkun = "";
@@ -380,16 +379,30 @@
         return;
     }
 
-    const form = new FormData();
-    form.append("video", file);
-    form.append("nomor", nomorBersih);
-    form.append("email", emailAkun);
-    form.append("username", usernameAkun); 
+    let tokenUpload;
+    try {
+        const tokenRes = await fetch(`${API}/request-upload-token`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ turnstileToken: turnstileResponse })
+        });
+        const tokenData = await tokenRes.json();
+
+        if (!tokenData.status) {
+            if (typeof turnstile !== "undefined") turnstile.reset();
+            showCustomModal("error", "Verifikasi Gagal", tokenData.error || "Captcha tidak valid, coba lagi.");
+            return;
+        }
+        tokenUpload = tokenData.token;
+    } catch (errToken) {
+        if (typeof turnstile !== "undefined") turnstile.reset();
+        showCustomModal("error", "Gagal Memproses", "Tidak bisa terhubung ke server untuk verifikasi.");
+        return;
+    }
 
     isCurrentlyUploading = true;
     document.getElementById("status").innerHTML = "Connecting to server...";
     
-    if (nomorInput) nomorInput.disabled = true;
     if (fileInput) fileInput.disabled = true;
     if (uploadBox) {
         uploadBox.style.pointerEvents = "none";
@@ -409,6 +422,12 @@
             </div>
         `;
     }
+
+    const form = new FormData();
+    form.append("video", file);
+    form.append("nomor", nomorBersih);
+    form.append("email", emailAkun);
+    form.append("username", usernameAkun); 
 
     const xhr = new XMLHttpRequest();
 
@@ -503,31 +522,11 @@
         showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
     };
 
-    let tokenUpload;
-    try {
-        const tokenRes = await fetch(`${API}/request-upload-token`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ turnstileToken: turnstileResponse })
-        });
-        const tokenData = await tokenRes.json();
-
-        if (!tokenData.status) {
-            resetUploadState();
-            showCustomModal("error", "Verifikasi Gagal", tokenData.error || "Captcha tidak valid, coba lagi.");
-            return;
-        }
-        tokenUpload = tokenData.token;
-    } catch (errToken) {
-        resetUploadState();
-        showCustomModal("error", "Gagal Memproses", "Tidak bisa terhubung ke server untuk verifikasi.");
-        return;
-    }
-
     xhr.open("POST", API + "/upload", true);
     xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
     xhr.send(form);
 }
+
 
 function resetUploadState() {
     isCurrentlyUploading = false;
