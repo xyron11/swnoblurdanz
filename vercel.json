@@ -13,5 +13,11 @@
       "destination": "https://http.cat/403",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/__/auth/:path*",
+      "destination": "https://danzclean-auth.firebaseapp.com/__/auth/:path*"
+    }
   ]
 }
