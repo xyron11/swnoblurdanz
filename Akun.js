@@ -39,10 +39,15 @@ function cekAkunOwner() {
     }
 }
 
-// 1. Pengecekan lokal instan (Cegah crash)
 cekAkunOwner();
 
-// 2. Pengecekan ekstra dari Database Firebase saat halaman sudah selesai dimuat
+window.addEventListener("DOMContentLoaded", function() {
+    cekAkunOwner();
+    if (typeof renderSidebar === "function") {
+        renderSidebar();
+    }
+});
+
 window.addEventListener("load", function() {
     if (typeof firebase === "undefined" || !firebase.database) return;
 
@@ -62,7 +67,9 @@ window.addEventListener("load", function() {
                 
                 if (dbRole === "owner") {
                     localStorage.setItem("isOwner", "true");
-                    if (typeof renderSidebar === "function") renderSidebar();
+                    if (typeof renderSidebar === "function") {
+                        renderSidebar();
+                    }
                 }
             }
         }).catch(function(e) {});
