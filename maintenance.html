@@ -27,37 +27,9 @@ href="style.css">
 
 <body>
 
-<div
-class="sidebar"
-id="sidebar">
-
-<div class="sidebar-header">
-
-<div class="logo-box">
-
-<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20231%20%5B93ADA1D%5D.png">
-
-</div>
-
-</div>
-
-<a href="/?owner=danzclean_owner_X92ka">
-
-<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Picsart_26-05-16_18-37-06-405.png">
-
-Dashboard
-
-</a>
-
-<a href="/maintenance.html">
-
-<img src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20232%20%5BAEABB89%5D.png">
-
-Perbaikan
-
-</a>
-
-</div>
+<div class="sidebar" id="sidebar"></div>
+<script src="akun.js"></script>
+<script src="sidebar.js"></script>
 
 <div class="topbar">
 
@@ -152,16 +124,6 @@ NONAKTIFKAN
 
 </button>
 
-<button
-class="btn-logout"
-onclick="logoutOwner()">
-
-LOGOUT OWNER
-
-</button>
-
-</div>
-
 </div>
 
 </div>
@@ -204,6 +166,11 @@ OKE
 
 <script>
 
+// Hanya akun yang terdaftar di akun.js yang boleh buka halaman ini
+if (localStorage.getItem("isOwner") !== "true") {
+    location.href = "/"
+}
+
 function toggleMenu(){
 
 const sidebar =
@@ -240,45 +207,28 @@ document
 
 }
 
-function logoutOwner(){
-
-localStorage.removeItem("isOwner")
-
-showPopup(
-"Logout",
-"Logout owner berhasil"
-)
-
-setTimeout(() => {
-
-location.href = "/"
-
-},1000)
-
-}
-
 const firebaseConfig = {
 
 apiKey:
-"AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
+"AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
 
 authDomain:
-"danzzclean.firebaseapp.com",
+"danzclean-auth.firebaseapp.com",
 
 databaseURL:
-"https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
+"https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
 
 projectId:
-"danzzclean",
+"danzclean-auth",
 
 storageBucket:
-"danzzclean.firebasestorage.app",
+"danzclean-auth.firebasestorage.app",
 
 messagingSenderId:
-"254872462958",
+"450022321477",
 
 appId:
-"1:254872462958:web:a7964353bb5afa6678287f"
+"1:450022321477:web:4d3ee887b935726dd2a22c"
 
 }
 
