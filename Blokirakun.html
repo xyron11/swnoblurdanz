@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Blokir Akun - danzclean</title>
+
+<link
+href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+rel="stylesheet">
+
+<link
+rel="stylesheet"
+href="style.css">
+
+<style>
+.block-page{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:120px 16px 60px;
+    box-sizing:border-box;
+}
+.block-card{
+    width:100%;
+    max-width:560px;
+    padding:28px 24px;
+    border-radius:32px;
+    background:linear-gradient(145deg, rgba(14,18,45,.94), rgba(6,9,24,.92));
+    border:1px solid rgba(255,255,255,.06);
+    backdrop-filter:blur(16px);
+    box-shadow:0 10px 40px rgba(0,0,0,.35), 0 0 40px rgba(76,125,255,.08);
+    box-sizing:border-box;
+}
+.block-card-icon{
+    font-size:44px;
+    margin-bottom:8px;
+    text-align:center;
+}
+.block-card-title{
+    font-size:26px;
+    font-weight:800;
+    margin-bottom:4px;
+    text-align:center;
+    background:linear-gradient(135deg, #ffffff, #73a5ff);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+.block-card-desc{
+    color:#aeb8e8;
+    font-size:13px;
+    margin-bottom:20px;
+    text-align:center;
+}
+.block-search{
+    width:100%;
+    padding:13px 16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.04);
+    color:#fff;
+    font-size:14px;
+    margin-bottom:14px;
+    box-sizing:border-box;
+    outline:none;
+}
+.block-search::placeholder{ color:#7a84ad; }
+.block-count{
+    color:#7a84ad;
+    font-size:12px;
+    margin-bottom:14px;
+}
+.block-list{
+    max-height:60vh;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+.block-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px 12px;
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.05);
+}
+.block-avatar{
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#4c7dff,#00ffaa);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    color:#0a0e1a;
+    flex-shrink:0;
+    font-size:15px;
+    overflow:hidden;
+}
+.block-avatar img{ width:100%; height:100%; object-fit:cover; }
+.block-info{
+    flex:1 1 140px;
+    min-width:0;
+}
+.block-username{
+    color:#fff;
+    font-weight:600;
+    font-size:14px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.block-meta{
+    color:#7a84ad;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.block-actions{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-left:auto;
+    flex-shrink:0;
+}
+.block-status{
+    font-size:11px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+    flex-shrink:0;
+}
+.block-status.aktif{ color:#00ffaa; background:rgba(0,255,170,.1); }
+.block-status.blocked{ color:#ff4d4d; background:rgba(255,77,77,.12); }
+.block-btn{
+    border:none;
+    padding:8px 14px;
+    border-radius:12px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    flex-shrink:0;
+    white-space:nowrap;
+    width:auto;
+}
+.block-btn.do-block{ background:#ff4d4d; color:#fff; }
+.block-btn.do-unblock{ background:#00ffaa; color:#0a0e1a; }
+.block-empty{
+    text-align:center;
+    color:#7a84ad;
+    font-size:13px;
+    padding:20px 0;
+}
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+</head>
+
+<body>
+
+<div class="sidebar" id="sidebar"></div>
+<script src="akun.js"></script>
+<script src="sidebar.js"></script>
+
+<div class="topbar">
+
+<div
+class="menu-btn"
+onclick="toggleMenu()">
+
+☰
+
+</div>
+
+</div>
+
+<div
+class="overlay"
+id="overlay"
+onclick="toggleMenu()">
+</div>
+
+<div class="block-page">
+
+<div class="block-card">
+
+<div class="block-card-icon">🚫</div>
+
+<div class="block-card-title">
+Blokir Akun
+</div>
+
+<div class="block-card-desc">
+Cari akun berdasarkan username / email / no HP, lalu blokir atau buka blokir.
+</div>
+
+<input
+type="text"
+id="blockSearch"
+class="block-search"
+placeholder="Cari username, email, atau nomor HP...">
+
+<div id="blockCount" class="block-count">Memuat data akun...</div>
+
+<div id="blockList" class="block-list">
+<div class="block-empty">Memuat data akun...</div>
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-overlay" id="popupModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">
+✅
+</div>
+
+<div
+class="modal-title"
+id="popupTitle">
+
+Berhasil
+
+</div>
+
+<div
+class="modal-text"
+id="popupText">
+
+Berhasil
+
+</div>
+
+<button
+class="modal-btn"
+onclick="closePopup()">
+
+OKE
+
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+// Hanya akun yang terdaftar di akun.js yang boleh buka halaman ini
+if (localStorage.getItem("isOwner") !== "true") {
+    location.href = "/"
+}
+
+function toggleMenu(){
+
+const sidebar =
+document.getElementById("sidebar")
+
+const overlay =
+document.getElementById("overlay")
+
+sidebar.classList.toggle("active")
+
+overlay.classList.toggle("active")
+
+document.body.classList.toggle("sidebar-open")
+
+}
+
+function showPopup(title,text){
+
+document.getElementById("popupTitle").innerText = title
+
+document.getElementById("popupText").innerText = text
+
+document
+.getElementById("popupModal")
+.classList.add("active")
+
+}
+
+function closePopup(){
+
+document
+.getElementById("popupModal")
+.classList.remove("active")
+
+}
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
+
+authDomain:
+"danzclean-auth.firebaseapp.com",
+
+databaseURL:
+"https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+projectId:
+"danzclean-auth",
+
+storageBucket:
+"danzclean-auth.firebasestorage.app",
+
+messagingSenderId:
+"450022321477",
+
+appId:
+"1:450022321477:web:4d3ee887b935726dd2a22c"
+
+}
+
+firebase.initializeApp(firebaseConfig)
+
+const db =
+firebase.database()
+
+// ==== Blokir Akun ====
+
+const usersRef = db.ref("users")
+const manualUsersRef = db.ref("manual_users")
+const blockedUsersRef = db.ref("blocked_users")
+
+let daftarAkun = {}     // uid -> {uid, username, email, phone, photo}
+let daftarBlokir = {}   // uid -> {blocked, reason}
+let blockSearchQuery = ""
+
+function getOwnerUid(){
+    try{
+        const stored = localStorage.getItem("danzclean_logged_user")
+        if(!stored) return null
+        const data = JSON.parse(stored)
+        return data && data.uid ? data.uid : null
+    }catch(e){
+        return null
+    }
+}
+
+const ownerUid = getOwnerUid()
+
+function inisialAvatar(nama){
+    if(!nama) return "?"
+    return nama.trim().charAt(0).toUpperCase()
+}
+
+function renderBlockList(){
+
+    const container = document.getElementById("blockList")
+    const countEl = document.getElementById("blockCount")
+    const q = blockSearchQuery.trim().toLowerCase()
+
+    const daftar = Object.values(daftarAkun).filter(akun => {
+        if(ownerUid && akun.uid === ownerUid) return false
+        if(!q) return true
+        return (
+            (akun.username || "").toLowerCase().includes(q) ||
+            (akun.email || "").toLowerCase().includes(q) ||
+            (akun.phone || "").toLowerCase().includes(q)
+        )
+    }).sort((a,b) => (a.username || "").localeCompare(b.username || ""))
+
+    const totalAkun = Object.keys(daftarAkun).filter(uid => !(ownerUid && uid === ownerUid)).length
+    const totalBlokir = Object.values(daftarBlokir).filter(b => b && b.blocked).length
+    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir`
+
+    if(daftar.length === 0){
+        container.innerHTML = `<div class="block-empty">Tidak ada akun ditemukan.</div>`
+        return
+    }
+
+    container.innerHTML = daftar.map(akun => {
+
+        const statusBlokir = daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked
+        const avatarHtml = akun.photo
+            ? `<img src="${akun.photo}">`
+            : inisialAvatar(akun.username)
+
+        return `
+        <div class="block-row">
+            <div class="block-avatar">${avatarHtml}</div>
+            <div class="block-info">
+                <div class="block-username">${akun.username || "(tanpa username)"}</div>
+                <div class="block-meta">${akun.email || akun.phone || ""}</div>
+            </div>
+            <div class="block-actions">
+                <span class="block-status ${statusBlokir ? "blocked" : "aktif"}">
+                    ${statusBlokir ? "DIBLOKIR" : "AKTIF"}
+                </span>
+                <button
+                    class="block-btn ${statusBlokir ? "do-unblock" : "do-block"}"
+                    onclick="toggleBlokirAkun('${akun.uid}', ${statusBlokir ? "false" : "true"})">
+                    ${statusBlokir ? "Buka" : "Blokir"}
+                </button>
+            </div>
+        </div>
+        `
+    }).join("")
+}
+
+function toggleBlokirAkun(uid, blockedBaru){
+
+    const akun = daftarAkun[uid]
+
+    if(blockedBaru){
+        const reason = prompt("Alasan blokir (opsional, boleh dikosongkan):", "") || ""
+        blockedUsersRef.child(uid).set({
+            blocked: true,
+            reason: reason,
+            username: akun ? akun.username : "",
+            blockedAt: Date.now()
+        }).then(() => {
+            showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil diblokir 🚫`)
+        })
+    }else{
+        blockedUsersRef.child(uid).remove().then(() => {
+            showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil dibuka blokirnya ✅`)
+        })
+    }
+}
+
+document.getElementById("blockSearch").addEventListener("input", (e) => {
+    blockSearchQuery = e.target.value
+    renderBlockList()
+})
+
+usersRef.on("value", snap => {
+    const data = snap.val() || {}
+    Object.keys(data).forEach(uid => {
+        daftarAkun[uid] = { uid, ...data[uid] }
+    })
+    renderBlockList()
+})
+
+manualUsersRef.on("value", snap => {
+    const data = snap.val() || {}
+    Object.keys(data).forEach(uid => {
+        daftarAkun[uid] = { uid, ...data[uid] }
+    })
+    renderBlockList()
+})
+
+blockedUsersRef.on("value", snap => {
+    daftarBlokir = snap.val() || {}
+    renderBlockList()
+})
+
+</script>
+
+</body>
+</html>

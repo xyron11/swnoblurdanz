@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DanzClean - Pengaturan Akun</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="topbar">
+        <div class="menu-btn dashboard-menu" onclick="toggleMenu()">☰</div>
+    </div>
+
+    <div class="sidebar" id="sidebar"></div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="setting-container">
+        <div class="setting-card">
+            <h2 class="setting-title">Pengaturan Akun</h2>
+
+            <div class="profile-upload-section">
+                <div class="profile-avatar-wrapper">
+                    <img id="avatarPreview" src="https://ui-avatars.com/api/?name=User&background=4c7dff&color=fff" alt="Avatar">
+                    <label for="inputAvatar">Ubah</label>
+                    <input type="file" id="inputAvatar" accept="image/*" hidden>
+                </div>
+                <span id="userTypeBadge" class="account-badge">Manual Account</span>
+            </div>
+
+            <form id="settingForm" novalidate>
+                <div class="form-group-setting">
+                    <label>Username</label>
+                    <div class="phone-input-wrapper">
+                        <input type="text" id="setUsername" placeholder="Masukkan Username baru" required>
+                        <span class="phone-status-icon" id="setUsernameStatusIcon"></span>
+                    </div>
+                </div>
+
+                <div class="form-group-setting">
+                    <label>Nomor WhatsApp/HP</label>
+                    <div class="phone-input-wrapper">
+                        <input type="tel" id="setPhone" placeholder="6287948924410 / +62 879-4892-4410" required>
+                        <span class="phone-status-icon" id="setPhoneStatusIcon"></span>
+                    </div>
+                    <div class="phone-format-warning" id="setPhoneFormatWarning">
+                        Format nomor tidak valid. Hanya boleh: 6287948924410 (tanpa +, tanpa spasi) atau +62 879-4892-4410 (pakai + dan spasi)
+                    </div>
+                </div>
+
+                <div class="form-group-setting" id="passwordGroup">
+                    <label>Password Baru (Kosongkan jika tidak mau ubah)</label>
+                    <input type="password" id="setPassword" placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="btn-save" id="btnSaveSetting"><span id="btnSaveSettingText">SIMPAN PERUBAHAN</span></button>
+            </form>
+
+            <div class="danger-divider"><span>Zona Berbahaya</span></div>
+            <button type="button" class="btn-danger-zone" id="btnDeleteAccount">HAPUS AKUN</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="customModal">
+        <div class="modal-card">
+            <div class="modal-icon" id="modalIcon">⚠️</div>
+            <div class="modal-title" id="modalTitle">Info</div>
+            <div class="modal-text" id="modalText">Pesan sistem...</div>
+            <div id="modalActionContainer">
+                <button class="modal-btn" onclick="closeModal()">Kembali</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="akun.js"></script>
+    <script src="sidebar.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
+            authDomain: "danzclean-auth.firebaseapp.com",
+            databaseURL: "https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "danzclean-auth",
+            storageBucket: "danzclean-auth.firebasestorage.app",
+            messagingSenderId: "450022321477",
+            appId: "1:450022321477:web:4d3ee887b935726dd2a22c"
+        };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let loggedUser = JSON.parse(localStorage.getItem("danzclean_logged_user"));
+        if (!loggedUser) window.location.replace("/login.html");
+
+        function toggleMenu() {
+            document.getElementById("sidebar").classList.toggle("active");
+            document.getElementById("overlay").classList.toggle("active");
+            document.body.classList.toggle("sidebar-open");
+        }
+
+        function showModal(type, title, msg, onConfirm = null) {
+            const modal = document.getElementById("customModal");
+            document.getElementById("modalIcon").innerText = type === "success" ? "✅" : (type === "error" ? "❌" : "⚠️");
+            document.getElementById("modalTitle").innerText = title;
+            document.getElementById("modalText").innerText = msg;
+            
+            const action = document.getElementById("modalActionContainer");
+            if(onConfirm) {
+                action.innerHTML = `
+                    <button class="modal-btn" style="background:#ff4d4d; margin-bottom: 8px;" id="btnConfirmAction">Ya, Hapus</button>
+                    <button class="modal-btn" style="background:transparent; border:1px solid rgba(255,255,255,0.2)" onclick="closeModal()">Batal</button>
+                `;
+                document.getElementById("btnConfirmAction").onclick = onConfirm;
+            } else {
+                action.innerHTML = `<button class="modal-btn" onclick="closeModal()">Tutup</button>`;
+            }
+            // PENTING: CSS mendefinisikan animasi tampil lewat class "active", bukan "show".
+            // Ini penyebab utama popup tidak pernah muncul sebelumnya.
+            modal.classList.add("active");
+        }
+
+        function closeModal() {
+            document.getElementById("customModal").classList.remove("active");
+        }
+
+        const avatarPreview = document.getElementById("avatarPreview");
+        const setUsername = document.getElementById("setUsername");
+        const setPhone = document.getElementById("setPhone");
+        const passwordGroup = document.getElementById("passwordGroup");
+        const userTypeBadge = document.getElementById("userTypeBadge");
+
+        setUsername.value = loggedUser.username || "";
+        setPhone.value = loggedUser.phone || "";
+        if (loggedUser.photo) avatarPreview.src = loggedUser.photo;
+        
+        if (loggedUser.loginType === "google") {
+            passwordGroup.style.display = "none";
+            userTypeBadge.innerText = "Google Account";
+        }
+
+        document.getElementById("inputAvatar").addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if(file.size > 2 * 1024 * 1024) {
+                    showModal("warning", "Ukuran Gambar", "Maksimal ukuran foto adalah 2MB.");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (evt) {
+                    avatarPreview.src = evt.target.result;
+                    loggedUser.photo = evt.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function hashPassword(pw) {
+            const enc = new TextEncoder().encode(pw);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', enc);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        // Ikon SVG (bukan karakter unicode ✓/✕) supaya posisinya presisi center,
+        // tidak tergantung bentuk glyph font yang suka miring/turun.
+        const ICON_CHECK_SVG = '<svg viewBox="0 0 24 24" width="14" height="14"><polyline points="20 6 9 17 4 12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        const ICON_CROSS_SVG = '<svg viewBox="0 0 24 24" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+
+        // ==== Validasi format nomor: HANYA 2 pola berikut yang diterima ====
+        // Pola 1 (angka polos, tanpa "+", tanpa spasi/strip)  : 6287948924410
+        // Pola 2 ("+" + kode negara + spasi, sisanya boleh dipisah spasi/strip) : +62 879-4892-4410
+        // Berlaku untuk kode negara mana pun (bukan cuma 62), selama total digitnya
+        // sesuai standar E.164 (8-15 digit termasuk kode negara).
+        function isValidPhoneFormat(raw) {
+            const trimmed = raw.trim();
+
+            // Pola 1: hanya digit, tidak boleh diawali 0, panjang 8-15 digit
+            const POLA_TANPA_PLUS = /^[1-9]\d{7,14}$/;
+
+            // Pola 2: "+" + kode negara (1-4 digit, tidak diawali 0) + WAJIB spasi,
+            // lalu sisa digit boleh dikelompokkan dengan spasi dan/atau strip
+            const POLA_DENGAN_PLUS = /^\+[1-9]\d{0,3}[ -]\d+(?:[ -]\d+)*$/;
+
+            if (POLA_TANPA_PLUS.test(trimmed)) return true;
+
+            if (POLA_DENGAN_PLUS.test(trimmed)) {
+                const digitsOnly = trimmed.replace(/[^0-9]/g, '');
+                return digitsOnly.length >= 8 && digitsOnly.length <= 15;
+            }
+
+            return false;
+        }
+
+        function sanitizePhoneNumber(phone) {
+            let cleaned = phone.replace(/[^0-9]/g, '');
+            if (cleaned.startsWith('0')) {
+                cleaned = '62' + cleaned.slice(1);
+            }
+            return cleaned;
+        }
+
+        function togglePhoneFormatWarning(warningId, show) {
+            const warningEl = document.getElementById(warningId);
+            if (!warningEl) return;
+            warningEl.classList.toggle("show", show);
+        }
+
+        // ==== Cek username/nomor ke Firebase, kecualikan akun sendiri ====
+        async function checkUsernameTaken(username, excludeUid) {
+            const [usersSnap, manualSnap] = await Promise.all([
+                db.ref("users").orderByChild("username").equalTo(username).once("value"),
+                db.ref("manual_users").orderByChild("username").equalTo(username).once("value")
+            ]);
+            let taken = false;
+            usersSnap.forEach(child => { if (child.key !== excludeUid) taken = true; });
+            manualSnap.forEach(child => { if (child.key !== excludeUid) taken = true; });
+            return taken;
+        }
+
+        async function checkPhoneTaken(phone, excludeUid) {
+            const [usersSnap, manualSnap] = await Promise.all([
+                db.ref("users").orderByChild("phone").equalTo(phone).once("value"),
+                db.ref("manual_users").orderByChild("phone").equalTo(phone).once("value")
+            ]);
+            let taken = false;
+            usersSnap.forEach(child => { if (child.key !== excludeUid) taken = true; });
+            manualSnap.forEach(child => { if (child.key !== excludeUid) taken = true; });
+            return taken;
+        }
+
+        const settingBlockState = { usernameInvalid: false, phoneInvalid: false };
+        function updateSaveButtonState() {
+            const btn = document.getElementById("btnSaveSetting");
+            if (btn) btn.disabled = settingBlockState.usernameInvalid || settingBlockState.phoneInvalid;
+        }
+
+        function setupUsernameChecker(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            let debounceTimer = null;
+            let requestId = 0;
+
+            input.addEventListener("input", () => {
+                clearTimeout(debounceTimer);
+                icon.className = "phone-status-icon";
+                icon.textContent = "";
+                settingBlockState.usernameInvalid = false;
+                updateSaveButtonState();
+                requestId++;
+                const currentRequest = requestId;
+
+                const value = input.value.trim();
+                if (!value || value.length < 3) return;
+
+                icon.className = "phone-status-icon loading";
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const taken = await checkUsernameTaken(value, loggedUser.uid);
+                        if (currentRequest !== requestId) return;
+                        icon.className = "phone-status-icon " + (taken ? "invalid" : "valid");
+                        icon.innerHTML = taken ? ICON_CROSS_SVG : ICON_CHECK_SVG;
+                        settingBlockState.usernameInvalid = taken;
+                        updateSaveButtonState();
+                    } catch (err) {
+                        if (currentRequest !== requestId) return;
+                        icon.className = "phone-status-icon";
+                        icon.textContent = "";
+                        settingBlockState.usernameInvalid = false;
+                        updateSaveButtonState();
+                    }
+                }, 700);
+            });
+        }
+
+        function setupPhoneChecker(inputId, iconId, warningId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            let debounceTimer = null;
+            let requestId = 0;
+
+            input.addEventListener("input", () => {
+                clearTimeout(debounceTimer);
+                icon.className = "phone-status-icon";
+                icon.textContent = "";
+                settingBlockState.phoneInvalid = false;
+                updateSaveButtonState();
+                requestId++;
+                const currentRequest = requestId;
+
+                const raw = input.value.trim();
+                if (!raw) {
+                    togglePhoneFormatWarning(warningId, false);
+                    return;
+                }
+
+                if (!isValidPhoneFormat(raw)) {
+                    togglePhoneFormatWarning(warningId, true);
+                    return;
+                }
+                togglePhoneFormatWarning(warningId, false);
+
+                const cleaned = sanitizePhoneNumber(raw);
+                if (!cleaned || cleaned.length < 8) return;
+
+                icon.className = "phone-status-icon loading";
+
+                debounceTimer = setTimeout(async () => {
+                    try {
+                        const taken = await checkPhoneTaken(cleaned, loggedUser.uid);
+                        if (currentRequest !== requestId) return;
+                        icon.className = "phone-status-icon " + (taken ? "invalid" : "valid");
+                        icon.innerHTML = taken ? ICON_CROSS_SVG : ICON_CHECK_SVG;
+                        settingBlockState.phoneInvalid = taken;
+                        updateSaveButtonState();
+                    } catch (err) {
+                        if (currentRequest !== requestId) return;
+                        icon.className = "phone-status-icon";
+                        icon.textContent = "";
+                        settingBlockState.phoneInvalid = false;
+                        updateSaveButtonState();
+                    }
+                }, 700);
+            });
+        }
+
+        setupUsernameChecker("setUsername", "setUsernameStatusIcon");
+        setupPhoneChecker("setPhone", "setPhoneStatusIcon", "setPhoneFormatWarning");
+
+        document.getElementById("settingForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newUsername = setUsername.value.trim();
+            const newPhoneRaw = setPhone.value.trim();
+            const newPassword = document.getElementById("setPassword").value;
+
+            if(!newUsername || !newPhoneRaw) {
+                showModal("warning", "Lengkapi Data", "Username dan Nomor WhatsApp wajib diisi.");
+                return;
+            }
+
+            if (!isValidPhoneFormat(newPhoneRaw)) {
+                showModal("warning", "Nomor Tidak Valid", "Silakan masukkan nomor WhatsApp/HP yang valid.");
+                return;
+            }
+
+            if (settingBlockState.usernameInvalid) {
+                showModal("warning", "Username Sudah Dipakai", "Username tersebut sudah digunakan akun lain. Silakan pilih username lain.");
+                return;
+            }
+
+            if (settingBlockState.phoneInvalid) {
+                showModal("warning", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP tersebut sudah digunakan akun lain. Silakan gunakan nomor lain.");
+                return;
+            }
+
+            const newPhone = sanitizePhoneNumber(newPhoneRaw);
+            const dbPath = loggedUser.loginType === "google" ? "users/" + loggedUser.uid : "manual_users/" + loggedUser.uid;
+            
+            let updateData = {
+                username: newUsername,
+                phone: newPhone,
+                photo: loggedUser.photo || ""
+            };
+
+            if (loggedUser.loginType !== "google" && newPassword) {
+                if(newPassword.length < 6) {
+                    showModal("warning", "Password Lemah", "Password baru minimal 6 karakter.");
+                    return;
+                }
+                updateData.passwordHash = await hashPassword(newPassword);
+            }
+
+            const saveBtn = document.getElementById("btnSaveSetting");
+            const saveBtnText = document.getElementById("btnSaveSettingText");
+            saveBtn.disabled = true;
+            const originalText = saveBtnText.textContent;
+            saveBtnText.textContent = "MENYIMPAN...";
+
+            try {
+                await db.ref(dbPath).update(updateData);
+                
+                loggedUser.username = newUsername;
+                loggedUser.phone = newPhone;
+                localStorage.setItem("danzclean_logged_user", JSON.stringify(loggedUser));
+
+                showModal("success", "Berhasil!", "Data profil berhasil diperbarui.");
+            } catch (err) {
+                showModal("error", "Gagal Memperbarui", err.message);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtnText.textContent = originalText;
+            }
+        });
+
+        document.getElementById("btnDeleteAccount").addEventListener("click", () => {
+            showModal("warning", "Hapus Akun?", "Apakah Anda yakin ingin menghapus akun ini secara permanen? Tindakan ini tidak bisa dibatalkan.", async () => {
+                const confirmBtn = document.getElementById("btnConfirmAction");
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                    confirmBtn.textContent = "MENGHAPUS...";
+                }
+                const dbPath = loggedUser.loginType === "google" ? "users/" + loggedUser.uid : "manual_users/" + loggedUser.uid;
+                try {
+                    await db.ref(dbPath).remove();
+                    localStorage.removeItem("danzclean_logged_user");
+                    localStorage.removeItem("isOwner");
+                    window.location.replace("/login.html");
+                } catch (err) {
+                    showModal("error", "Gagal Hapus", err.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
