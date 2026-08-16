@@ -5,49 +5,26 @@ const AKUN_OWNER = [
     "danzz"
 ];
 
-async function cekAkunOwnerFirebase() {
+function cekAkunOwner() {
     try {
         const raw = localStorage.getItem("danzclean_logged_user");
+
         if (!raw) {
             localStorage.removeItem("isOwner");
-            if (typeof renderSidebar === "function") renderSidebar();
             return false;
         }
 
         const data = JSON.parse(raw);
-        const uid = data.uid;
-        const loginType = data.loginType;
-
-        let isOwner = false;
 
         const email = ((data && data.email) || "").toLowerCase().trim();
         const username = ((data && data.username) || "").toLowerCase().trim();
         const phone = ((data && data.phone) || "").toLowerCase().trim();
         const nomor = ((data && data.nomor) || "").toLowerCase().trim();
 
-        if (AKUN_OWNER.some(o => [email, username, phone, nomor].includes(o.toLowerCase().trim()))) {
-            isOwner = true;
-        }
-
-        if (typeof firebase !== "undefined" && firebase.database && uid) {
-            const dbPath = loginType === "google" ? `users/${uid}` : `manual_users/${uid}`;
-            const snap = await firebase.database().ref(dbPath).once("value");
-            
-            if (snap.exists()) {
-                const dbUser = snap.val();
-                const dbEmail = (dbUser.email || "").toLowerCase().trim();
-                const dbUsername = (dbUser.username || "").toLowerCase().trim();
-                const dbPhone = (dbUser.phone || dbUser.nomor || "").toLowerCase().trim();
-                const dbRole = (dbUser.role || "").toLowerCase().trim();
-
-                if (
-                    dbRole === "owner" ||
-                    AKUN_OWNER.some(o => [dbEmail, dbUsername, dbPhone].includes(o.toLowerCase().trim()))
-                ) {
-                    isOwner = true;
-                }
-            }
-        }
+        const isOwner = AKUN_OWNER.some(owner => {
+            const target = owner.toLowerCase().trim();
+            return target === email || target === username || target === phone || target === nomor;
+        });
 
         if (isOwner) {
             localStorage.setItem("isOwner", "true");
@@ -55,18 +32,39 @@ async function cekAkunOwnerFirebase() {
             localStorage.removeItem("isOwner");
         }
 
-        if (typeof renderSidebar === "function") {
-            renderSidebar();
-        }
-
         return isOwner;
     } catch (err) {
-        console.error("Error checking owner:", err);
-        if (typeof renderSidebar === "function") renderSidebar();
+        localStorage.removeItem("isOwner");
         return false;
     }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    cekAkunOwnerFirebase();
+// 1. Pengecekan lokal instan (Cegah crash)
+cekAkunOwner();
+
+// 2. Pengecekan ekstra dari Database Firebase saat halaman sudah selesai dimuat
+window.addEventListener("load", function() {
+    if (typeof firebase === "undefined" || !firebase.database) return;
+
+    try {
+        const raw = localStorage.getItem("danzclean_logged_user");
+        if (!raw) return;
+
+        const data = JSON.parse(raw);
+        if (!data || !data.uid) return;
+
+        const dbPath = data.loginType === "google" ? `users/${data.uid}` : `manual_users/${data.uid}`;
+        
+        firebase.database().ref(dbPath).once("value").then(snap => {
+            if (snap.exists()) {
+                const dbUser = snap.val();
+                const dbRole = (dbUser.role || "").toLowerCase().trim();
+                
+                if (dbRole === "owner") {
+                    localStorage.setItem("isOwner", "true");
+                    if (typeof renderSidebar === "function") renderSidebar();
+                }
+            }
+        }).catch(function(e) {});
+    } catch (e) {}
 });
