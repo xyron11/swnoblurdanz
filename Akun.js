@@ -1,6 +1,7 @@
 const AKUN_OWNER = [
     "caisen004@gmail.com",
-    "6285807428724",
+    "6285807428724", 
+    "admin",
     "danzz"
 ];
 
@@ -19,16 +20,15 @@ async function cekAkunOwnerFirebase() {
 
         let isOwner = false;
 
-        // 1. Pengecekan awal via LocalStorage/Daftar AKUN_OWNER
         const email = ((data && data.email) || "").toLowerCase().trim();
         const username = ((data && data.username) || "").toLowerCase().trim();
         const phone = ((data && data.phone) || "").toLowerCase().trim();
+        const nomor = ((data && data.nomor) || "").toLowerCase().trim();
 
-        if (AKUN_OWNER.some(o => [email, username, phone].includes(o.toLowerCase().trim()))) {
+        if (AKUN_OWNER.some(o => [email, username, phone, nomor].includes(o.toLowerCase().trim()))) {
             isOwner = true;
         }
 
-        // 2. Validasi Akurat Langsung dari Database Firebase (Realtime DB)
         if (typeof firebase !== "undefined" && firebase.database && uid) {
             const dbPath = loginType === "google" ? `users/${uid}` : `manual_users/${uid}`;
             const snap = await firebase.database().ref(dbPath).once("value");
@@ -37,7 +37,7 @@ async function cekAkunOwnerFirebase() {
                 const dbUser = snap.val();
                 const dbEmail = (dbUser.email || "").toLowerCase().trim();
                 const dbUsername = (dbUser.username || "").toLowerCase().trim();
-                const dbPhone = (dbUser.phone || "").toLowerCase().trim();
+                const dbPhone = (dbUser.phone || dbUser.nomor || "").toLowerCase().trim();
                 const dbRole = (dbUser.role || "").toLowerCase().trim();
 
                 if (
@@ -49,7 +49,6 @@ async function cekAkunOwnerFirebase() {
             }
         }
 
-        // 3. Simpan Status & Render Ulang Sidebar Otomatis
         if (isOwner) {
             localStorage.setItem("isOwner", "true");
         } else {
@@ -68,7 +67,6 @@ async function cekAkunOwnerFirebase() {
     }
 }
 
-// Jalankan saat script dimuat
 document.addEventListener("DOMContentLoaded", () => {
     cekAkunOwnerFirebase();
 });
