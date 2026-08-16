@@ -8,21 +8,43 @@ const SIDEBAR_MENU = [
       { href: "/tiktok.html", label: "TikTok Downloader" },
       { href: "/instagram.html", label: "Instagram Downloader" },
       { href: "/yt.html", label: "YouTube Downloader" },
-      { href: "/pinterest.html", label: "Pinterest Downloader" },
+            { href: "/pinterest.html", label: "Pinterest Downloader" },
     ],
   },
   { href: "https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y", icon: "./media/channel.png", label: "Channel WhatsApp", target: "_blank" },
   { href: "/creator.html", icon: "./media/creator.png", label: "Creator" },
   { href: "/stats.html", icon: "./media/statistik.png", label: "Statistik" },
   { href: "/rating.html", icon: "./media/rating.png", label: "Rating" },
+  { href: "/settingakun.html", icon: "./media/setting.png", label: "Setting" },
 
-  { href: "/maintenance.html", label: "Perbaikan", id: "maintenanceBtn", hidden: true },
-  { href: "#", label: "Logout Owner", id: "logoutOwnerBtn", hidden: true },
+  { href: "/maintenance.html", label: "Perbaikan", id: "maintenanceBtn", hidden: true, ownerOnly: true },
+  { href: "/blokirakun.html", label: " Blokir Akun", id: "blockAkunBtn", hidden: true, ownerOnly: true },
+  { href: "#", label: "Logout Akun", id: "userLogoutBtn" },
 ];
+
+document.addEventListener("click", (e) => {
+  if (e.target && e.target.id === "userLogoutBtn") {
+    e.preventDefault();
+    localStorage.removeItem("danzclean_logged_user");
+    localStorage.removeItem("isOwner");
+
+    if (typeof firebase !== "undefined" && firebase.auth) {
+      firebase.auth().signOut().then(() => {
+        window.location.replace("/danzclean.html");
+      }).catch(() => {
+        window.location.replace("/danzclean.html");
+      });
+    } else {
+      window.location.replace("/danzclean.html");
+    }
+  }
+});
 
 function renderSidebar() {
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) return;
+
+  const isOwner = localStorage.getItem("isOwner") === "true";
 
   let html = `
     <div class="sidebar-header">
@@ -51,9 +73,12 @@ function renderSidebar() {
       return;
     }
 
+    // Item ownerOnly hanya ditampilkan kalau akun yang login ada di daftar akun.js
+    if (item.ownerOnly && !isOwner) return;
+
     const targetAttr = item.target ? ` target="${item.target}"` : "";
     const idAttr = item.id ? ` id="${item.id}"` : "";
-    const styleAttr = item.hidden ? ` style="display:none;"` : "";
+    const styleAttr = item.hidden && !item.ownerOnly ? ` style="display:none;"` : "";
     const iconHtml = item.icon ? `<img src="${item.icon}">` : "";
 
     html += `<a href="${item.href}"${targetAttr}${idAttr}${styleAttr}>${iconHtml}${item.label}</a>\n`;
