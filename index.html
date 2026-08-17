@@ -333,6 +333,8 @@
         }
 
     async function upload() {
+    if (isCurrentlyUploading) return;
+
     const fileInput = document.getElementById("file");
     const uploadBox = document.querySelector(".upload-box");
     const btn = document.getElementById("uploadBtn");
@@ -379,6 +381,9 @@
         return;
     }
 
+    isCurrentlyUploading = true;
+    if (btn) btn.disabled = true;
+
     let tokenUpload;
     try {
         const tokenRes = await fetch(`${API}/request-upload-token`, {
@@ -389,12 +394,16 @@
         const tokenData = await tokenRes.json();
 
         if (!tokenData.status) {
+            isCurrentlyUploading = false;
+            if (btn) btn.disabled = false;
             if (typeof turnstile !== "undefined") turnstile.reset();
             showCustomModal("error", "Verifikasi Gagal", tokenData.error || "Captcha tidak valid, coba lagi.");
             return;
         }
         tokenUpload = tokenData.token;
-    } catch (errToken) {
+    l} catch (errToken) {
+        isCurrentlyUploading = false;
+        if (btn) btn.disabled = false;
         if (typeof turnstile !== "undefined") turnstile.reset();
         showCustomModal("error", "Gagal Memproses", "Tidak bisa terhubung ke server untuk verifikasi.");
         return;
