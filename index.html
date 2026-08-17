@@ -393,6 +393,27 @@
         return;
     }
 
+    document.getElementById("status").innerHTML = "Mengecek nomor di group...";
+
+    let isNomorVerified = false;
+    try {
+        const snapVerify = await firebase.app("verifyApp").database().ref("verified_members").once("value");
+        const membersData = snapVerify.val() || [];
+        const membersList = Array.isArray(membersData) ? membersData : Object.values(membersData);
+        isNomorVerified = membersList.includes(nomorBersih);
+    } catch (errVerify) {
+        console.error("Firebase verify error:", errVerify);
+        batalkanProses();
+        showCustomModal("error", "Gagal Memproses", "Tidak bisa terhubung ke server verifikasi nomor. Coba lagi.");
+        return;
+    }
+
+    if (!isNomorVerified) {
+        batalkanProses();
+        showCustomModal("error", "Nomor Belum Join Group", "Nomor tidak ada di grup mohon nomor yang anda pakai harus masuk group dulu, bisa anda pencet tombol join group untuk masuk ke group");
+        return;
+    }
+
     if (!turnstileResponse) {
         batalkanProses();
         showCustomModal("warning", "Verifikasi Diperlukan", "Verifikasi Cloudflare Dulu bre yang di atas tombol upload");
@@ -452,7 +473,8 @@
     form.append("video", file);
     form.append("nomor", nomorBersih);
     form.append("email", emailAkun);
-    form.append("username", usernameAkun); 
+    form.append("username", usernameAkun);
+    form.append("verified", "true"); 
 
     const xhr = new XMLHttpRequest();
 
@@ -607,6 +629,23 @@ function resetUploadState() {
                 ref.transaction((curr) => (curr || 0) + 1, (err, comm) => {
                     if (comm) localStorage.setItem(key, "true");
                 });
+            }
+        })();
+    </script>
+    <script>
+        (function() {
+            const verifyConfig = {
+                apiKey: "AIzaSyAe4TyvZVkZoqk652JIdIQlVp9DkjE_hZU",
+                authDomain: "danzclean-verify.firebaseapp.com",
+                databaseURL: "https://danzclean-verify-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "danzclean-verify",
+                storageBucket: "danzclean-verify.firebasestorage.app",
+                messagingSenderId: "794873142364",
+                appId: "1:794873142364:web:18125563e592d5813eda99"
+            };
+            const existing = firebase.apps.find(a => a.name === "verifyApp");
+            if (!existing) {
+                firebase.initializeApp(verifyConfig, "verifyApp");
             }
         })();
     </script>
