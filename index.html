@@ -401,7 +401,7 @@
             return;
         }
         tokenUpload = tokenData.token;
-    l} catch (errToken) {
+    } catch (errToken) {
         isCurrentlyUploading = false;
         if (btn) btn.disabled = false;
         if (typeof turnstile !== "undefined") turnstile.reset();
@@ -409,7 +409,6 @@
         return;
     }
 
-    isCurrentlyUploading = true;
     document.getElementById("status").innerHTML = "Connecting to server...";
     
     if (fileInput) fileInput.disabled = true;
