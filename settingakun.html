@@ -137,6 +137,25 @@
         setUsername.value = loggedUser.username || "";
         setPhone.value = loggedUser.phone || "";
         if (loggedUser.photo) avatarPreview.src = loggedUser.photo;
+
+        // Ambil data terbaru langsung dari Firebase (biar nomor/username yang
+        // diubah dari halaman lain, mis. Blokir Akun oleh owner, ikut ter-update)
+        const freshDbPath = loggedUser.loginType === "google" ? "users/" + loggedUser.uid : "manual_users/" + loggedUser.uid;
+        db.ref(freshDbPath).once("value").then(snap => {
+            const freshData = snap.val();
+            if (!freshData) return;
+
+            setUsername.value = freshData.username || loggedUser.username || "";
+            setPhone.value = freshData.phone || loggedUser.phone || "";
+            if (freshData.photo) avatarPreview.src = freshData.photo;
+
+            loggedUser.username = freshData.username || loggedUser.username;
+            loggedUser.phone = freshData.phone || loggedUser.phone;
+            loggedUser.photo = freshData.photo || loggedUser.photo;
+            localStorage.setItem("danzclean_logged_user", JSON.stringify(loggedUser));
+        }).catch(() => {
+            // Kalau gagal ambil data terbaru, tetap pakai data cache localStorage yang sudah diisi di atas
+        });
         
         if (loggedUser.loginType === "google") {
             passwordGroup.style.display = "none";
