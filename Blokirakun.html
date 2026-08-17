@@ -128,6 +128,42 @@ href="style.css">
     overflow:hidden;
     text-overflow:ellipsis;
 }
+.block-phone{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:2px;
+    flex-wrap:nowrap;
+}
+.block-phone-text{
+    color:#7a84ad;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    flex:1 1 auto;
+    min-width:0;
+}
+.block-edit-phone{
+    border:none;
+    background:rgba(76,125,255,.15);
+    color:#73a5ff;
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    flex:0 0 auto;
+    width:auto;
+    box-shadow:none;
+    letter-spacing:normal;
+    line-height:1.6;
+}
+.block-edit-phone:hover{
+    background:rgba(76,125,255,.28);
+    transform:none;
+    box-shadow:none;
+    filter:none;
+}
 .block-actions{
     display:flex;
     align-items:center;
@@ -163,6 +199,31 @@ href="style.css">
     color:#7a84ad;
     font-size:13px;
     padding:20px 0;
+}
+.modal-input{
+    width:100%;
+    padding:13px 16px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.04);
+    color:#fff;
+    font-size:14px;
+    margin-bottom:18px;
+    box-sizing:border-box;
+    outline:none;
+    text-align:left;
+}
+.modal-input::placeholder{ color:#7a84ad; }
+.modal-btn-row{
+    display:flex;
+    gap:10px;
+}
+.modal-btn-row .modal-btn{
+    width:100%;
+}
+.modal-btn.secondary{
+    background:rgba(255,255,255,.06);
+    color:#aeb8e8;
 }
 </style>
 
@@ -257,6 +318,56 @@ onclick="closePopup()">
 OKE
 
 </button>
+
+</div>
+
+</div>
+
+<div class="modal-overlay" id="phoneModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">📱</div>
+
+<div class="modal-title">Ubah Nomor HP</div>
+
+<div class="modal-text" id="phoneModalName">Masukkan nomor HP baru.</div>
+
+<input
+type="text"
+id="phoneModalInput"
+class="modal-input"
+placeholder="Contoh: 6281234567890">
+
+<div class="modal-btn-row">
+<button class="modal-btn secondary" onclick="closePhoneModal()">Batal</button>
+<button class="modal-btn" onclick="simpanNomorAkun()">Simpan</button>
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-overlay" id="blockModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">🚫</div>
+
+<div class="modal-title">Blokir Akun</div>
+
+<div class="modal-text" id="blockModalName">Berikan alasan blokir (opsional).</div>
+
+<input
+type="text"
+id="blockModalInput"
+class="modal-input"
+placeholder="Alasan blokir (opsional)">
+
+<div class="modal-btn-row">
+<button class="modal-btn secondary" onclick="closeBlockModal()">Batal</button>
+<button class="modal-btn" onclick="konfirmasiBlokirAkun()">Blokir</button>
+</div>
 
 </div>
 
@@ -400,7 +511,11 @@ function renderBlockList(){
             <div class="block-avatar">${avatarHtml}</div>
             <div class="block-info">
                 <div class="block-username">${akun.username || "(tanpa username)"}</div>
-                <div class="block-meta">${akun.email || akun.phone || ""}</div>
+                <div class="block-meta">${akun.email || ""}</div>
+                <div class="block-phone">
+                    <span class="block-phone-text">${akun.phone || "(tidak ada nomor)"}</span>
+                    <button class="block-edit-phone" onclick="editNomorAkun('${akun.uid}')">✏️ Ubah</button>
+                </div>
             </div>
             <div class="block-actions">
                 <span class="block-status ${statusBlokir ? "blocked" : "aktif"}">
@@ -417,25 +532,91 @@ function renderBlockList(){
     }).join("")
 }
 
+let pendingBlockUid = null
+
 function toggleBlokirAkun(uid, blockedBaru){
 
     const akun = daftarAkun[uid]
 
     if(blockedBaru){
-        const reason = prompt("Alasan blokir (opsional, boleh dikosongkan):", "") || ""
-        blockedUsersRef.child(uid).set({
-            blocked: true,
-            reason: reason,
-            username: akun ? akun.username : "",
-            blockedAt: Date.now()
-        }).then(() => {
-            showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil diblokir 🚫`)
-        })
+        pendingBlockUid = uid
+        document.getElementById("blockModalName").innerText =
+            `Berikan alasan blokir untuk "${akun ? akun.username : uid}" (opsional).`
+        document.getElementById("blockModalInput").value = ""
+        document.getElementById("blockModal").classList.add("active")
     }else{
         blockedUsersRef.child(uid).remove().then(() => {
             showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil dibuka blokirnya ✅`)
         })
     }
+}
+
+function closeBlockModal(){
+    document.getElementById("blockModal").classList.remove("active")
+    pendingBlockUid = null
+}
+
+function konfirmasiBlokirAkun(){
+
+    if(!pendingBlockUid) return
+
+    const uid = pendingBlockUid
+    const akun = daftarAkun[uid]
+    const reason = document.getElementById("blockModalInput").value.trim()
+
+    blockedUsersRef.child(uid).set({
+        blocked: true,
+        reason: reason,
+        username: akun ? akun.username : "",
+        blockedAt: Date.now()
+    }).then(() => {
+        closeBlockModal()
+        showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil diblokir 🚫`)
+    })
+}
+
+let pendingPhoneUid = null
+
+function editNomorAkun(uid){
+
+    const akun = daftarAkun[uid]
+    pendingPhoneUid = uid
+
+    document.getElementById("phoneModalName").innerText =
+        `Masukkan nomor HP baru untuk "${akun ? akun.username : uid}".`
+    document.getElementById("phoneModalInput").value = akun && akun.phone ? akun.phone : ""
+    document.getElementById("phoneModal").classList.add("active")
+}
+
+function closePhoneModal(){
+    document.getElementById("phoneModal").classList.remove("active")
+    pendingPhoneUid = null
+}
+
+function simpanNomorAkun(){
+
+    if(!pendingPhoneUid) return
+
+    const uid = pendingPhoneUid
+    const akun = daftarAkun[uid]
+    const nomorTrim = document.getElementById("phoneModalInput").value.trim()
+
+    usersRef.child(uid).once("value").then(snap => {
+        if(snap.exists()){
+            return usersRef.child(uid).update({ phone: nomorTrim })
+        }
+        return manualUsersRef.child(uid).once("value").then(snap2 => {
+            if(snap2.exists()){
+                return manualUsersRef.child(uid).update({ phone: nomorTrim })
+            }
+            return manualUsersRef.child(uid).update({ phone: nomorTrim, username: akun ? akun.username : "" })
+        })
+    }).then(() => {
+        closePhoneModal()
+        showPopup("Berhasil", `Nomor HP akun "${akun ? akun.username : uid}" berhasil diubah ✅`)
+    }).catch(() => {
+        showPopup("Gagal", "Terjadi kesalahan saat mengubah nomor HP.")
+    })
 }
 
 document.getElementById("blockSearch").addEventListener("input", (e) => {
