@@ -470,7 +470,7 @@
     }
 
         try {
-        const res = await uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload);
+        const res = await uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload, isNomorVerified);
         tampilkanHasilUpload(res);
     } catch (errUpload) {
         resetUploadState();
@@ -529,7 +529,7 @@ function uploadSatuChunk(uploadId, chunkIndex, blob, tokenUpload, onProgress) {
 
 // Upload file secara bertahap (chunk demi chunk) biar tahan koneksi lambat/putus-nyambung
 // dan nggak kena limit ukuran request dari Cloudflare.
-async function uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload) {
+async function uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload, isNomorVerified) {
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
     const initRes = await fetch(`${API}/upload-init`, {
@@ -543,7 +543,8 @@ async function uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, to
             totalChunks,
             nomor: nomorBersih,
             email: emailAkun,
-            username: usernameAkun
+            username: usernameAkun,
+            verified: isNomorVerified ? "true" : "false"
         })
     });
     const initData = await initRes.json();
