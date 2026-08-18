@@ -469,194 +469,109 @@
         `;
     }
 
-        try {
-        const res = await uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload, isNomorVerified);
-        tampilkanHasilUpload(res);
-    } catch (errUpload) {
-        resetUploadState();
-        document.getElementById("status").innerHTML = errUpload.message || "Gagal mengunggah file.";
-        showCustomModal("error", "Masalah Jaringan", errUpload.message || "Gagal mengunggah file. Koneksi jaringan terputus atau tidak stabil.");
-    }
-}
+    const form = new FormData();
+    form.append("video", file);
+    form.append("nomor", nomorBersih);
+    form.append("email", emailAkun);
+    form.append("username", usernameAkun);
+    form.append("verified", "true"); 
 
-// Ukuran tiap potongan file. Dijaga jauh di bawah limit body Cloudflare (100MB)
-// dan cukup kecil biar tiap potongan cepat kekirim walau sinyal lemah.
-const CHUNK_SIZE = 4 * 1024 * 1024; // 4MB per chunk
-const CHUNK_MAX_RETRY = 5;
+    const xhr = new XMLHttpRequest();
 
-// Upload satu chunk lewat XHR, dibungkus Promise biar bisa di-retry pakai await.
-function uploadSatuChunk(uploadId, chunkIndex, blob, tokenUpload, onProgress) {
-    return new Promise((resolve, reject) => {
-        const chunkForm = new FormData();
-        chunkForm.append("chunk", blob);
-        chunkForm.append("uploadId", uploadId);
-        chunkForm.append("chunkIndex", chunkIndex);
+    xhr.upload.onprogress = function (e) {
+        if (e.lengthComputable) {
+            const percentComplete = Math.round((e.loaded / e.total) * 100);
+            const displayPercent = Math.round(percentComplete * 0.95);
 
-        const chunkXhr = new XMLHttpRequest();
-
-        chunkXhr.upload.onprogress = function (e) {
-            if (e.lengthComputable && onProgress) onProgress(e.loaded);
-        };
-
-        chunkXhr.onload = function () {
-            if (chunkXhr.status >= 200 && chunkXhr.status < 300) {
-                try {
-                    const r = JSON.parse(chunkXhr.responseText);
-                    if (r.status) resolve();
-                    else reject(new Error(r.error || "Gagal mengirim bagian file"));
-                } catch (e) {
-                    reject(new Error("Respon server rusak saat mengirim bagian file"));
-                }
-            } else {
-                reject(new Error(`Server Error (${chunkXhr.status}) saat mengirim bagian file`));
-            }
-        };
-
-        chunkXhr.onerror = function () {
-            reject(new Error("Koneksi terputus saat mengirim bagian file"));
-        };
-
-        chunkXhr.timeout = 60000; // tiap chunk kecil, 60 detik cukup lebar
-        chunkXhr.ontimeout = function () {
-            reject(new Error("Koneksi terlalu lambat saat mengirim bagian file"));
-        };
-
-        chunkXhr.open("POST", API + "/upload-chunk", true);
-        chunkXhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
-        chunkXhr.send(chunkForm);
-    });
-}
-
-// Upload file secara bertahap (chunk demi chunk) biar tahan koneksi lambat/putus-nyambung
-// dan nggak kena limit ukuran request dari Cloudflare.
-async function uploadFileInChunks(file, nomorBersih, emailAkun, usernameAkun, tokenUpload, isNomorVerified) {
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-
-    const initRes = await fetch(`${API}/upload-init`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + tokenUpload
-        },
-        body: JSON.stringify({
-            filename: file.name,
-            totalChunks,
-            nomor: nomorBersih,
-            email: emailAkun,
-            username: usernameAkun,
-            verified: isNomorVerified ? "true" : "false"
-        })
-    });
-    const initData = await initRes.json();
-    if (!initData.status) throw new Error(initData.error || "Gagal memulai sesi upload");
-    const uploadId = initData.uploadId;
-
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-    let bytesSelesai = 0;
-
-    const updateProgress = (bytesTambahan) => {
-        const totalTerkirim = bytesSelesai + bytesTambahan;
-        const percentComplete = Math.min(100, Math.round((totalTerkirim / file.size) * 100));
-        const displayPercent = Math.round(percentComplete * 0.95);
-        document.getElementById("status").innerHTML = `Memproses video... (${percentComplete}%)`;
-        if (pBar) pBar.style.width = displayPercent + "%";
-        if (pText) pText.innerText = `UPLOADING... (${displayPercent}%)`;
+            document.getElementById("status").innerHTML = `Memproses video... (${percentComplete}%)`;
+            
+            const pBar = document.getElementById("btnProgressBar");
+            const pText = document.getElementById("btnProgressText");
+            if (pBar) pBar.style.width = displayPercent + "%";
+            if (pText) pText.innerText = `UPLOADING... (${displayPercent}%)`;
+        }
     };
 
-    for (let i = 0; i < totalChunks; i++) {
-        const start = i * CHUNK_SIZE;
-        const end = Math.min(file.size, start + CHUNK_SIZE);
-        const blob = file.slice(start, end);
-        const ukuranChunk = end - start;
-
-        let attempt = 0;
-        let berhasil = false;
-        let errorTerakhir = null;
-
-        while (attempt < CHUNK_MAX_RETRY && !berhasil) {
+    xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
             try {
-                await uploadSatuChunk(uploadId, i, blob, tokenUpload, (loaded) => updateProgress(loaded));
-                berhasil = true;
-            } catch (err) {
-                errorTerakhir = err;
-                attempt++;
-                if (attempt < CHUNK_MAX_RETRY) {
-                    document.getElementById("status").innerHTML = `Koneksi bermasalah, mencoba ulang bagian ${i + 1}/${totalChunks}...`;
-                    await new Promise(r => setTimeout(r, 1200 * attempt)); // makin lama makin nunggu (backoff)
-                }
-            }
-        }
+                const res = JSON.parse(xhr.responseText);
 
-        if (!berhasil) {
-            throw errorTerakhir || new Error("Gagal mengunggah file setelah beberapa kali percobaan");
-        }
+                if (res.status && res.id) {
+                    document.getElementById("status").innerHTML = "Menunggu antrean & PROSES HD...";
 
-        bytesSelesai += ukuranChunk;
-        updateProgress(0);
-    }
+                    const pBar = document.getElementById("btnProgressBar");
+                    const pText = document.getElementById("btnProgressText");
+                    if (pBar) pBar.style.width = "96%";
+                    if (pText) pText.innerText = "PROSES HD... (96%)"; 
 
-    const completeRes = await fetch(`${API}/upload-complete`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + tokenUpload
-        },
-        body: JSON.stringify({ uploadId })
-    });
-    return await completeRes.json();
-}
+                    const intervalCek = setInterval(async () => {
+                        try {
+                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
+                            if (!cekReq.ok) return; 
 
-// Lanjutan setelah server nerima file utuh: nunggu antrean & polling proses render HD.
-// Ini logic yang sama persis kayak sebelumnya, cuma dipisah jadi function sendiri.
-function tampilkanHasilUpload(res) {
-    if (res.status && res.id) {
-        document.getElementById("status").innerHTML = "Menunggu antrean & PROSES HD...";
+                            const statusData = await cekReq.json();
 
-        const pBar = document.getElementById("btnProgressBar");
-        const pText = document.getElementById("btnProgressText");
-        if (pBar) pBar.style.width = "96%";
-        if (pText) pText.innerText = "PROSES HD... (96%)";
+                            if (statusData.status === "proses") {
+                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+                                if (pBar) pBar.style.width = "98%";
+                                if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
+                            } 
+                            else if (statusData.status === "selesai") {
+                                if (pBar) pBar.style.width = "100%";
+                                if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
 
-        const intervalCek = setInterval(async () => {
-            try {
-                const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
-                if (!cekReq.ok) return;
+                                await new Promise(r => setTimeout(r, 600));
+                                clearInterval(intervalCek); 
+                                
+                                resetUploadState();
+                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                            } 
+                            else if (statusData.status === "error") {
+                                clearInterval(intervalCek);
+                                throw new Error(statusData.message);
+                            }
+                        } catch (errCek) {
+                            clearInterval(intervalCek);
+                            resetUploadState();
+                            document.getElementById("status").innerHTML = errCek.message;
+                            showCustomModal("error", "Gagal Memproses", errCek.message);
+                        }
+                    }, 3000); 
 
-                const statusData = await cekReq.json();
-
-                if (statusData.status === "proses") {
-                    document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
-                    if (pBar) pBar.style.width = "98%";
-                    if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
-                }
-                else if (statusData.status === "selesai") {
-                    if (pBar) pBar.style.width = "100%";
-                    if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
-
-                    await new Promise(r => setTimeout(r, 600));
-                    clearInterval(intervalCek);
-
+                } else {
                     resetUploadState();
-                    showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                    document.getElementById("status").innerHTML = res.error || "Gagal memproses";
+                    showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
                 }
-                else if (statusData.status === "error") {
-                    clearInterval(intervalCek);
-                    throw new Error(statusData.message);
-                }
-            } catch (errCek) {
-                clearInterval(intervalCek);
+            } catch (err) {
                 resetUploadState();
-                document.getElementById("status").innerHTML = errCek.message;
-                showCustomModal("error", "Gagal Memproses", errCek.message);
+                document.getElementById("status").innerHTML = "Respon server rusak.";
+                showCustomModal("error", "Gagal Memproses", "Server mengirimkan respon HTML/Rusak (Bukan JSON).");
             }
-        }, 3000);
+        } else {
+            resetUploadState();
+            document.getElementById("status").innerHTML = `Server Error (${xhr.status})`;
+            showCustomModal("error", "Server Error", `Gagal mengunggah file. Server merespon dengan status ${xhr.status}.`);
+        }
+    };
 
-    } else {
+    xhr.onerror = function () {
         resetUploadState();
-        document.getElementById("status").innerHTML = res.error || "Gagal memproses";
-        showCustomModal("error", "Gagal Memproses", res.error || "Terjadi kesalahan backend.");
-    }
+        document.getElementById("status").innerHTML = "Koneksi terputus.";
+        showCustomModal("error", "Masalah Jaringan", "Gagal mengirim data. Koneksi jaringan terputus atau tidak stabil.");
+    };
+
+    xhr.timeout = 300000; 
+    xhr.ontimeout = function () {
+        resetUploadState();
+        document.getElementById("status").innerHTML = "Upload Timeout.";
+        showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
+    };
+
+    xhr.open("POST", API + "/upload", true);
+    xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
+    xhr.send(form);
 }
 
 
