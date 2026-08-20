@@ -333,6 +333,16 @@
             }
 
             const newPhone = setPhoneCtrl.fullDigits;
+
+            const saveBtnPre = document.getElementById("btnSaveSetting");
+            saveBtnPre.disabled = true;
+            const finalPhoneTaken = await checkPhoneTaken(newPhone, loggedUser.uid);
+            if (finalPhoneTaken) {
+                saveBtnPre.disabled = false;
+                showModal("warning", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP tersebut baru saja digunakan akun lain. Silakan gunakan nomor lain.");
+                return;
+            }
+
             const dbPath = loggedUser.loginType === "google" ? "users/" + loggedUser.uid : "manual_users/" + loggedUser.uid;
             
             let updateData = {
@@ -344,6 +354,7 @@
             if (loggedUser.loginType !== "google" && newPassword) {
                 if(newPassword.length < 6) {
                     showModal("warning", "Password Lemah", "Password baru minimal 6 karakter.");
+                    saveBtnPre.disabled = false;
                     return;
                 }
                 updateData.passwordHash = await hashPassword(newPassword);
