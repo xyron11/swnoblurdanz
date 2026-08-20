@@ -18,3 +18,13 @@ const FIREBASE_CONFIG_MAIN = {
     messagingSenderId: "254872462958",
     appId: "1:254872462958:web:a7964353bb5afa6678287f"
 };
+
+const FIREBASE_CONFIG_VERIFY = {
+    apiKey: "AIzaSyAe4TyvZVkZoqk652JIdIQlVp9DkjE_hZU",
+    authDomain: "danzclean-verify.firebaseapp.com",
+    databaseURL: "https://danzclean-verify-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "danzclean-verify",
+    storageBucket: "danzclean-verify.firebasestorage.app",
+    messagingSenderId: "794873142364",
+    appId: "1:794873142364:web:18125563e592d5813eda99"
+};
