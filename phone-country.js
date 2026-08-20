@@ -97,8 +97,16 @@
         let out = digits.slice(0, 3);
         let rest = digits.slice(3);
         while (rest.length > 0) {
-            out += "-" + rest.slice(0, 4);
-            rest = rest.slice(4);
+            let take = 4;
+            // Kalau sisa setelah ambil 4 digit cuma nyisain 1 digit,
+            // gabungkan aja ke kelompok ini (jadi 5 digit) daripada
+            // bikin kelompok baru isi 1 digit sendirian. Misal 12 digit
+            // jadi 857-9589-22011, bukan 857-9589-2201-1.
+            if (rest.length - take === 1) {
+                take = 5;
+            }
+            out += "-" + rest.slice(0, take);
+            rest = rest.slice(take);
         }
         return out;
     }
