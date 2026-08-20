@@ -3,7 +3,7 @@
 
 
     const COUNTRIES = [
-        { name: "Indonesia", dial: "62", iso2: "ID", min: 8, max: 11 },
+        { name: "Indonesia", dial: "62", iso2: "ID", min: 8, max: 12 },
         { name: "Malaysia", dial: "60", iso2: "MY", min: 8, max: 10 },
         { name: "Singapura", dial: "65", iso2: "SG", min: 8, max: 8 },
         { name: "Thailand", dial: "66", iso2: "TH", min: 8, max: 9 },
