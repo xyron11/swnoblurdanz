@@ -11,7 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="phone-country.js"></script>
     
     <style>
         .hidden-element {
@@ -62,12 +62,13 @@
                     </div>
                     <div class="form-group">
                         <label for="inputGooglePhone">Nomor WhatsApp/HP</label>
-                        <div class="phone-input-wrapper">
-                            <input type="tel" id="inputGooglePhone" placeholder="6287948924410 / +62 879-4892-4410" required>
+                        <div class="phone-input-wrapper" id="googlePhoneWrapper">
+                            <input type="tel" id="inputGooglePhone" placeholder="858-0743-8758" inputmode="numeric" autocomplete="off" required>
                             <span class="phone-status-icon" id="googlePhoneStatusIcon"></span>
                         </div>
+                        <div class="phone-format-hint" id="googlePhoneFormatHint"></div>
                         <div class="phone-format-warning" id="googlePhoneFormatWarning">
-                            Format nomor tidak valid. Hanya boleh: 6287948924410 (tanpa +, tanpa spasi) atau +62 879-4892-4410 (pakai + dan spasi)
+                            Jumlah digit nomor tidak sesuai untuk negara yang dipilih. Cek kembali nomornya.
                         </div>
                     </div>
                     <button type="submit" class="btn-auth-primary" id="btnSubmitGooglePhone">
@@ -96,19 +97,20 @@
                     <div class="form-group" id="groupEmail">
                         <label for="inputEmail">Alamat Email</label>
                         <div class="phone-input-wrapper">
-                            <input type="email" id="inputEmail" placeholder="contoh@domain.com">
+                            <input type="email" id="inputEmail" placeholder="contoh@gmail.com">
                             <span class="phone-status-icon" id="emailStatusIcon"></span>
                         </div>
                     </div>
 
                     <div class="form-group" id="groupPhone">
                         <label for="inputPhone">Nomor WhatsApp/HP</label>
-                        <div class="phone-input-wrapper">
-                            <input type="tel" id="inputPhone" placeholder="6287948924410 / +62 879-4892-4410">
+                        <div class="phone-input-wrapper" id="manualPhoneWrapper">
+                            <input type="tel" id="inputPhone" placeholder="858-0743-8758" inputmode="numeric" autocomplete="off">
                             <span class="phone-status-icon" id="emailPhoneStatusIcon"></span>
                         </div>
+                        <div class="phone-format-hint" id="manualPhoneFormatHint"></div>
                         <div class="phone-format-warning" id="emailPhoneFormatWarning">
-                            Format nomor tidak valid. Hanya boleh: 6287948924410 (tanpa +, tanpa spasi) atau +62 879-4892-4410 (pakai + dan spasi)
+                            Jumlah digit nomor tidak sesuai untuk negara yang dipilih. Cek kembali nomornya.
                         </div>
                     </div>
 
@@ -121,6 +123,10 @@
                             <span class="strength-bar" data-bar="3"></span>
                         </div>
                         <div class="password-strength-label" id="passwordStrengthLabel"></div>
+                    </div>
+
+                    <div class="auth-toggle-row" id="forgotPasswordRow">
+                        <span class="btn-auth-link" id="forgotPasswordLink">Lupa password?</span>
                     </div>
 
                     <div class="inline-error-text" id="loginErrorText"></div>
@@ -150,6 +156,56 @@
 
                     <button type="button" class="btn-auth-link" id="btnResendOtp">Kirim Ulang Kode OTP</button>
                 </form>
+
+                <form id="stepForgotEmailForm" class="auth-form hidden-element">
+                    <div class="otp-notice">
+                        Masukkan email akun kamu. Kami akan kirim kode OTP untuk reset password.
+                    </div>
+                    <div class="form-group">
+                        <label for="inputForgotEmail">Alamat Email</label>
+                        <input type="email" id="inputForgotEmail" placeholder="contoh@gmail.com">
+                    </div>
+                    <div class="inline-error-text" id="forgotEmailErrorText"></div>
+                    <button type="submit" class="btn-auth-primary" id="btnSendForgotOtp">
+                        <span class="btn-text">KIRIM KODE OTP</span>
+                    </button>
+                    <div class="auth-toggle-row">
+                        <span class="btn-auth-link" id="btnBackToLoginFromForgot">Kembali ke Login</span>
+                    </div>
+                </form>
+
+                <form id="stepForgotOtpForm" class="auth-form hidden-element">
+                    <div class="otp-notice">
+                        Kode OTP telah dikirim ke <strong id="displayForgotEmail">email Anda</strong>.
+                    </div>
+                    <div class="form-group">
+                        <label for="inputForgotOtp">Kode OTP (6 Digit)</label>
+                        <input type="text" id="inputForgotOtp" placeholder="123456" maxlength="6" required style="letter-spacing: 4px; font-weight: 700;">
+                    </div>
+                    <button type="submit" class="btn-auth-primary" id="btnVerifyForgotOtp">
+                        <span class="btn-text">VERIFIKASI KODE</span>
+                    </button>
+                    <button type="button" class="btn-auth-link" id="btnResendForgotOtp">Kirim Ulang Kode OTP</button>
+                </form>
+
+                <form id="stepNewPasswordForm" class="auth-form hidden-element">
+                    <div class="otp-notice">
+                        Buat password baru untuk akun kamu.
+                    </div>
+                    <div class="form-group">
+                        <label for="inputNewPassword">Password Baru</label>
+                        <input type="password" id="inputNewPassword" placeholder="Minimal 6 karakter">
+                        <div class="password-strength-bars" id="newPasswordStrengthBars">
+                            <span class="strength-bar" data-bar="1"></span>
+                            <span class="strength-bar" data-bar="2"></span>
+                            <span class="strength-bar" data-bar="3"></span>
+                        </div>
+                        <div class="password-strength-label" id="newPasswordStrengthLabel"></div>
+                    </div>
+                    <button type="submit" class="btn-auth-primary" id="btnSubmitNewPassword">
+                        <span class="btn-text">SIMPAN PASSWORD BARU</span>
+                    </button>
+                </form>
             </div>
 
         </div>
@@ -166,53 +222,80 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="firebase-config.js"></script>
     <script>
         window.addEventListener("error", function (e) {
             alert("Terjadi error di halaman: " + (e.message || "tidak diketahui") + "\nBaris: " + e.lineno);
         });
     </script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
-            authDomain: "danzclean.arisu.biz.id",
-            databaseURL: "https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "danzclean-auth",
-            storageBucket: "danzclean-auth.firebasestorage.app",
-            messagingSenderId: "450022321477",
-            appId: "1:450022321477:web:4d3ee887b935726dd2a22c",
-            measurementId: "G-LSCQ9MKPZ6"
-        };
-
         if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(FIREBASE_CONFIG_AUTH);
         }
 
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ==== Konfigurasi EmailJS ====
-        const EMAILJS_PUBLIC_KEY = "_kJxKlSMmKF2m2RRF";
-        const EMAILJS_SERVICE_ID = "service_b6f3tgc";
-        const EMAILJS_TEMPLATE_ID = "template_18yssd1";
-        try {
-            if (typeof emailjs !== "undefined") {
-                emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
-            } else {
-                console.warn("EmailJS SDK gagal dimuat (cek koneksi/CDN).");
+        
+
+        function buildBrevoErrorMessage(errData) {
+            const code = (errData && errData.code || "").toLowerCase();
+            const msg = (errData && errData.message || "").toLowerCase();
+            const isQuota = code.includes("credit") || code.includes("quota") || code.includes("limit")
+                || msg.includes("credit") || msg.includes("quota") || msg.includes("limit") || msg.includes("plan");
+            if (isQuota) {
+                const err = new Error("Kuota email harian sudah penuh. Silakan coba lagi besok.");
+                err.isQuotaError = true;
+                return err;
             }
-        } catch (e) {
-            console.error("Gagal init EmailJS:", e);
+            return new Error((errData && errData.error) || (errData && errData.message) || "Gagal mengirim email. Coba lagi.");
         }
 
         async function sendOtpEmail(targetEmail, targetName, otpCode) {
-            if (typeof emailjs === "undefined") {
-                throw new Error("Layanan pengirim email (EmailJS) tidak berhasil dimuat. Cek koneksi internet lalu refresh halaman.");
-            }
-            return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-                to_email: targetEmail,
-                to_name: targetName,
-                otp_code: otpCode
+            const response = await fetch(EMAIL_API, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    type: "otp",
+                    targetEmail,
+                    targetName,
+                    otpCode
+                })
             });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw buildBrevoErrorMessage(errData);
+            }
+
+            return response.json();
+        }
+
+        async function sendResetPasswordEmail(targetEmail, targetName, resetLink) {
+            const response = await fetch(EMAIL_API, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({
+                    type: "reset",
+                    targetEmail,
+                    targetName,
+                    resetLink
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw buildBrevoErrorMessage(errData);
+            }
+
+            return response.json();
+        }
+
+        function generateResetToken() {
+            const bytes = new Uint8Array(24);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
         let generatedOtp = null;
@@ -237,13 +320,17 @@
             }
         });
 
-        function sanitizePhoneNumber(phone) {
-    let cleaned = phone.replace(/[^0-9]/g, '');
-    if (cleaned.startsWith('0')) {
-        cleaned = '62' + cleaned.slice(1);
-    }
-    return cleaned;
-}
+        
+        const googlePhoneCtrl = PhoneCountryModule.createPhoneInput({
+            wrapperEl: document.getElementById("googlePhoneWrapper"),
+            inputEl: document.getElementById("inputGooglePhone"),
+            hintEl: document.getElementById("googlePhoneFormatHint")
+        });
+        const manualPhoneCtrl = PhoneCountryModule.createPhoneInput({
+            wrapperEl: document.getElementById("manualPhoneWrapper"),
+            inputEl: document.getElementById("inputPhone"),
+            hintEl: document.getElementById("manualPhoneFormatHint")
+        });
 
 
         document.getElementById("btnGoogleLogin").addEventListener("click", () => {
@@ -265,10 +352,10 @@
                         return;
                     }
 
-                    // Cek apakah email Google ini sudah pernah dipakai daftar manual sebelumnya
+                    
                     const matchedManual = await findManualUserByIdentifier(user.email);
                     if (matchedManual) {
-                        // Tandai akun manual ini juga terhubung dengan Google (biar login berikutnya lebih cepat)
+                        
                         db.ref("manual_users/" + matchedManual.uid + "/googleUid").set(user.uid).catch(() => {});
 
                         const sessionData = { ...matchedManual.data };
@@ -313,26 +400,20 @@
             const usernameInput = document.getElementById("inputGoogleUsername");
             const customUsername = usernameInput ? usernameInput.value.trim() : "";
             const phoneInputEl = document.getElementById("inputGooglePhone");
-            const phoneRaw = phoneInputEl.value.trim();
 
             if (!customUsername) {
                 showModal("warning", "Username Kosong", "Silakan isi username pilihan Anda.");
                 return;
             }
 
-            if (!isValidPhoneFormat(phoneRaw)) {
+            if (!googlePhoneCtrl.isValid()) {
                 togglePhoneFormatWarning("googlePhoneFormatWarning", true);
                 phoneInputEl.focus();
                 return;
             }
             togglePhoneFormatWarning("googlePhoneFormatWarning", false);
 
-            const cleanedPhone = sanitizePhoneNumber(phoneRaw);
-
-            if (!cleanedPhone || cleanedPhone.length < 9) {
-                showModal("warning", "Nomor Tidak Valid", "Silakan masukkan nomor telepon yang valid.");
-                return;
-            }
+            const cleanedPhone = googlePhoneCtrl.fullDigits;
 
             const googlePhoneIcon = document.getElementById("googlePhoneStatusIcon");
             if (googlePhoneIcon && googlePhoneIcon.classList.contains("invalid")) {
@@ -369,9 +450,9 @@
             }
         });
 
-        let authMode = "login"; // 'login' atau 'daftar'
+        let authMode = "login"; 
 
-        // Cari user manual berdasarkan email ATAU username
+        
         async function findManualUserByIdentifier(identifier) {
             if (!identifier) return null;
             const idLower = identifier.trim().toLowerCase();
@@ -404,7 +485,7 @@
             showModal("success", "Kode OTP Dikirim!", `Silakan cek inbox (atau folder spam) di ${targetEmail} untuk kode OTP-nya.`);
         }
 
-        // Tampilkan field sesuai mode (login / daftar) + toggle tombol & tulisan
+        
         function setAuthMode(mode) {
             authMode = mode;
             const isLogin = mode === "login";
@@ -419,6 +500,7 @@
 
             document.getElementById("btnAuthSubmitText").innerText = isLogin ? "LOGIN" : "DAFTAR";
             document.getElementById("authToggleLink").innerText = isLogin ? "Daftar" : "Login";
+            document.getElementById("forgotPasswordRow").style.display = isLogin ? "flex" : "none";
 
             document.getElementById("stepManualForm").reset();
             resetManualFormIndicators();
@@ -426,7 +508,7 @@
             clearLoginInlineError();
         }
 
-        // Reset icon status (centang/silang) & strength bar password ke kondisi kosong
+        
         function resetManualFormIndicators() {
             ["usernameStatusIcon", "emailStatusIcon", "emailPhoneStatusIcon"].forEach((id) => {
                 const el = document.getElementById(id);
@@ -446,7 +528,7 @@
             }
         }
 
-        // ==== Pesan error inline (teks merah, bukan popup) untuk login gagal ====
+        
         function showLoginInlineError(msg) {
             const el = document.getElementById("loginErrorText");
             el.textContent = msg;
@@ -509,7 +591,6 @@
             const username = document.getElementById("inputUsername").value.trim();
             const email = document.getElementById("inputEmail").value.trim();
             const phoneInputEl = document.getElementById("inputPhone");
-            const phoneRaw = phoneInputEl.value.trim();
             const password = document.getElementById("inputPassword").value;
 
             if (!username || !email || !password) {
@@ -522,18 +603,14 @@
                 return;
             }
 
-            if (!isValidPhoneFormat(phoneRaw)) {
+            if (!manualPhoneCtrl.isValid()) {
                 togglePhoneFormatWarning("emailPhoneFormatWarning", true);
                 phoneInputEl.focus();
                 return;
             }
             togglePhoneFormatWarning("emailPhoneFormatWarning", false);
 
-            const cleanedPhone = sanitizePhoneNumber(phoneRaw);
-            if (!cleanedPhone || cleanedPhone.length < 9) {
-                showModal("warning", "Nomor Tidak Valid", "Masukkan nomor WhatsApp/HP yang valid.");
-                return;
-            }
+            const cleanedPhone = manualPhoneCtrl.fullDigits;
 
             const emailPhoneIcon = document.getElementById("emailPhoneStatusIcon");
             if (emailPhoneIcon && emailPhoneIcon.classList.contains("invalid")) {
@@ -561,7 +638,8 @@
 
                 showOtpStep(email);
             } catch (err) {
-                showModal("error", "Gagal Mengirim OTP", err.text || err.message || "Terjadi kesalahan sistem. Coba lagi.");
+                const title = err.isQuotaError ? "Kuota Email Penuh" : "Gagal Mengirim OTP";
+                showModal(err.isQuotaError ? "warning" : "error", title, err.message || "Terjadi kesalahan sistem. Coba lagi.");
             } finally {
                 if (triggerBtn) triggerBtn.disabled = false;
             }
@@ -610,7 +688,7 @@
             showModal("success", "Pendaftaran Berhasil!", "Akun kamu sudah dibuat. Silakan login memakai email/username dan password kamu.");
         });
 
-        // Kembalikan tampilan ke form login manual setelah OTP berhasil diverifikasi
+        
         function backToLoginAfterOtp() {
             const otpForm = document.getElementById("stepOtpForm");
             otpForm.reset();
@@ -628,6 +706,33 @@
 
         setAuthMode("login");
 
+        async function checkResetLinkOnLoad() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get("reset");
+            const uid = params.get("uid");
+            if (!token || !uid) return;
+
+            try {
+                const snap = await db.ref("manual_users/" + uid).once("value");
+                const data = snap.val();
+
+                if (!data || data.resetToken !== token || !data.resetTokenExpiry || Date.now() > data.resetTokenExpiry) {
+                    showModal("error", "Link Tidak Valid", "Link reset password sudah kadaluarsa atau tidak valid. Silakan minta link baru lewat 'Lupa password?'.");
+                    if (window.history.replaceState) {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                    return;
+                }
+
+                tempForgotUser = { uid, data };
+                expandCard.classList.add("active");
+                showForgotStep("stepNewPasswordForm");
+            } catch (err) {
+                showModal("error", "Gagal Memuat", "Terjadi kesalahan saat memvalidasi link reset password.");
+            }
+        }
+        checkResetLinkOnLoad();
+
         document.getElementById("btnResendOtp").addEventListener("click", async (e) => {
             if (!tempUserData) {
                 showModal("warning", "Sesi Kadaluarsa", "Silakan ulangi proses pendaftaran dari awal.");
@@ -641,36 +746,181 @@
                 generatedOtp = newOtp;
                 showModal("success", "OTP Baru Dikirim", `Kode OTP baru sudah dikirim ke ${tempUserData.email}.`);
             } catch (err) {
-                showModal("error", "Gagal Mengirim Ulang", err.text || err.message || "Terjadi kesalahan sistem. Coba lagi.");
+                const title = err.isQuotaError ? "Kuota Email Penuh" : "Gagal Mengirim Ulang";
+                showModal(err.isQuotaError ? "warning" : "error", title, err.message || "Terjadi kesalahan sistem. Coba lagi.");
             } finally {
                 btn.disabled = false;
             }
         });
 
-        // ==== Validasi format nomor: HANYA 2 pola berikut yang diterima ====
-        // Pola 1 (angka polos, tanpa "+", tanpa spasi/strip)  : 6287948924410
-        // Pola 2 ("+" + kode negara + spasi, sisanya boleh dipisah spasi/strip) : +62 879-4892-4410
-        // Berlaku untuk kode negara mana pun (bukan cuma 62), selama total digitnya
-        // sesuai standar E.164 (8-15 digit termasuk kode negara).
-        function isValidPhoneFormat(raw) {
-            const trimmed = raw.trim();
+        
+        let tempForgotUser = null;
 
-            // Pola 1: hanya digit, tidak boleh diawali 0, panjang 8-15 digit
-            const POLA_TANPA_PLUS = /^[1-9]\d{7,14}$/;
+        
+        async function canSendOtp(uid) {
+            const snap = await db.ref("manual_users/" + uid + "/otpMeta").once("value");
+            const meta = snap.val() || {};
+            const now = Date.now();
+            const cooldownMs = 60 * 1000; 
 
-            // Pola 2: "+" + kode negara (1-4 digit, tidak diawali 0) + WAJIB spasi,
-            // lalu sisa digit boleh dikelompokkan dengan spasi dan/atau strip
-            const POLA_DENGAN_PLUS = /^\+[1-9]\d{0,3}[ -]\d+(?:[ -]\d+)*$/;
-
-            if (POLA_TANPA_PLUS.test(trimmed)) return true;
-
-            if (POLA_DENGAN_PLUS.test(trimmed)) {
-                const digitsOnly = trimmed.replace(/[^0-9]/g, '');
-                return digitsOnly.length >= 8 && digitsOnly.length <= 15;
+            if (meta.lastSentAt && (now - meta.lastSentAt) < cooldownMs) {
+                const wait = Math.ceil((cooldownMs - (now - meta.lastSentAt)) / 1000);
+                return { allowed: false, message: `Tunggu ${wait} detik sebelum minta kode OTP lagi.` };
             }
 
-            return false;
+            const todayKey = new Date().toISOString().slice(0, 10);
+            if (meta.dateKey === todayKey && (meta.countToday || 0) >= 5) {
+                return { allowed: false, message: "Kamu sudah minta kode OTP 5 kali hari ini. Coba lagi besok." };
+            }
+
+            return { allowed: true };
         }
+
+        async function recordOtpSent(uid) {
+            const snap = await db.ref("manual_users/" + uid + "/otpMeta").once("value");
+            const meta = snap.val() || {};
+            const now = Date.now();
+            const todayKey = new Date().toISOString().slice(0, 10);
+            const countToday = meta.dateKey === todayKey ? (meta.countToday || 0) + 1 : 1;
+
+            await db.ref("manual_users/" + uid + "/otpMeta").set({
+                lastSentAt: now,
+                dateKey: todayKey,
+                countToday
+            });
+        }
+
+        function showForgotStep(stepId) {
+            ["stepManualForm", "stepForgotEmailForm", "stepForgotOtpForm", "stepNewPasswordForm"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (id === stepId) {
+                    el.classList.remove("hidden-element");
+                    el.style.display = "block";
+                } else if (id !== "stepManualForm") {
+                    el.classList.add("hidden-element");
+                    el.style.display = "none";
+                } else {
+                    el.style.display = "none";
+                }
+            });
+            document.getElementById("btnGoogleLogin").style.display = "none";
+            document.getElementById("authDivider").style.display = "none";
+        }
+
+        function backToLoginAfterForgot() {
+            ["stepForgotEmailForm", "stepForgotOtpForm", "stepNewPasswordForm"].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el.reset) el.reset();
+                el.style.display = "none";
+                el.classList.add("hidden-element");
+            });
+
+            document.getElementById("btnGoogleLogin").style.display = "flex";
+            document.getElementById("authDivider").style.display = "flex";
+
+            const manualForm = document.getElementById("stepManualForm");
+            manualForm.style.display = "flex";
+
+            setAuthMode("login");
+        }
+
+        document.getElementById("forgotPasswordLink").addEventListener("click", () => {
+            showForgotStep("stepForgotEmailForm");
+        });
+
+        document.getElementById("btnBackToLoginFromForgot").addEventListener("click", () => {
+            backToLoginAfterForgot();
+        });
+
+        document.getElementById("stepForgotEmailForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("inputForgotEmail").value.trim();
+            const errEl = document.getElementById("forgotEmailErrorText");
+            errEl.textContent = "";
+            errEl.classList.remove("show");
+
+            if (!email) {
+                showModal("warning", "Input Kosong", "Silakan isi alamat email kamu.");
+                return;
+            }
+
+            const btn = document.getElementById("btnSendForgotOtp");
+            btn.disabled = true;
+            try {
+                const found = await findManualUserByIdentifier(email);
+                if (!found) {
+                    errEl.textContent = "Email ini belum terdaftar.";
+                    errEl.classList.add("show");
+                    return;
+                }
+
+                const cooldownCheck = await canSendOtp(found.uid);
+                if (!cooldownCheck.allowed) {
+                    showModal("warning", "Tunggu Sebentar", cooldownCheck.message);
+                    return;
+                }
+
+                const token = generateResetToken();
+                const expiry = Date.now() + 30 * 60 * 1000; 
+                await db.ref("manual_users/" + found.uid).update({
+                    resetToken: token,
+                    resetTokenExpiry: expiry
+                });
+                await recordOtpSent(found.uid);
+
+                const resetLink = window.location.origin + window.location.pathname
+                    + "?reset=" + token + "&uid=" + found.uid;
+                await sendResetPasswordEmail(email, found.data.username, resetLink);
+
+                backToLoginAfterForgot();
+                showModal("success", "Link Reset Terkirim!", `Silakan cek inbox (atau folder spam) di ${email} dan klik link untuk membuat password baru. Link berlaku 30 menit.`);
+            } catch (err) {
+                const title = err.isQuotaError ? "Kuota Email Penuh" : "Gagal Mengirim Link";
+                showModal(err.isQuotaError ? "warning" : "error", title, err.message || "Terjadi kesalahan sistem. Coba lagi.");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById("stepNewPasswordForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById("inputNewPassword").value;
+
+            if (!newPassword || newPassword.length < 6) {
+                showModal("warning", "Password Terlalu Pendek", "Password minimal 6 karakter.");
+                return;
+            }
+
+            if (!tempForgotUser) {
+                showModal("error", "Sesi Kadaluarsa", "Silakan ulangi proses lupa password dari awal.");
+                backToLoginAfterForgot();
+                return;
+            }
+
+            const btn = document.getElementById("btnSubmitNewPassword");
+            btn.disabled = true;
+            try {
+                const newHash = await hashPassword(newPassword);
+                await db.ref("manual_users/" + tempForgotUser.uid).update({
+                    passwordHash: newHash,
+                    resetToken: null,
+                    resetTokenExpiry: null
+                });
+
+                tempForgotUser = null;
+
+                if (window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+
+                backToLoginAfterForgot();
+                showModal("success", "Password Berhasil Diubah!", "Silakan login memakai password baru kamu.");
+            } catch (err) {
+                showModal("error", "Gagal Menyimpan", err.message || "Terjadi kesalahan sistem.");
+            } finally {
+                btn.disabled = false;
+            }
+        });
 
         function togglePhoneFormatWarning(warningId, show) {
             const warningEl = document.getElementById(warningId);
@@ -678,7 +928,7 @@
             warningEl.classList.toggle("show", show);
         }
 
-        // ==== Cek Nomor HP ke Firebase (debounce + indikator status) ====
+        
         async function checkPhoneExists(phone) {
             const [usersSnap, manualSnap] = await Promise.all([
                 db.ref("users").orderByChild("phone").equalTo(phone).once("value"),
@@ -687,8 +937,9 @@
             return usersSnap.exists() || manualSnap.exists();
         }
 
-        function setupPhoneChecker(inputId, iconId, submitBtnId, warningId, onBlockChange) {
-            const input = document.getElementById(inputId);
+        
+        function setupPhoneChecker(ctrl, iconId, submitBtnId, warningId, onBlockChange) {
+            const input = ctrl.inputEl;
             const icon = document.getElementById(iconId);
             const submitBtn = submitBtnId ? document.getElementById(submitBtnId) : null;
             if (!input || !icon) return;
@@ -701,7 +952,7 @@
                 if (onBlockChange) onBlockChange(blocked);
             };
 
-            input.addEventListener("input", () => {
+            const runCheck = () => {
                 clearTimeout(debounceTimer);
                 icon.className = "phone-status-icon";
                 icon.textContent = "";
@@ -709,22 +960,23 @@
                 requestId++;
                 const currentRequest = requestId;
 
-                const raw = input.value.trim();
-                if (!raw) {
+                if (!ctrl.nationalDigits) {
                     if (warningId) togglePhoneFormatWarning(warningId, false);
                     return;
                 }
 
-                if (!isValidPhoneFormat(raw)) {
+                if (!ctrl.isValid()) {
                     if (warningId) togglePhoneFormatWarning(warningId, true);
                     return;
                 }
                 if (warningId) togglePhoneFormatWarning(warningId, false);
 
-                const cleaned = sanitizePhoneNumber(raw);
-                if (!cleaned || cleaned.length < 8) {
+                
+                if (!ctrl.isFull()) {
                     return;
                 }
+
+                const cleaned = ctrl.fullDigits;
 
                 icon.className = "phone-status-icon loading";
 
@@ -742,10 +994,13 @@
                         setBlocked(false);
                     }
                 }, 700);
-            });
+            };
+
+            input.addEventListener("input", runCheck);
+            input.addEventListener("phonechange", runCheck);
         }
 
-        // ==== Cek Username ke Firebase (debounce + indikator status) ====
+        
         async function checkUsernameExists(username) {
             const [usersSnap, manualSnap] = await Promise.all([
                 db.ref("users").orderByChild("username").equalTo(username).once("value"),
@@ -754,7 +1009,7 @@
             return usersSnap.exists() || manualSnap.exists();
         }
 
-        // Status gabungan dipakai bareng untuk tombol SIMPAN DATA & LOGIN (username + nomor Google)
+        
         const googleFormBlockState = { usernameInvalid: false, phoneInvalid: false };
         function updateGoogleSubmitState() {
             const btn = document.getElementById("btnSubmitGooglePhone");
@@ -810,13 +1065,13 @@
         setupUsernameChecker("inputGoogleUsername", "googleUsernameStatusIcon", "usernameInvalid");
         setupUsernameChecker("inputUsername", "usernameStatusIcon", null);
 
-        setupPhoneChecker("inputGooglePhone", "googlePhoneStatusIcon", null, "googlePhoneFormatWarning", (blocked) => {
+        setupPhoneChecker(googlePhoneCtrl, "googlePhoneStatusIcon", null, "googlePhoneFormatWarning", (blocked) => {
             googleFormBlockState.phoneInvalid = blocked;
             updateGoogleSubmitState();
         });
-        setupPhoneChecker("inputPhone", "emailPhoneStatusIcon", null, "emailPhoneFormatWarning");
+        setupPhoneChecker(manualPhoneCtrl, "emailPhoneStatusIcon", null, "emailPhoneFormatWarning");
 
-        // ==== Cek Email ke Firebase (debounce + indikator status) ====
+        
         async function checkEmailExists(email) {
             const [usersSnap, manualSnap] = await Promise.all([
                 db.ref("users").orderByChild("email").equalTo(email).once("value"),
@@ -864,7 +1119,7 @@
 
         setupEmailChecker("inputEmail", "emailStatusIcon");
 
-        // ==== Indikator Kekuatan Password (3 garis) ====
+        
         function calcPasswordStrength(pw) {
             if (!pw) return 0;
             let categories = 0;
@@ -919,6 +1174,7 @@
         }
 
         setupPasswordStrength("inputPassword", "passwordStrengthBars", "passwordStrengthLabel");
+        setupPasswordStrength("inputNewPassword", "newPasswordStrengthBars", "newPasswordStrengthLabel");
 
         function showModal(type, title, msg) {
             const modal = document.getElementById("authAlertModal");
@@ -930,11 +1186,11 @@
             else if (type === "error") icon.innerText = "❌";
             else icon.innerText = "⚠️";
 
-            modal.classList.add("show");
+            modal.classList.add("active");
         }
 
         function closeAuthModal() {
-            document.getElementById("authAlertModal").classList.remove("show");
+            document.getElementById("authAlertModal").classList.remove("active");
         }
     </script>
 </body>
