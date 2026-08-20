@@ -415,17 +415,18 @@
 
             const cleanedPhone = googlePhoneCtrl.fullDigits;
 
-            const googlePhoneIcon = document.getElementById("googlePhoneStatusIcon");
-            if (googlePhoneIcon && googlePhoneIcon.classList.contains("invalid")) {
-                showModal("warning", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP yang kamu masukkan sudah digunakan akun lain. Silakan gunakan nomor lain.");
-                phoneInputEl.focus();
-                return;
-            }
-
             const submitBtn = document.getElementById("btnSubmitGooglePhone");
             submitBtn.disabled = true;
 
             try {
+                const phoneAlreadyExists = await checkPhoneExists(cleanedPhone);
+                if (phoneAlreadyExists) {
+                    showModal("warning", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP yang kamu masukkan sudah digunakan akun lain. Silakan gunakan nomor lain.");
+                    phoneInputEl.focus();
+                    submitBtn.disabled = false;
+                    return;
+                }
+
                 const sessionData = {
                     uid: tempGoogleUser.uid,
                     username: customUsername,
@@ -621,12 +622,18 @@
 
             if (triggerBtn) triggerBtn.disabled = true;
             try {
-                const [existingByEmail, existingByUsername] = await Promise.all([
+                const [existingByEmail, existingByUsername, phoneAlreadyExists] = await Promise.all([
                     findManualUserByIdentifier(email),
-                    findManualUserByIdentifier(username)
+                    findManualUserByIdentifier(username),
+                    checkPhoneExists(cleanedPhone)
                 ]);
                 if (existingByEmail || existingByUsername) {
                     showModal("warning", "Sudah Terdaftar", "Email atau Username sudah digunakan. Silakan tekan Login.");
+                    return;
+                }
+                if (phoneAlreadyExists) {
+                    showModal("warning", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP ini sudah punya akun. Silakan tekan Login.");
+                    phoneInputEl.focus();
                     return;
                 }
 
@@ -664,6 +671,15 @@
 
             if (userOtp !== generatedOtp) {
                 showModal("error", "OTP Salah", "Kode OTP tidak cocok.");
+                return;
+            }
+
+            const finalPhoneExists = await checkPhoneExists(tempUserData.phone);
+            if (finalPhoneExists) {
+                showModal("error", "Nomor Sudah Terdaftar", "Nomor WhatsApp/HP ini baru saja terdaftar akun lain. Silakan ulangi pendaftaran dengan nomor lain.");
+                backToLoginAfterOtp();
+                generatedOtp = null;
+                tempUserData = null;
                 return;
             }
 
