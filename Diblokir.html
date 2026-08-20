@@ -52,6 +52,7 @@
 </style>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="firebase-config.js"></script>
 </head>
 <body>
 
@@ -67,16 +68,9 @@
 </div>
 
 <script>
-const firebaseConfig = {
-    apiKey: "AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
-    authDomain: "danzclean-auth.firebaseapp.com",
-    databaseURL: "https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "danzclean-auth",
-    storageBucket: "danzclean-auth.firebasestorage.app",
-    messagingSenderId: "450022321477",
-    appId: "1:450022321477:web:4d3ee887b935726dd2a22c"
-};
-firebase.initializeApp(firebaseConfig);
+if (!firebase.apps.length) {
+    firebase.initializeApp(FIREBASE_CONFIG_AUTH);
+}
 
 function logoutBlocked(){
     localStorage.removeItem("danzclean_logged_user");
@@ -86,7 +80,6 @@ function logoutBlocked(){
     });
 }
 
-// Tampilkan alasan blokir kalau ada, dikirim lewat query string ?reason=...
 const params = new URLSearchParams(location.search);
 const reason = params.get("reason");
 if (reason) {
