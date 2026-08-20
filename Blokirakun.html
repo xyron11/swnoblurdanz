@@ -373,7 +373,16 @@ placeholder="Cari username, email, atau nomor HP...">
 <button class="block-tab" id="tabAktif" onclick="setBlockFilter('aktif')">Aktif</button>
 <button class="block-tab" id="tabBlokir" onclick="setBlockFilter('blokir')">Diblokir</button>
 <button class="block-tab" id="tabManual" onclick="setBlockFilter('manual')">Login Manual</button>
+<button class="block-tab" id="tabDuplikat" onclick="setBlockFilter('duplikat')">Duplikat</button>
 </div>
+
+<button
+id="hapusSemuaDuplikatBtn"
+class="block-btn do-block"
+style="display:none; width:100%; margin-bottom:14px; padding:11px 14px; font-size:13px;"
+onclick="hapusSemuaDuplikatAkun()">
+🗑️ Hapus Semua Akun Duplikat
+</button>
 
 <div id="blockCount" class="block-count">Memuat data akun...</div>
 
@@ -496,6 +505,25 @@ placeholder="Alasan blokir (opsional)">
 
 </div>
 
+<div class="modal-overlay" id="dupModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">🗑️</div>
+
+<div class="modal-title">Hapus Semua Duplikat</div>
+
+<div class="modal-text" id="dupModalName">Yakin ingin menghapus semua akun duplikat?</div>
+
+<div class="modal-btn-row">
+<button class="modal-btn secondary" onclick="closeDupModal()">Batal</button>
+<button class="modal-btn" style="background:#ff4d4d;" onclick="konfirmasiHapusDuplikat()">Hapus Semua</button>
+</div>
+
+</div>
+
+</div>
+
 <script>
 
 if (localStorage.getItem("isOwner") !== "true") {
@@ -561,6 +589,8 @@ function setBlockFilter(filter){
     document.getElementById("tabAktif").classList.toggle("active", filter === "aktif")
     document.getElementById("tabBlokir").classList.toggle("active", filter === "blokir")
     document.getElementById("tabManual").classList.toggle("active", filter === "manual")
+    document.getElementById("tabDuplikat").classList.toggle("active", filter === "duplikat")
+    document.getElementById("hapusSemuaDuplikatBtn").style.display = filter === "duplikat" ? "block" : "none"
     renderBlockList()
 }
 
@@ -588,11 +618,43 @@ function inisialAvatar(nama){
     return nama.trim().charAt(0).toUpperCase()
 }
 
+function cariGrupDuplikat(){
+    const grup = {}
+    Object.values(daftarAkun).forEach(akun => {
+        if(ownerUid && akun.uid === ownerUid) return
+        const email = (akun.email || "").trim().toLowerCase()
+        const phone = (akun.phone || "").trim()
+        if(email){
+            const key = "email:" + email
+            if(!grup[key]) grup[key] = []
+            grup[key].push(akun.uid)
+        }
+        if(phone){
+            const key = "phone:" + phone
+            if(!grup[key]) grup[key] = []
+            grup[key].push(akun.uid)
+        }
+    })
+    const hasil = {}
+    Object.keys(grup).forEach(key => {
+        if(grup[key].length > 1) hasil[key] = grup[key]
+    })
+    return hasil
+}
+
+function getUidDuplikat(){
+    const grup = cariGrupDuplikat()
+    const set = new Set()
+    Object.values(grup).forEach(uids => uids.forEach(u => set.add(u)))
+    return set
+}
+
 function renderBlockList(){
 
     const container = document.getElementById("blockList")
     const countEl = document.getElementById("blockCount")
     const q = blockSearchQuery.trim().toLowerCase()
+    const uidDuplikat = getUidDuplikat()
 
     const daftar = Object.values(daftarAkun).filter(akun => {
         if(ownerUid && akun.uid === ownerUid) return false
@@ -601,6 +663,7 @@ function renderBlockList(){
         if(blockFilter === "aktif" && statusBlokir) return false
         if(blockFilter === "blokir" && !statusBlokir) return false
         if(blockFilter === "manual" && akun.sumberAkun !== "manual") return false
+        if(blockFilter === "duplikat" && !uidDuplikat.has(akun.uid)) return false
 
         if(!q) return true
         return (
@@ -613,7 +676,8 @@ function renderBlockList(){
     const totalAkun = Object.keys(daftarAkun).filter(uid => !(ownerUid && uid === ownerUid)).length
     const totalBlokir = Object.values(daftarBlokir).filter(b => b && b.blocked).length
     const totalManual = Object.values(daftarAkun).filter(akun => !(ownerUid && akun.uid === ownerUid) && akun.sumberAkun === "manual").length
-    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${totalManual} login manual`
+    const totalDuplikat = uidDuplikat.size
+    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${totalManual} login manual · ${totalDuplikat} duplikat`
 
     if(daftar.length === 0){
         container.innerHTML = `<div class="block-empty">Tidak ada akun ditemukan.</div>`
@@ -638,7 +702,7 @@ function renderBlockList(){
         <div class="block-row">
             <div class="block-avatar">${avatarHtml}</div>
             <div class="block-info">
-                <div class="block-username">${akun.username || "(tanpa username)"} ${akun.sumberAkun === "manual" ? '<span style="font-size:10px;color:#73a5ff;background:rgba(76,125,255,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">MANUAL</span>' : ""}</div>
+                <div class="block-username">${akun.username || "(tanpa username)"} ${akun.sumberAkun === "manual" ? '<span style="font-size:10px;color:#73a5ff;background:rgba(76,125,255,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">MANUAL</span>' : ""} ${uidDuplikat.has(akun.uid) ? '<span style="font-size:10px;color:#ff8f4d;background:rgba(255,143,77,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">DUPLIKAT</span>' : ""}</div>
                 <div class="block-meta">${akun.email || ""}</div>
                 <div class="block-phone">
                     <span class="block-phone-text">${akun.phone || "(tidak ada nomor)"}</span>
@@ -705,6 +769,48 @@ function konfirmasiBlokirAkun(){
     }).then(() => {
         closeBlockModal()
         showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil diblokir 🚫`)
+    })
+}
+
+function hapusSemuaDuplikatAkun(){
+
+    const uidSet = getUidDuplikat()
+
+    if(uidSet.size === 0){
+        showPopup("Info", "Tidak ada akun duplikat yang ditemukan.")
+        return
+    }
+
+    document.getElementById("dupModalName").innerText =
+        `Yakin ingin menghapus SEMUA ${uidSet.size} akun duplikat? Semua akun dalam grup duplikat akan dihapus permanen, tidak ada satupun yang disisakan, dan tidak bisa dikembalikan.`
+    document.getElementById("dupModal").classList.add("active")
+}
+
+function closeDupModal(){
+    document.getElementById("dupModal").classList.remove("active")
+}
+
+function konfirmasiHapusDuplikat(){
+
+    const uidSet = getUidDuplikat()
+    document.getElementById("dupModal").classList.remove("active")
+
+    if(uidSet.size === 0) return
+
+    const promises = []
+    uidSet.forEach(uid => {
+        promises.push(usersRef.child(uid).remove())
+        promises.push(manualUsersRef.child(uid).remove())
+        promises.push(blockedUsersRef.child(uid).remove())
+        delete daftarAkun[uid]
+        delete daftarBlokir[uid]
+    })
+
+    Promise.all(promises).then(() => {
+        renderBlockList()
+        showPopup("Berhasil", `Berhasil menghapus ${uidSet.size} akun duplikat, tidak ada yang disisakan ✅`)
+    }).catch(() => {
+        showPopup("Gagal", "Terjadi kesalahan saat menghapus akun duplikat.")
     })
 }
 
