@@ -4160,3 +4160,162 @@ body{
     border-color: rgba(255, 60, 60, 0.4);
     color: #ffffff;
 }
+/* ======================================================
+   PEMILIH KODE NEGARA UNTUK INPUT NOMOR TELEPON
+   (dipakai bareng phone-country.js)
+   ====================================================== */
+.phone-input-wrapper--with-country {
+    gap: 8px;
+}
+
+.phone-input-wrapper--with-country input {
+    padding-left: 12px;
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+}
+
+.country-select-btn {
+    flex: 0 0 auto;
+    width: auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    height: 44px;
+    padding: 0 10px;
+    background: rgba(5, 8, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    color: #ffffff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: normal;
+    box-shadow: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.country-select-btn:hover,
+.country-select-btn:focus-visible {
+    border-color: rgba(255, 255, 255, 0.22);
+    background: rgba(5, 8, 28, 0.9);
+    outline: none;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+}
+
+.country-select-btn:active {
+    transform: none;
+}
+
+.country-select-flag {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.country-select-dial {
+    color: #c7d2fe;
+    white-space: nowrap;
+}
+
+.country-select-caret {
+    font-size: 10px;
+    color: #8890b5;
+    margin-left: 1px;
+}
+
+/* Kelas util untuk menyembunyikan elemen (dipakai juga oleh phone-country.js) */
+.hidden-element {
+    display: none !important;
+}
+
+/* Panel dropdown pencarian negara (posisi fixed, di-append ke body) */
+.country-dropdown-panel {
+    z-index: 5000;
+    max-height: 320px;
+    display: flex;
+    flex-direction: column;
+    background: #0b0f22;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.country-search-input {
+    margin: 8px;
+    height: 38px;
+    padding: 0 12px;
+    background: rgba(5, 8, 28, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+}
+
+.country-search-input:focus {
+    border-color: var(--primary, #3d6cff);
+}
+
+.country-list {
+    overflow-y: auto;
+    padding: 4px 6px 8px;
+}
+
+.country-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #e5e7ff;
+}
+
+.country-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.country-item.active {
+    background: rgba(61, 108, 255, 0.18);
+    color: #ffffff;
+}
+
+.country-item-flag {
+    font-size: 17px;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.country-item-name {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.country-item-dial {
+    flex: 0 0 auto;
+    color: #8890b5;
+    font-size: 12px;
+}
+
+.country-list-empty {
+    padding: 14px 10px;
+    text-align: center;
+    color: #8890b5;
+    font-size: 12px;
+}
+
+.phone-format-hint {
+    font-size: 11px;
+    color: #8890b5;
+    margin-top: 6px;
+    line-height: 1.4;
+}
