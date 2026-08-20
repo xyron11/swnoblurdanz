@@ -164,6 +164,95 @@ href="style.css">
     box-shadow:none;
     filter:none;
 }
+.block-password{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:2px;
+    flex-wrap:nowrap;
+}
+.block-password-text{
+    color:#7a84ad;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    flex:1 1 auto;
+    min-width:0;
+    font-family:monospace;
+    letter-spacing:1px;
+}
+.block-eye-btn{
+    border:none;
+    background:rgba(255,255,255,.06);
+    color:#aeb8e8;
+    font-size:12px;
+    padding:4px 8px;
+    border-radius:8px;
+    cursor:pointer;
+    flex:0 0 auto;
+    width:auto;
+    box-shadow:none;
+    letter-spacing:normal;
+    line-height:1.6;
+}
+.block-eye-btn:hover{
+    background:rgba(255,255,255,.12);
+    transform:none;
+    box-shadow:none;
+    filter:none;
+}
+.block-edit-password{
+    border:none;
+    background:rgba(76,125,255,.15);
+    color:#73a5ff;
+    font-size:11px;
+    padding:4px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    flex:0 0 auto;
+    width:auto;
+    box-shadow:none;
+    letter-spacing:normal;
+    line-height:1.6;
+}
+.block-edit-password:hover{
+    background:rgba(76,125,255,.28);
+    transform:none;
+    box-shadow:none;
+    filter:none;
+}
+.block-tabs{
+    display:flex;
+    gap:8px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+}
+.block-tab{
+    border:none;
+    background:rgba(255,255,255,.04);
+    color:#aeb8e8;
+    font-size:12px;
+    font-weight:600;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    width:auto;
+    box-shadow:none;
+    letter-spacing:normal;
+    line-height:1.4;
+    transition:.2s;
+}
+.block-tab:hover{
+    background:rgba(255,255,255,.08);
+    transform:none;
+    box-shadow:none;
+    filter:none;
+}
+.block-tab.active{
+    background:linear-gradient(135deg, #3d6cff, #6b5cff);
+    color:#fff;
+}
 .block-actions{
     display:flex;
     align-items:center;
@@ -231,6 +320,8 @@ href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<script src="firebase-config.js"></script>
+
 </head>
 
 <body>
@@ -276,6 +367,13 @@ type="text"
 id="blockSearch"
 class="block-search"
 placeholder="Cari username, email, atau nomor HP...">
+
+<div class="block-tabs">
+<button class="block-tab active" id="tabSemua" onclick="setBlockFilter('semua')">Semua</button>
+<button class="block-tab" id="tabAktif" onclick="setBlockFilter('aktif')">Aktif</button>
+<button class="block-tab" id="tabBlokir" onclick="setBlockFilter('blokir')">Diblokir</button>
+<button class="block-tab" id="tabManual" onclick="setBlockFilter('manual')">Login Manual</button>
+</div>
 
 <div id="blockCount" class="block-count">Memuat data akun...</div>
 
@@ -348,6 +446,31 @@ placeholder="Contoh: 6281234567890">
 
 </div>
 
+<div class="modal-overlay" id="passwordModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">🔑</div>
+
+<div class="modal-title">Ubah Password</div>
+
+<div class="modal-text" id="passwordModalName">Masukkan password baru.</div>
+
+<input
+type="text"
+id="passwordModalInput"
+class="modal-input"
+placeholder="Password baru">
+
+<div class="modal-btn-row">
+<button class="modal-btn secondary" onclick="closePasswordModal()">Batal</button>
+<button class="modal-btn" onclick="simpanPasswordAkun()">Simpan</button>
+</div>
+
+</div>
+
+</div>
+
 <div class="modal-overlay" id="blockModal">
 
 <div class="modal-card">
@@ -375,7 +498,6 @@ placeholder="Alasan blokir (opsional)">
 
 <script>
 
-// Hanya akun yang terdaftar di akun.js yang boleh buka halaman ini
 if (localStorage.getItem("isOwner") !== "true") {
     location.href = "/"
 }
@@ -416,45 +538,37 @@ document
 
 }
 
-const firebaseConfig = {
-
-apiKey:
-"AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
-
-authDomain:
-"danzclean-auth.firebaseapp.com",
-
-databaseURL:
-"https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-projectId:
-"danzclean-auth",
-
-storageBucket:
-"danzclean-auth.firebasestorage.app",
-
-messagingSenderId:
-"450022321477",
-
-appId:
-"1:450022321477:web:4d3ee887b935726dd2a22c"
-
+if (!firebase.apps.length) {
+    firebase.initializeApp(FIREBASE_CONFIG_AUTH)
 }
-
-firebase.initializeApp(firebaseConfig)
 
 const db =
 firebase.database()
 
-// ==== Blokir Akun ====
 
 const usersRef = db.ref("users")
 const manualUsersRef = db.ref("manual_users")
 const blockedUsersRef = db.ref("blocked_users")
 
-let daftarAkun = {}     // uid -> {uid, username, email, phone, photo}
+let daftarAkun = {}     // uid -> {uid, username, email, phone, photo, password}
 let daftarBlokir = {}   // uid -> {blocked, reason}
 let blockSearchQuery = ""
+let blockFilter = "semua" // semua | aktif | blokir
+
+function setBlockFilter(filter){
+    blockFilter = filter
+    document.getElementById("tabSemua").classList.toggle("active", filter === "semua")
+    document.getElementById("tabAktif").classList.toggle("active", filter === "aktif")
+    document.getElementById("tabBlokir").classList.toggle("active", filter === "blokir")
+    document.getElementById("tabManual").classList.toggle("active", filter === "manual")
+    renderBlockList()
+}
+
+async function hashSHA256(teks){
+    const enc = new TextEncoder().encode(teks)
+    const buf = await crypto.subtle.digest("SHA-256", enc)
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("")
+}
 
 function getOwnerUid(){
     try{
@@ -482,6 +596,12 @@ function renderBlockList(){
 
     const daftar = Object.values(daftarAkun).filter(akun => {
         if(ownerUid && akun.uid === ownerUid) return false
+
+        const statusBlokir = !!(daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked)
+        if(blockFilter === "aktif" && statusBlokir) return false
+        if(blockFilter === "blokir" && !statusBlokir) return false
+        if(blockFilter === "manual" && akun.sumberAkun !== "manual") return false
+
         if(!q) return true
         return (
             (akun.username || "").toLowerCase().includes(q) ||
@@ -492,7 +612,8 @@ function renderBlockList(){
 
     const totalAkun = Object.keys(daftarAkun).filter(uid => !(ownerUid && uid === ownerUid)).length
     const totalBlokir = Object.values(daftarBlokir).filter(b => b && b.blocked).length
-    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir`
+    const totalManual = Object.values(daftarAkun).filter(akun => !(ownerUid && akun.uid === ownerUid) && akun.sumberAkun === "manual").length
+    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${totalManual} login manual`
 
     if(daftar.length === 0){
         container.innerHTML = `<div class="block-empty">Tidak ada akun ditemukan.</div>`
@@ -502,20 +623,32 @@ function renderBlockList(){
     container.innerHTML = daftar.map(akun => {
 
         const statusBlokir = daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked
+        const infoBlokir = daftarBlokir[akun.uid]
         const avatarHtml = akun.photo
             ? `<img src="${akun.photo}">`
             : inisialAvatar(akun.username)
+
+        const punyaPassword = !!akun.passwordHash
+
+        const alasanBlokir = statusBlokir && infoBlokir && infoBlokir.reason
+            ? `<div class="block-meta">Alasan: ${infoBlokir.reason}</div>`
+            : ""
 
         return `
         <div class="block-row">
             <div class="block-avatar">${avatarHtml}</div>
             <div class="block-info">
-                <div class="block-username">${akun.username || "(tanpa username)"}</div>
+                <div class="block-username">${akun.username || "(tanpa username)"} ${akun.sumberAkun === "manual" ? '<span style="font-size:10px;color:#73a5ff;background:rgba(76,125,255,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">MANUAL</span>' : ""}</div>
                 <div class="block-meta">${akun.email || ""}</div>
                 <div class="block-phone">
                     <span class="block-phone-text">${akun.phone || "(tidak ada nomor)"}</span>
                     <button class="block-edit-phone" onclick="editNomorAkun('${akun.uid}')">✏️ Ubah</button>
                 </div>
+                <div class="block-password">
+                    <span class="block-password-text">${punyaPassword ? "Password: terenkripsi" : "(belum punya password)"}</span>
+                    <button class="block-edit-password" onclick="editPasswordAkun('${akun.uid}')">✏️ Ubah</button>
+                </div>
+                ${alasanBlokir}
             </div>
             <div class="block-actions">
                 <span class="block-status ${statusBlokir ? "blocked" : "aktif"}">
@@ -619,6 +752,57 @@ function simpanNomorAkun(){
     })
 }
 
+let pendingPasswordUid = null
+
+function editPasswordAkun(uid){
+
+    const akun = daftarAkun[uid]
+    pendingPasswordUid = uid
+
+    document.getElementById("passwordModalName").innerText =
+        `Masukkan password baru untuk "${akun ? akun.username : uid}".`
+    document.getElementById("passwordModalInput").value = ""
+    document.getElementById("passwordModal").classList.add("active")
+}
+
+function closePasswordModal(){
+    document.getElementById("passwordModal").classList.remove("active")
+    pendingPasswordUid = null
+}
+
+async function simpanPasswordAkun(){
+
+    if(!pendingPasswordUid) return
+
+    const uid = pendingPasswordUid
+    const akun = daftarAkun[uid]
+    const passwordBaru = document.getElementById("passwordModalInput").value.trim()
+
+    if(!passwordBaru){
+        showPopup("Gagal", "Password tidak boleh kosong.")
+        return
+    }
+
+    const hashBaru = await hashSHA256(passwordBaru)
+
+    usersRef.child(uid).once("value").then(snap => {
+        if(snap.exists()){
+            return usersRef.child(uid).update({ passwordHash: hashBaru })
+        }
+        return manualUsersRef.child(uid).once("value").then(snap2 => {
+            if(snap2.exists()){
+                return manualUsersRef.child(uid).update({ passwordHash: hashBaru })
+            }
+            return manualUsersRef.child(uid).update({ passwordHash: hashBaru, username: akun ? akun.username : "" })
+        })
+    }).then(() => {
+        closePasswordModal()
+        showPopup("Berhasil", `Password akun "${akun ? akun.username : uid}" berhasil diubah ✅`)
+    }).catch(() => {
+        showPopup("Gagal", "Terjadi kesalahan saat mengubah password.")
+    })
+}
+
 document.getElementById("blockSearch").addEventListener("input", (e) => {
     blockSearchQuery = e.target.value
     renderBlockList()
@@ -627,7 +811,7 @@ document.getElementById("blockSearch").addEventListener("input", (e) => {
 usersRef.on("value", snap => {
     const data = snap.val() || {}
     Object.keys(data).forEach(uid => {
-        daftarAkun[uid] = { uid, ...data[uid] }
+        daftarAkun[uid] = { uid, ...data[uid], sumberAkun: "auth" }
     })
     renderBlockList()
 })
@@ -635,7 +819,7 @@ usersRef.on("value", snap => {
 manualUsersRef.on("value", snap => {
     const data = snap.val() || {}
     Object.keys(data).forEach(uid => {
-        daftarAkun[uid] = { uid, ...data[uid] }
+        daftarAkun[uid] = { uid, ...data[uid], sumberAkun: "manual" }
     })
     renderBlockList()
 })
