@@ -27,6 +27,7 @@ href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="firebase-config.js"></script>
 
 </head>
 
@@ -254,34 +255,9 @@ document
 
 }
 
-const firebaseConfig = {
-
-apiKey:
-"AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
-
-authDomain:
-"danzzclean.firebaseapp.com",
-
-databaseURL:
-"https://danzzclean-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-projectId:
-"danzzclean",
-
-storageBucket:
-"danzzclean.firebasestorage.app",
-
-messagingSenderId:
-"254872462958",
-
-appId:
-"1:254872462958:web:a7964353bb5afa6678287f"
-
-}
-
 if(!firebase.apps.length){
 
-firebase.initializeApp(firebaseConfig)
+firebase.initializeApp(FIREBASE_CONFIG_MAIN)
 
 }
 
