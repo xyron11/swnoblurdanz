@@ -473,6 +473,41 @@
             return null;
         }
 
+        
+        async function findAnyUserByIdentifier(identifier) {
+            if (!identifier) return null;
+            const idLower = identifier.trim().toLowerCase();
+
+            const [usersSnap, manualSnap] = await Promise.all([
+                db.ref("users").once("value"),
+                db.ref("manual_users").once("value")
+            ]);
+
+            if (usersSnap.exists()) {
+                const all = usersSnap.val();
+                for (const key of Object.keys(all)) {
+                    const data = all[key];
+                    const emailMatch = data.email && data.email.trim().toLowerCase() === idLower;
+                    const usernameMatch = data.username && data.username.trim().toLowerCase() === idLower;
+                    if (emailMatch || usernameMatch) {
+                        return { uid: key, data, table: "users" };
+                    }
+                }
+            }
+            if (manualSnap.exists()) {
+                const all = manualSnap.val();
+                for (const key of Object.keys(all)) {
+                    const data = all[key];
+                    const emailMatch = data.email && data.email.trim().toLowerCase() === idLower;
+                    const usernameMatch = data.username && data.username.trim().toLowerCase() === idLower;
+                    if (emailMatch || usernameMatch) {
+                        return { uid: key, data, table: "manual_users" };
+                    }
+                }
+            }
+            return null;
+        }
+
         function showOtpStep(targetEmail) {
             document.getElementById("displayTargetEmail").innerText = targetEmail;
             document.getElementById("stepManualForm").style.display = "none";
@@ -561,9 +596,14 @@
             clearLoginInlineError();
             if (triggerBtn) triggerBtn.disabled = true;
             try {
-                const found = await findManualUserByIdentifier(identifier);
+                const found = await findAnyUserByIdentifier(identifier);
                 if (!found) {
                     showLoginInlineError("Email/Username belum terdaftar.");
+                    return;
+                }
+
+                if (found.table === "users" && !found.data.passwordHash) {
+                    showLoginInlineError("Akun ini terdaftar lewat Google. Silakan gunakan tombol 'Lanjutkan dengan Google' di atas.");
                     return;
                 }
 
@@ -623,12 +663,17 @@
             if (triggerBtn) triggerBtn.disabled = true;
             try {
                 const [existingByEmail, existingByUsername, phoneAlreadyExists] = await Promise.all([
-                    findManualUserByIdentifier(email),
-                    findManualUserByIdentifier(username),
+                    findAnyUserByIdentifier(email),
+                    findAnyUserByIdentifier(username),
                     checkPhoneExists(cleanedPhone)
                 ]);
-                if (existingByEmail || existingByUsername) {
-                    showModal("warning", "Sudah Terdaftar", "Email atau Username sudah digunakan. Silakan tekan Login.");
+                const existingMatch = existingByEmail || existingByUsername;
+                if (existingMatch) {
+                    if (existingMatch.table === "users") {
+                        showModal("warning", "Sudah Terdaftar via Google", "Email atau username ini sudah dipakai akun Google. Silakan tekan tombol 'Lanjutkan dengan Google' untuk masuk ke akun yang sama.");
+                    } else {
+                        showModal("warning", "Sudah Terdaftar", "Email atau Username sudah digunakan. Silakan tekan Login.");
+                    }
                     return;
                 }
                 if (phoneAlreadyExists) {
@@ -863,6 +908,13 @@
             const btn = document.getElementById("btnSendForgotOtp");
             btn.disabled = true;
             try {
+                const anyFound = await findAnyUserByIdentifier(email);
+                if (anyFound && anyFound.table === "users") {
+                    errEl.textContent = "Akun ini terdaftar lewat Google dan tidak punya password. Silakan login dengan tombol Google.";
+                    errEl.classList.add("show");
+                    return;
+                }
+
                 const found = await findManualUserByIdentifier(email);
                 if (!found) {
                     errEl.textContent = "Email ini belum terdaftar.";
