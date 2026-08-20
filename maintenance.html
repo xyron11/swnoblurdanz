@@ -23,6 +23,8 @@ href="style.css">
 
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+<script src="firebase-config.js"></script>
+
 </head>
 
 <body>
@@ -207,32 +209,7 @@ document
 
 }
 
-const firebaseConfig = {
-
-apiKey:
-"AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
-
-authDomain:
-"danzclean-auth.firebaseapp.com",
-
-databaseURL:
-"https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-projectId:
-"danzclean-auth",
-
-storageBucket:
-"danzclean-auth.firebasestorage.app",
-
-messagingSenderId:
-"450022321477",
-
-appId:
-"1:450022321477:web:4d3ee887b935726dd2a22c"
-
-}
-
-firebase.initializeApp(firebaseConfig)
+firebase.initializeApp(FIREBASE_CONFIG_AUTH)
 
 const db =
 firebase.database()
