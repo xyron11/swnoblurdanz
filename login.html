@@ -1039,11 +1039,8 @@
                 }
                 if (warningId) togglePhoneFormatWarning(warningId, false);
 
-                
-                if (!ctrl.isFull()) {
-                    return;
-                }
-
+                // Begitu jumlah digit udah masuk rentang valid negara (min-max),
+                // langsung cek ke database — nggak nunggu persis digit maksimal.
                 const cleaned = ctrl.fullDigits;
 
                 icon.className = "phone-status-icon loading";
