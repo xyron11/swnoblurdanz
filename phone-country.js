@@ -3,7 +3,7 @@
 
 
     const COUNTRIES = [
-        { name: "Indonesia", dial: "62", iso2: "ID", min: 8, max: 12 },
+        { name: "Indonesia", dial: "62", iso2: "ID", min: 11, max: 12 },
         { name: "Malaysia", dial: "60", iso2: "MY", min: 8, max: 10 },
         { name: "Singapura", dial: "65", iso2: "SG", min: 8, max: 8 },
         { name: "Thailand", dial: "66", iso2: "TH", min: 8, max: 9 },
@@ -267,8 +267,28 @@
 
 
         inputEl.addEventListener("input", (e) => {
-            let raw = inputEl.value.replace(/\D/g, "");
             const isBackspace = e.inputType === "deleteContentBackward" || e.inputType === "deleteContentForward";
+            const hasPlus = /^\s*\+/.test(inputEl.value);
+
+            // Deteksi negara langsung waktu ngetik (bukan cuma waktu paste).
+            // Kalau user ngetik pakai tanda "+" (mis. "+855..."), begitu digit
+            // yang sudah diketik cocok sama kode dial suatu negara, langsung
+            // ganti negara aktif & sisanya diperlakukan sebagai nomor nasional.
+            if (hasPlus && !isBackspace) {
+                const rawWithPlus = inputEl.value.replace(/\D/g, "");
+                const matched = findByDialPrefix(rawWithPlus);
+                if (matched) {
+                    const national = stripLeadingZeros(rawWithPlus.slice(matched.dial.length));
+                    if (matched.iso2 !== country.iso2) {
+                        country = matched;
+                        refreshCountryUI();
+                    }
+                    applyDigits(national);
+                    return;
+                }
+            }
+
+            let raw = inputEl.value.replace(/\D/g, "");
             if (isBackspace && raw.length === lastDigits.length && raw.length > 0) {
 
                 raw = raw.slice(0, -1);
