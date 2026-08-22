@@ -124,4 +124,82 @@ function highlightActiveLink() {
   });
 }
 
+function renderTopbarProfile() {
+  const topbar = document.querySelector(".topbar");
+  if (!topbar || document.getElementById("topbarProfileBtn")) return;
+
+  let loggedUser = {};
+  try {
+    loggedUser = JSON.parse(localStorage.getItem("danzclean_logged_user")) || {};
+  } catch (e) {
+    loggedUser = {};
+  }
+
+  const displayName = loggedUser.username || "User";
+  const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(displayName) + "&background=4c7dff&color=fff";
+  const avatarSrc = loggedUser.photo || fallbackAvatar;
+
+  const profileBtn = document.createElement("button");
+  profileBtn.type = "button";
+  profileBtn.className = "topbar-profile-btn";
+  profileBtn.id = "topbarProfileBtn";
+  profileBtn.innerHTML = `<img src="${avatarSrc}" alt="Profil" onerror="this.src='${fallbackAvatar}'"><span class="topbar-profile-status"></span>`;
+  topbar.appendChild(profileBtn);
+
+  const dropdown = document.createElement("div");
+  dropdown.className = "profile-dropdown";
+  dropdown.id = "profileDropdown";
+  dropdown.innerHTML = `
+    <div class="profile-dropdown-header">
+      <img src="${avatarSrc}" alt="Profil" onerror="this.src='${fallbackAvatar}'">
+      <div class="profile-dropdown-info">
+        <div class="profile-dropdown-name">${displayName}</div>
+        <div class="profile-dropdown-sub">${loggedUser.phone || "Akun DanzClean"}</div>
+      </div>
+    </div>
+    <a href="/settingakun.html" class="profile-dropdown-item">
+      <span class="pd-icon"><img src="./media/setting.png" alt="" width="16" height="16" style="width:16px;height:16px;object-fit:contain;"></span> Setting Akun
+    </a>
+  `;
+  document.body.appendChild(dropdown);
+
+  function positionDropdown() {
+    const btnRect = profileBtn.getBoundingClientRect();
+    const topbarRect = topbar.getBoundingClientRect();
+    dropdown.style.top = (topbarRect.bottom + 12) + "px";
+    dropdown.style.right = (window.innerWidth - btnRect.right) + "px";
+  }
+
+  function openDropdown() {
+    positionDropdown();
+    dropdown.classList.add("show");
+    profileBtn.classList.add("open");
+  }
+
+  function closeDropdown() {
+    dropdown.classList.remove("show");
+    profileBtn.classList.remove("open");
+  }
+
+  profileBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (dropdown.classList.contains("show")) {
+      closeDropdown();
+    } else {
+      openDropdown();
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target) && e.target !== profileBtn) {
+      closeDropdown();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (dropdown.classList.contains("show")) positionDropdown();
+  });
+}
+
 renderSidebar();
+renderTopbarProfile();
