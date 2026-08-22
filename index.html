@@ -699,8 +699,12 @@ function closeDonationPopup() {
 const ratingTrack =
 document.getElementById("ratingTrack")
 
+if (!firebase.apps.find(a => a.name === "mainApp")) {
+    firebase.initializeApp(FIREBASE_CONFIG_MAIN, "mainApp");
+}
+
 const reviewDb =
-firebase.database()
+firebase.app("mainApp").database()
 
 let reviewLoopStarted = false
 
