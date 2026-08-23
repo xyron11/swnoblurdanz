@@ -3,7 +3,8 @@ const DOWNLOAD_API = "https://api-download-beryl.vercel.app";
 const YT_API = "https://api.azbry.com/api/download";
 const EMAIL_API = "https://inquisitive-platypus-c3bfdc.netlify.app/.netlify/functions/send-email";
 
-const CS_API = "https://inquisitive-platypus-c3bfdc.netlify.app/.netlify/functions/send-gemini";
+const CS_API = "https://gemniapi.netlify.app/.netlify/functions/send-gemini";
+
 const CS_SYSTEM_PROMPT = `
 Kamu adalah "DanzClean Support", asisten customer service resmi untuk
 website DanzClean (situs downloader & tools media sosial). Kamu diciptakan
