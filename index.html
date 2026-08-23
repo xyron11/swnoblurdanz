@@ -315,11 +315,11 @@
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
             } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
-                titleEl.innerText = "Nomor lu gada di group";
-                actionContainer.innerHTML = `
-                    <a href="https://chat.whatsapp.com/IcazIYACsoUAscuR7XCv6K?s=cl&p=a&mlu=4" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
-                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
-                `;
+    titleEl.innerText = "Nomor lu gada di group";
+    actionContainer.innerHTML = `
+        <button type="button" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;" onclick="closeModal(); openGroupModal();">JOIN GROUP</button>
+        <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
+    `;
             } else {
                 actionContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">Kembali</button>`;
             }
@@ -906,17 +906,19 @@ div.remove()
     }
 
     const groupModalOverlay = document.getElementById("groupModalOverlay");
-    const joinGroupTrigger = document.getElementById("joinGroupTrigger");
-    const closeGroupModal = document.getElementById("closeGroupModal");
+const joinGroupTrigger = document.getElementById("joinGroupTrigger");
+const closeGroupModal = document.getElementById("closeGroupModal");
 
-    joinGroupTrigger.addEventListener("click", () => {
-        renderGroupButtons();
-        groupModalOverlay.classList.add("show");
-    });
+function openGroupModal() {
+    renderGroupButtons();
+    groupModalOverlay.classList.add("show");
+}
 
-    closeGroupModal.addEventListener("click", () => {
-        groupModalOverlay.classList.remove("show");
-    });
+joinGroupTrigger.addEventListener("click", openGroupModal);
+
+closeGroupModal.addEventListener("click", () => {
+    groupModalOverlay.classList.remove("show");
+});
 
     groupModalOverlay.addEventListener("click", (e) => {
         if (e.target === groupModalOverlay) {
