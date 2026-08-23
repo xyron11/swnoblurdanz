@@ -136,14 +136,34 @@ function showCsHintTooltip(csBtn) {
 
   function positionTooltip() {
     const btnRect = csBtn.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+
+    // Kalau ukurannya masih kebaca 0 (tombol/tooltip belum sempat ke-layout),
+    // coba lagi di frame berikutnya alih-alih lanjut ngitung pake angka 0
+    // (ini yang bikin tooltip nyempil ke pojok kiri atas sebelumnya)
+    if (!btnRect.width || !tooltipRect.width) {
+      requestAnimationFrame(positionTooltip);
+      return;
+    }
+
     const btnCenterX = btnRect.left + btnRect.width / 2;
+    const margin = 8; // jarak minimum ke tepi layar
+
+    // Hitung posisi "left" langsung (bukan "right") biar ga gampang salah hitung.
+    // Arrow ada di kanan box (right:14px), jadi box digeser supaya ujung kanannya
+    // (+19px) pas nunjuk ke tengah tombol CS
+    let left = btnCenterX + 19 - tooltipRect.width;
+
+    // Clamp biar box-nya ga pernah kepotong / nyempil keluar layar
+    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
+
+    tooltip.style.left = left + "px";
     tooltip.style.top = (btnRect.bottom + 10) + "px";
-    // Geser dikit biar arrow-nya (posisi right:14px, lebar 10px) pas nunjuk ke tengah tombol
-    tooltip.style.right = (window.innerWidth - btnCenterX - 19) + "px";
   }
 
-  // Tunggu 1 frame biar layout topbar (posisi tombol CS) udah final dulu
-  requestAnimationFrame(positionTooltip);
+  // Tunggu 2 frame biar layout topbar (posisi tombol CS) beneran final dulu
+  // sebelum diukur (1 frame kadang belum cukup di beberapa browser HP)
+  requestAnimationFrame(() => requestAnimationFrame(positionTooltip));
   window.addEventListener("resize", positionTooltip);
 
   // Kasih jeda dikit biar animasi munculnya kerasa smooth
