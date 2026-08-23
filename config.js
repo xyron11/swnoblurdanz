@@ -3,7 +3,7 @@ const DOWNLOAD_API = "https://api-download-beryl.vercel.app";
 const YT_API = "https://api.azbry.com/api/download";
 const EMAIL_API = "https://inquisitive-platypus-c3bfdc.netlify.app/.netlify/functions/send-email";
 
-const GEMINI_API_KEY = "AQ.Ab8RN6LpgVaSV0RVH1Iia7Qt4bMyG_EyW5t0-AbbkkFejiHDjA";
+const CS_API = "https://inquisitive-platypus-c3bfdc.netlify.app/.netlify/functions/send-gemini";
 const GEMINI_MODEL = "gemini-3.5-flash-lite";
 const GEMINI_API = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
