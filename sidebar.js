@@ -124,6 +124,59 @@ function highlightActiveLink() {
   });
 }
 
+function showCsHintTooltip(csBtn) {
+  // Ga usah muncul kalau lagi di halaman CS-nya sendiri
+  if (location.pathname.endsWith("/customerservice.html")) return;
+
+  const tooltip = document.createElement("div");
+  tooltip.className = "cs-hint-tooltip";
+  tooltip.id = "csHintTooltip";
+  tooltip.innerHTML = "Tanya apa saja<br>masalahmu di CS";
+  document.body.appendChild(tooltip);
+
+  function positionTooltip() {
+    const btnRect = csBtn.getBoundingClientRect();
+    const btnCenterX = btnRect.left + btnRect.width / 2;
+    tooltip.style.top = (btnRect.bottom + 10) + "px";
+    // Geser dikit biar arrow-nya (posisi right:14px, lebar 10px) pas nunjuk ke tengah tombol
+    tooltip.style.right = (window.innerWidth - btnCenterX - 19) + "px";
+  }
+
+  // Tunggu 1 frame biar layout topbar (posisi tombol CS) udah final dulu
+  requestAnimationFrame(positionTooltip);
+  window.addEventListener("resize", positionTooltip);
+
+  // Kasih jeda dikit biar animasi munculnya kerasa smooth
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => tooltip.classList.add("show"));
+  });
+
+  const hide = () => {
+    tooltip.classList.remove("show");
+    setTimeout(() => tooltip.remove(), 400);
+  };
+
+  // Ilang otomatis abis 4 detik
+  const autoHideTimer = setTimeout(hide, 7000);
+
+  // Kalau tombolnya diklik duluan sebelum 4 detik, tooltip langsung ilang
+  csBtn.addEventListener("click", () => {
+    clearTimeout(autoHideTimer);
+    hide();
+  }, { once: true });
+
+  // Kalau sidebar (menu hamburger) dibuka, tooltip langsung ditutup juga
+  // biar ga nembus/ngambang di atas overlay yang blur
+  const sidebarObserver = new MutationObserver(() => {
+    if (document.body.classList.contains("sidebar-open")) {
+      clearTimeout(autoHideTimer);
+      hide();
+      sidebarObserver.disconnect();
+    }
+  });
+  sidebarObserver.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+}
+
 function renderTopbarProfile() {
   const topbar = document.querySelector(".topbar");
   if (!topbar || document.getElementById("topbarProfileBtn")) return;
@@ -139,12 +192,39 @@ function renderTopbarProfile() {
   const fallbackAvatar = "https://ui-avatars.com/api/?name=" + encodeURIComponent(displayName) + "&background=4c7dff&color=fff";
   const avatarSrc = loggedUser.photo || fallbackAvatar;
 
+  let csBtnRef = null;
+
+  if (!document.getElementById("topbarCsBtn")) {
+    const csBtn = document.createElement("button");
+    csBtn.type = "button";
+    csBtn.className = "topbar-cs-btn";
+    csBtn.id = "topbarCsBtn";
+    csBtn.title = "Customer Service";
+    csBtn.innerHTML = `
+      <span class="topbar-cs-inner">
+        <img src="./media/cs.png" alt="CS" onerror="this.style.display='none';">
+      </span>
+      <span class="topbar-cs-status"></span>
+    `;
+    csBtn.addEventListener("click", () => {
+      window.location.href = "/customerservice.html";
+    });
+    topbar.appendChild(csBtn);
+
+    csBtnRef = csBtn;
+  }
+
   const profileBtn = document.createElement("button");
   profileBtn.type = "button";
   profileBtn.className = "topbar-profile-btn";
   profileBtn.id = "topbarProfileBtn";
   profileBtn.innerHTML = `<img src="${avatarSrc}" alt="Profil" onerror="this.src='${fallbackAvatar}'"><span class="topbar-profile-status"></span>`;
   topbar.appendChild(profileBtn);
+
+  // Tooltip CS baru ditampilkan SETELAH tombol profile juga selesai
+  // ditambahin, biar posisi tombol CS udah final (gara-gara margin-left:auto
+  // posisinya bisa geser begitu tombol profile nyusul ditambahin ke topbar)
+  if (csBtnRef) showCsHintTooltip(csBtnRef);
 
   const dropdown = document.createElement("div");
   dropdown.className = "profile-dropdown";
