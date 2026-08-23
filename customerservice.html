@@ -813,11 +813,6 @@
             const text = csTextInput.value.trim();
             if (!text && !pendingImage) return;
 
-            if (!GEMINI_API_KEY || GEMINI_API_KEY === "ISI_API_KEY_GEMINI_DISINI") {
-                csAddMessage("error", "API key Gemini belum diisi. Isi GEMINI_API_KEY di config.js dulu ya.");
-                return;
-            }
-
             csRemoveQuickReplies();
 
             isSending = true;
@@ -848,7 +843,7 @@
                     body.systemInstruction = { parts: [{ text: CS_SYSTEM_PROMPT }] };
                 }
 
-                const res = await fetch(`${GEMINI_API}?key=${GEMINI_API_KEY}`, {
+                const res = await fetch(CS_API, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(body)
