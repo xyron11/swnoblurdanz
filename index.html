@@ -316,7 +316,7 @@
                 `;
             } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
     titleEl.innerText = "Nomor lu gada di group";
-    textEl.innerHTML = `<strong>Mohon di baca</strong><br>${message}<br><br>Klik tombol CS di bawah untuk masalah ini`;
+    textEl.innerHTML = `<strong style="color:#ffffff;">Mohon di baca</strong><br>${message}<br><br><strong style="color:#ffffff;">Klik tombol CS di bawah untuk masalah ini</strong>`;
     actionContainer.innerHTML = `
         <button type="button" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #3d6cff, #6366f1); color: #ffffff;" onclick="window.location.href='/customerservice.html'">🎧 CUSTOMER SERVICE</button>
         <button type="button" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c; margin-top: 10px;" onclick="closeModal(); openGroupModal();">JOIN GROUP</button>
