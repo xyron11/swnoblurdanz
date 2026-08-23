@@ -21,7 +21,7 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-    
+
     :root {
         --cs-bg: #04060e;
         --cs-panel: rgba(13, 18, 42, 0.7);
@@ -837,11 +837,17 @@
                     body.systemInstruction = { parts: [{ text: CS_SYSTEM_PROMPT }] };
                 }
 
+                const csAbortCtrl = new AbortController();
+                const csTimeoutId = setTimeout(() => csAbortCtrl.abort(), 25000);
+
                 const res = await fetch(CS_API, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body)
+                    body: JSON.stringify(body),
+                    signal: csAbortCtrl.signal
                 });
+
+                clearTimeout(csTimeoutId);
 
                 const data = await res.json();
                 csHideTyping();
@@ -865,7 +871,11 @@
 
             } catch (err) {
                 csHideTyping();
-                csAddMessage("error", "Gagal terhubung ke server AI. Cek koneksi internet kamu.");
+                if (err && err.name === "AbortError") {
+                    csAddMessage("error", "Server AI kelamaan jawab (timeout). Coba kirim ulang ya.");
+                } else {
+                    csAddMessage("error", "Gagal terhubung ke server AI. Cek koneksi internet kamu.");
+                }
                 csHistory.pop();
                 csSaveStorage();
             }
