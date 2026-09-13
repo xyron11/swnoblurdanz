@@ -277,9 +277,19 @@
         });
 
         document.getElementById("file").addEventListener("change", e => {
-            const file = e.target.files[0];
-            document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
-        });
+    const file = e.target.files[0];
+    const MAX_FILE_SIZE_BYTES = 250 * 1024 * 1024;
+
+    if (file && file.size > MAX_FILE_SIZE_BYTES) {
+        const ukuranFileMB = (file.size / (1024 * 1024)).toFixed(1);
+        showCustomModal("error", "File Terlalu Besar", `Ukuran file kamu ${ukuranFileMB}MB, maksimal yang diizinkan adalah 250MB. Kompres dulu videonya ya.`);
+        e.target.value = "";
+        document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
+        return;
+    }
+
+    document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
+});
 
         function toggleMenu() {
             document.getElementById("sidebar").classList.toggle("active");
@@ -376,6 +386,16 @@
     if (!file) {
         batalkanProses();
         showCustomModal("warning", "File Kosong", "Mana video atau fotonya euy, masukin dulu");
+        return;
+    }
+
+    const MAX_FILE_SIZE_MB = 250;
+    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+        batalkanProses();
+        const ukuranFileMB = (file.size / (1024 * 1024)).toFixed(1);
+        showCustomModal("error", "File Terlalu Besar", `Ukuran file kamu ${ukuranFileMB}MB, maksimal yang diizinkan adalah ${MAX_FILE_SIZE_MB}MB. Kompres dulu videonya ya.`);
         return;
     }
 
