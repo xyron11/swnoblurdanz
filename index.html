@@ -379,13 +379,6 @@
         return;
     }
 
-    const MAX_UPLOAD_SIZE = 250 * 1024 * 1024; // 250MB
-    if (file.size > MAX_UPLOAD_SIZE) {
-        batalkanProses();
-        showCustomModal("error", "File Terlalu Besar", "Ukuran file maksimal 250 MB. File kamu " + (file.size / 1024 / 1024).toFixed(1) + " MB.");
-        return;
-    }
-
     if (!nomor) {
         batalkanProses();
         showCustomModal("error", "Sesi Dikeluarkan", "Sesi login tidak ditemukan. Silakan login kembali.");
