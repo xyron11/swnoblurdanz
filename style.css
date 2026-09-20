@@ -2964,14 +2964,18 @@ z-index:99999;
         line-height: 1.5 !important;
     }
 
-    input {
+    /* Cuma buat elemen uploader di halaman utama.
+       JANGAN pakai selector global `input` / `button` di sini, karena bakal
+       ngerusak halaman login, tombol foto profil, tombol CS, dan semua popup. */
+    .container > input {
         padding: 24px 20px !important; 
         border-radius: 22px !important;
         font-size: 22px !important;
         margin-bottom: 45px !important;
     }
 
-    button, #uploadBtn {
+    #uploadBtn,
+    .btn-join-main {
         padding: 24px !important;
         border-radius: 22px !important;
         font-size: 22px !important;
