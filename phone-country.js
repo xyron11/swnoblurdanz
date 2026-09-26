@@ -234,7 +234,7 @@
             dialSpan.textContent = "+" + country.dial;
             countryBtn.setAttribute("aria-label", "Kode negara: " + country.name + " +" + country.dial);
             if (hintEl) {
-                const contoh = formatGrouped("8".repeat(Math.max(country.min, 6)).slice(0, Math.min(country.max, 11)));
+                const contoh = formatGrouped("8".repeat(Math.max(country.min, 6)).slice(0, Math.min(country.max, 13)));
                 const rangeTxt = country.min === country.max ? country.min + " digit" : country.min + "-" + country.max + " digit";
                 hintEl.textContent = "Contoh format: " + contoh + " (" + rangeTxt + ")";
             }
