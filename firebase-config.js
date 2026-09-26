@@ -8,7 +8,10 @@ const FIREBASE_CONFIG_AUTH = {
     appId: "1:450022321477:web:4d3ee887b935726dd2a22c",
     measurementId: "G-LSCQ9MKPZ6"
 };
-
+const CLOUDINARY_CONFIG = {
+    cloudName: "l8aazitj",
+    uploadPreset: "danzclean_video"
+};
 const FIREBASE_CONFIG_MAIN = {
     apiKey: "AIzaSyCEj9USiCvQbbwvaZiFDN4lkLitPXWzew4",
     authDomain: "danzzclean.firebaseapp.com",
@@ -28,3 +31,15 @@ const FIREBASE_CONFIG_VERIFY = {
     messagingSenderId: "794873142364",
     appId: "1:794873142364:web:18125563e592d5813eda99"
 };
+
+const FIREBASE_CONFIG_PRESET = {
+    apiKey: "AIzaSyD8AFCMv_zNNme-jVc_dryw-hMjm51v8TE",
+    authDomain: "preset-9ebb6.firebaseapp.com",
+    databaseURL: "https://preset-9ebb6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "preset-9ebb6",
+    storageBucket: "preset-9ebb6.firebasestorage.app",
+    messagingSenderId: "460817401813",
+    appId: "1:460817401813:web:1b57ae904092b6c1729f5c",
+    measurementId: "G-KPLEGJJXQ1"
+};
+
