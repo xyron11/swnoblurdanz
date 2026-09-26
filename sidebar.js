@@ -13,6 +13,7 @@ const SIDEBAR_MENU = [
   },
   { href: "https://whatsapp.com/channel/0029VbCPkeX2UPBEbTumgG2Y", icon: "./media/channel.png", label: "Channel WhatsApp", target: "_blank" },
   { href: "/creator.html", icon: "./media/creator.png", label: "Creator" },
+  { href: "/preset-tamplate.html", icon: "./media/preset.png", label: "Preset & Template" },
   { href: "/stats.html", icon: "./media/statistik.png", label: "Statistik" },
   { href: "/rating.html", icon: "./media/rating.png", label: "Rating" },
   { href: "/settingakun.html", icon: "./media/setting.png", label: "Setting" },
