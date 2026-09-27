@@ -43,3 +43,13 @@ const FIREBASE_CONFIG_PRESET = {
     measurementId: "G-KPLEGJJXQ1"
 };
 
+const FIREBASE_CONFIG_NOTIF = {
+  apiKey: "AIzaSyATBMI8Xqg6Sk6cMlFIuZi7x_2e4obevP4",
+  authDomain: "notif-22dce.firebaseapp.com",
+  databaseURL: "https://notif-22dce-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "notif-22dce",
+  storageBucket: "notif-22dce.firebasestorage.app",
+  messagingSenderId: "159257237463",
+  appId: "1:159257237463:web:be79fea1216f31f3ac9d92",
+  measurementId: "G-1Z9FVXZDHN"
+};
