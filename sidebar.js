@@ -215,6 +215,28 @@ function renderTopbarProfile() {
 
   let csBtnRef = null;
 
+  if (!document.getElementById("topbarNotifBtn")) {
+    const notifBtn = document.createElement("button");
+    notifBtn.type = "button";
+    notifBtn.className = "topbar-notif-btn";
+    notifBtn.id = "topbarNotifBtn";
+    notifBtn.title = "Notifikasi";
+    notifBtn.innerHTML = `
+      <span class="topbar-notif-inner">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+        </svg>
+      </span>
+      <span class="topbar-notif-dot" id="topbarNotifDot" style="display:none;"></span>
+    `;
+    // Logic notifikasi (buka panel, ambil data firebase, dll) ada di notifikasi.js
+    notifBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (typeof window.toggleNotifPanel === "function") window.toggleNotifPanel();
+    });
+    topbar.appendChild(notifBtn);
+  }
+
   if (!document.getElementById("topbarCsBtn")) {
     const csBtn = document.createElement("button");
     csBtn.type = "button";
