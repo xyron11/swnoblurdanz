@@ -283,6 +283,8 @@ href="style.css">
 }
 .block-btn.do-block{ background:#ff4d4d; color:#fff; }
 .block-btn.do-unblock{ background:#00ffaa; color:#0a0e1a; }
+.block-btn.do-delete{ background:rgba(255,77,77,.14); color:#ff6b6b; }
+.block-btn.do-delete:hover{ background:#ff4d4d; color:#fff; }
 .block-empty{
     text-align:center;
     color:#7a84ad;
@@ -499,6 +501,25 @@ placeholder="Alasan blokir (opsional)">
 <div class="modal-btn-row">
 <button class="modal-btn secondary" onclick="closeBlockModal()">Batal</button>
 <button class="modal-btn" onclick="konfirmasiBlokirAkun()">Blokir</button>
+</div>
+
+</div>
+
+</div>
+
+<div class="modal-overlay" id="deleteModal">
+
+<div class="modal-card">
+
+<div class="modal-icon">🗑️</div>
+
+<div class="modal-title">Hapus Akun</div>
+
+<div class="modal-text" id="deleteModalName">Yakin ingin menghapus akun ini?</div>
+
+<div class="modal-btn-row">
+<button class="modal-btn secondary" onclick="closeDeleteModal()">Batal</button>
+<button class="modal-btn" style="background:#ff4d4d;" onclick="konfirmasiHapusAkun()">Hapus</button>
 </div>
 
 </div>
@@ -723,6 +744,11 @@ function renderBlockList(){
                     onclick="toggleBlokirAkun('${akun.uid}', ${statusBlokir ? "false" : "true"})">
                     ${statusBlokir ? "Buka" : "Blokir"}
                 </button>
+                <button
+                    class="block-btn do-delete"
+                    onclick="hapusAkun('${akun.uid}')">
+                     Hapus
+                </button>
             </div>
         </div>
         `
@@ -769,6 +795,58 @@ function konfirmasiBlokirAkun(){
     }).then(() => {
         closeBlockModal()
         showPopup("Berhasil", `Akun "${akun ? akun.username : uid}" berhasil diblokir 🚫`)
+    })
+}
+
+let pendingDeleteUid = null
+
+function hapusAkun(uid){
+
+    if(ownerUid && uid === ownerUid){
+        showPopup("Gagal", "Akun owner tidak bisa dihapus.")
+        return
+    }
+
+    const akun = daftarAkun[uid]
+    pendingDeleteUid = uid
+
+    document.getElementById("deleteModalName").innerText =
+        `Yakin ingin menghapus akun "${akun ? akun.username : uid}" secara permanen? Data akun tidak bisa dikembalikan.`
+    document.getElementById("deleteModal").classList.add("active")
+}
+
+function closeDeleteModal(){
+    document.getElementById("deleteModal").classList.remove("active")
+    pendingDeleteUid = null
+}
+
+function konfirmasiHapusAkun(){
+
+    if(!pendingDeleteUid) return
+
+    const uid = pendingDeleteUid
+    const akun = daftarAkun[uid]
+    const nama = akun ? akun.username : uid
+
+    if(ownerUid && uid === ownerUid){
+        closeDeleteModal()
+        return
+    }
+
+    document.getElementById("deleteModal").classList.remove("active")
+    pendingDeleteUid = null
+
+    Promise.all([
+        usersRef.child(uid).remove(),
+        manualUsersRef.child(uid).remove(),
+        blockedUsersRef.child(uid).remove()
+    ]).then(() => {
+        delete daftarAkun[uid]
+        delete daftarBlokir[uid]
+        renderBlockList()
+        showPopup("Berhasil", `Akun "${nama}" berhasil dihapus ✅`)
+    }).catch(() => {
+        showPopup("Gagal", "Gagal menghapus akun. Cek Firebase rules atau koneksi.")
     })
 }
 
