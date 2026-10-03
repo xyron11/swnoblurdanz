@@ -550,9 +550,29 @@
                                 showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
                             } 
                             else if (statusData.status === "error") {
-                                clearInterval(intervalCek);
-                                throw new Error(statusData.message);
-                            }
+
+    const pesanError = statusData.message || "";
+
+
+    if (
+        pesanError.toLowerCase().includes("id tidak ditemukan")
+    ) {
+        document.getElementById("status").innerHTML =
+            "Menunggu server memproses video...";
+
+        if (pBar) {
+            pBar.style.width = "98%";
+        }
+
+        if (pText) {
+            pText.innerText = "MENUNGGU SERVER... (98%)";
+        }
+
+        return;
+    }
+    clearInterval(intervalCek);
+    throw new Error(pesanError);
+}
                         } catch (errCek) {
                             clearInterval(intervalCek);
                             resetUploadState();
