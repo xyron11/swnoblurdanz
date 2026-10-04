@@ -527,59 +527,169 @@
                     if (pBar) pBar.style.width = "96%";
                     if (pText) pText.innerText = "PROSES HD... (96%)"; 
 
-                    const intervalCek = setInterval(async () => {
-                        try {
-                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
-                            if (!cekReq.ok) return; 
+                    let gagalCekProgress = 0;
 
-                            const statusData = await cekReq.json();
+const intervalCek = setInterval(async () => {
+    try {
+        const controller = new AbortController();
 
-                            if (statusData.status === "proses") {
-                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
-                                if (pBar) pBar.style.width = "98%";
-                                if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
-                            } 
-                            else if (statusData.status === "selesai") {
-                                if (pBar) pBar.style.width = "100%";
-                                if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
+        const timeoutProgress = setTimeout(() => {
+            controller.abort();
+        }, 10000);
 
-                                await new Promise(r => setTimeout(r, 600));
-                                clearInterval(intervalCek); 
-                                
-                                resetUploadState();
-                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
-                            } 
-                            else if (statusData.status === "error") {
+        let cekReq;
 
-    const pesanError = statusData.message || "";
+        try {
+            cekReq = await fetch(
+                `${API}/api/progress?id=${res.id}`,
+                {
+                    cache: "no-store",
+                    signal: controller.signal
+                }
+            );
+        } finally {
+            clearTimeout(timeoutProgress);
+        }
 
+        if (!cekReq.ok) {
+            gagalCekProgress++;
 
-    if (
-        pesanError.toLowerCase().includes("id tidak ditemukan")
-    ) {
+            document.getElementById("status").innerHTML =
+                "Koneksi ke server terganggu, mencoba lagi...";
+
+            if (pText) {
+                pText.innerText =
+                    "MENGHUBUNGKAN ULANG... (98%)";
+            }
+
+            return;
+        }
+
+        const statusData = await cekReq.json();
+
+        // Berhasil terhubung lagi
+        gagalCekProgress = 0;
+
+        if (statusData.status === "proses") {
+
+            document.getElementById("status").innerHTML =
+                statusData.message ||
+                "Sedang memproses video...";
+
+            if (pBar) {
+                pBar.style.width = "98%";
+            }
+
+            if (pText) {
+                pText.innerText =
+                    "KOMPRESI VIDEO HD... (98%)";
+            }
+
+        } else if (statusData.status === "selesai") {
+
+            if (pBar) {
+                pBar.style.width = "100%";
+            }
+
+            if (pText) {
+                pText.innerText =
+                    "SELESAI RENDERING! (100%)";
+            }
+
+            await new Promise(r => setTimeout(r, 600));
+
+            clearInterval(intervalCek);
+
+            resetUploadState();
+
+            showCustomModal(
+                "success",
+                "Upload Berhasil!",
+                "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit"
+            );
+
+        } else if (statusData.status === "error") {
+
+            const pesanError =
+                statusData.message || "";
+
+            if (
+                pesanError
+                    .toLowerCase()
+                    .includes("id tidak ditemukan")
+            ) {
+
+                document.getElementById("status").innerHTML =
+                    "Menunggu server memproses video...";
+
+                if (pBar) {
+                    pBar.style.width = "98%";
+                }
+
+                if (pText) {
+                    pText.innerText =
+                        "MENUNGGU SERVER... (98%)";
+                }
+
+                return;
+            }
+
+            clearInterval(intervalCek);
+
+            resetUploadState();
+
+            document.getElementById("status").innerHTML =
+                pesanError;
+
+            showCustomModal(
+                "error",
+                "Gagal Memproses",
+                pesanError
+            );
+        }
+
+    } catch (errCek) {
+
+        gagalCekProgress++;
+
+        console.warn(
+            "[PROGRESS NETWORK ERROR]",
+            gagalCekProgress,
+            errCek.message
+        );
+
+        // Jangan langsung menganggap upload gagal.
         document.getElementById("status").innerHTML =
-            "Menunggu server memproses video...";
+            "Koneksi terganggu, server masih memproses video...";
 
         if (pBar) {
             pBar.style.width = "98%";
         }
 
         if (pText) {
-            pText.innerText = "MENUNGGU SERVER... (98%)";
+            pText.innerText =
+                `MENUNGGU SERVER... (${Math.min(gagalCekProgress, 5)}/5)`;
         }
 
-        return;
+        // Baru tampilkan error setelah gagal berkali-kali
+        if (gagalCekProgress >= 5) {
+
+            clearInterval(intervalCek);
+
+            resetUploadState();
+
+            document.getElementById("status").innerHTML =
+                "Koneksi ke server tidak stabil.";
+
+            showCustomModal(
+                "error",
+                "Koneksi Terganggu",
+                "Koneksi ke server beberapa kali gagal. Server mungkin masih memproses video, jadi jangan upload ulang sebelum memastikan hasil sebelumnya."
+            );
+        }
     }
-    clearInterval(intervalCek);
-    throw new Error(pesanError);
-}
-                        } catch (errCek) {
-                            clearInterval(intervalCek);
-                            resetUploadState();
-                            document.getElementById("status").innerHTML = errCek.message;
-                            showCustomModal("error", "Gagal Memproses", errCek.message);
-                        }
-                    }, 3000); 
+
+}, 3000);
 
                 } else {
                     resetUploadState();
@@ -599,17 +709,51 @@
     };
 
     xhr.onerror = function () {
-        resetUploadState();
-        document.getElementById("status").innerHTML = "Koneksi terputus.";
-        showCustomModal("error", "Masalah Jaringan", "Gagal mengirim data. Koneksi jaringan terputus atau tidak stabil.");
-    };
+    isCurrentlyUploading = true;
 
-    xhr.timeout = 300000; 
-    xhr.ontimeout = function () {
-        resetUploadState();
-        document.getElementById("status").innerHTML = "Upload Timeout.";
-        showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
-    };
+    document.getElementById("status").innerHTML =
+        "Koneksi upload terganggu. Server mungkin masih memproses...";
+
+    const pBar = document.getElementById("btnProgressBar");
+    const pText = document.getElementById("btnProgressText");
+
+    if (pBar) {
+        pBar.style.width = "98%";
+    }
+
+    if (pText) {
+        pText.innerText =
+            "MENUNGGU SERVER... (98%)";
+    }
+
+    console.warn(
+        "[XHR NETWORK ERROR] Request mungkin sudah diterima server."
+    );
+};
+
+    xhr.timeout = 300000;
+
+xhr.ontimeout = function () {
+
+    document.getElementById("status").innerHTML =
+        "Upload belum mendapat respons. Server mungkin masih memproses...";
+
+    const pBar = document.getElementById("btnProgressBar");
+    const pText = document.getElementById("btnProgressText");
+
+    if (pBar) {
+        pBar.style.width = "98%";
+    }
+
+    if (pText) {
+        pText.innerText =
+            "MENUNGGU SERVER... (98%)";
+    }
+
+    console.warn(
+        "[XHR TIMEOUT] Jangan upload ulang dulu."
+    );
+};
 
     xhr.open("POST", API + "/upload", true);
     xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
