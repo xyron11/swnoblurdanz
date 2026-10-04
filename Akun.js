@@ -1,6 +1,6 @@
 const AKUN_OWNER = [
     "caisen004@gmail.com",
-    "yeonj7725@gmail.con",
+    "yeonj7725@gmail.com",
     "vizomzomi@gmail.com"
 ];
 
