@@ -2,7 +2,7 @@ const AKUN_OWNER = [
     "caisen004@gmail.com",
     "yeonj7725@gmail.com",
     "vizomzomi@gmail.com",
-    "oktabe491@gmqil.com"
+    "oktabe491@gmail.com"
 ];
 
 function cekAkunOwner() {
