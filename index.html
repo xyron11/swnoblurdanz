@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 
@@ -120,6 +121,19 @@
             box-shadow: 0 2px 6px rgba(61, 108, 255, 0.2);
         }
 
+
+        .modal-big-text {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.3;
+            margin: 0 0 16px;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 18px rgba(61, 108, 255, 0.55);
+        }
+
         .modal-btn-group {
             background: linear-gradient(135deg, #00ffaa, #00b377);
             color: #05081c;
@@ -188,7 +202,6 @@
         <div class="menu-btn dashboard-menu" onclick="toggleMenu()">☰</div>
     </div>
 
-    <script src="notifikasi.js"></script>
     <div class="sidebar" id="sidebar"></div>
     <script src="Akun.js"></script>
     <script src="sidebar.js"></script>
@@ -258,6 +271,7 @@
         <div class="modal-card">
             <div class="modal-icon" id="modalIcon">⚠️</div>
             <div class="modal-title" id="modalTitle">Perhatian</div>
+            <div class="modal-big-text" id="modalBigText" style="display:none;"></div>
             <div class="modal-text" id="modalText">Pesan peringatan sistem akan muncul di sini.</div>
             <div id="modalActionContainer">
                 <button class="modal-btn" onclick="closeModal()">Kembali</button>
@@ -278,19 +292,9 @@
         });
 
         document.getElementById("file").addEventListener("change", e => {
-    const file = e.target.files[0];
-    const MAX_FILE_SIZE_BYTES = 250 * 1024 * 1024;
-
-    if (file && file.size > MAX_FILE_SIZE_BYTES) {
-        const ukuranFileMB = (file.size / (1024 * 1024)).toFixed(1);
-        showCustomModal("error", "File Terlalu Besar", `Ukuran file kamu ${ukuranFileMB}MB, maksimal yang diizinkan adalah 250MB. Kompres dulu videonya ya.`);
-        e.target.value = "";
-        document.getElementById("file-name").innerText = "Tap di sini buat masukin video";
-        return;
-    }
-
-    document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
-});
+            const file = e.target.files[0];
+            document.getElementById("file-name").innerText = file ? file.name : "Tap di sini buat masukin video";
+        });
 
         function toggleMenu() {
             document.getElementById("sidebar").classList.toggle("active");
@@ -319,20 +323,31 @@
             titleEl.innerText = title;
             textEl.innerText = message;
 
+            const bigTextEl = document.getElementById("modalBigText");
+            bigTextEl.style.display = "none";
+            bigTextEl.innerText = "";
+
             const lowerMsg = message.toLowerCase();
-            if (type === "success") {
+            const isFileTooBig = lowerMsg.includes("maksimal yang diizinkan") && lowerMsg.includes("kompres");
+
+            if (isFileTooBig) {
+                bigTextEl.innerText = "Rekomendasi aplikasi untuk kompres MB video";
+                bigTextEl.style.display = "block";
+                actionContainer.innerHTML = `
+                    <a href="https://play.google.com/store/apps/details?id=com.videoconverter.videocompressor" target="_blank" rel="noopener" class="modal-btn modal-btn-group">APK COMPRESSOR</a>
+                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
+                `;
+            } else if (type === "success") {
                 actionContainer.innerHTML = `
                     <a href="https://chat.whatsapp.com/IcazIYACsoUAscuR7XCv6K" target="_blank" class="modal-btn modal-btn-group">CEK GROUP</a>
                     <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Tutup</button>
                 `;
             } else if (type === "error" && (lowerMsg.includes("gabung") || lowerMsg.includes("join") || lowerMsg.includes("grup") || lowerMsg.includes("group"))) {
-    titleEl.innerText = "Nomor lu gada di group";
-    textEl.innerHTML = `<strong style="color:#ffffff;">Mohon di baca</strong><br>${message}<br><br><strong style="color:#ffffff;">Klik tombol CS di bawah untuk masalah ini</strong>`;
-    actionContainer.innerHTML = `
-        <button type="button" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #3d6cff, #6366f1); color: #ffffff;" onclick="window.location.href='/customerservice.html'">🎧 CUSTOMER SERVICE</button>
-        <button type="button" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c; margin-top: 10px;" onclick="closeModal(); openGroupModal();">JOIN GROUP</button>
-        <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
-    `;
+                titleEl.innerText = "Nomor lu gada di group";
+                actionContainer.innerHTML = `
+                    <a href="https://chat.whatsapp.com/IcazIYACsoUAscuR7XCv6K?s=cl&p=a&mlu=4" target="_blank" class="modal-btn modal-btn-group" style="background: linear-gradient(135deg, #00ffaa, #00b377); color: #05081c;">JOIN GROUP</a>
+                    <button class="modal-btn" style="background: transparent; box-shadow: none; border: 1px solid rgba(255,255,255,0.15); margin-top: 12px; color: #9ea7d6;" onclick="closeModal()">Kembali</button>
+                `;
             } else {
                 actionContainer.innerHTML = `<button class="modal-btn" onclick="closeModal()">Kembali</button>`;
             }
@@ -390,13 +405,11 @@
         return;
     }
 
-    const MAX_FILE_SIZE_MB = 250;
-    const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-
-    if (file.size > MAX_FILE_SIZE_BYTES) {
+    const MAX_MB = 100;
+    const ukuranFileMB = (file.size / (1024 * 1024)).toFixed(1);
+    if (file.size > MAX_MB * 1024 * 1024) {
         batalkanProses();
-        const ukuranFileMB = (file.size / (1024 * 1024)).toFixed(1);
-        showCustomModal("error", "File Terlalu Besar", `Ukuran file kamu ${ukuranFileMB}MB, maksimal yang diizinkan adalah ${MAX_FILE_SIZE_MB}MB. Kompres dulu videonya ya.`);
+        showCustomModal("warning", "File Terlalu Besar", `Ukuran file kamu ${ukuranFileMB}MB, maksimal yang diizinkan adalah ${MAX_MB}MB. Kompres dulu videonya ya.`);
         return;
     }
 
@@ -527,169 +540,39 @@
                     if (pBar) pBar.style.width = "96%";
                     if (pText) pText.innerText = "PROSES HD... (96%)"; 
 
-                    let gagalCekProgress = 0;
+                    const intervalCek = setInterval(async () => {
+                        try {
+                            const cekReq = await fetch(`${API}/api/progress?id=${res.id}`);
+                            if (!cekReq.ok) return; 
 
-const intervalCek = setInterval(async () => {
-    try {
-        const controller = new AbortController();
+                            const statusData = await cekReq.json();
 
-        const timeoutProgress = setTimeout(() => {
-            controller.abort();
-        }, 10000);
+                            if (statusData.status === "proses") {
+                                document.getElementById("status").innerHTML = statusData.message || "Sedang memproses video...";
+                                if (pBar) pBar.style.width = "98%";
+                                if (pText) pText.innerText = "KOMPRESI VIDEO HD... (98%)";
+                            } 
+                            else if (statusData.status === "selesai") {
+                                if (pBar) pBar.style.width = "100%";
+                                if (pText) pText.innerText = "SELESAI RENDERING! (100%)";
 
-        let cekReq;
-
-        try {
-            cekReq = await fetch(
-                `${API}/api/progress?id=${res.id}`,
-                {
-                    cache: "no-store",
-                    signal: controller.signal
-                }
-            );
-        } finally {
-            clearTimeout(timeoutProgress);
-        }
-
-        if (!cekReq.ok) {
-            gagalCekProgress++;
-
-            document.getElementById("status").innerHTML =
-                "Koneksi ke server terganggu, mencoba lagi...";
-
-            if (pText) {
-                pText.innerText =
-                    "MENGHUBUNGKAN ULANG... (98%)";
-            }
-
-            return;
-        }
-
-        const statusData = await cekReq.json();
-
-        // Berhasil terhubung lagi
-        gagalCekProgress = 0;
-
-        if (statusData.status === "proses") {
-
-            document.getElementById("status").innerHTML =
-                statusData.message ||
-                "Sedang memproses video...";
-
-            if (pBar) {
-                pBar.style.width = "98%";
-            }
-
-            if (pText) {
-                pText.innerText =
-                    "KOMPRESI VIDEO HD... (98%)";
-            }
-
-        } else if (statusData.status === "selesai") {
-
-            if (pBar) {
-                pBar.style.width = "100%";
-            }
-
-            if (pText) {
-                pText.innerText =
-                    "SELESAI RENDERING! (100%)";
-            }
-
-            await new Promise(r => setTimeout(r, 600));
-
-            clearInterval(intervalCek);
-
-            resetUploadState();
-
-            showCustomModal(
-                "success",
-                "Upload Berhasil!",
-                "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit"
-            );
-
-        } else if (statusData.status === "error") {
-
-            const pesanError =
-                statusData.message || "";
-
-            if (
-                pesanError
-                    .toLowerCase()
-                    .includes("id tidak ditemukan")
-            ) {
-
-                document.getElementById("status").innerHTML =
-                    "Menunggu server memproses video...";
-
-                if (pBar) {
-                    pBar.style.width = "98%";
-                }
-
-                if (pText) {
-                    pText.innerText =
-                        "MENUNGGU SERVER... (98%)";
-                }
-
-                return;
-            }
-
-            clearInterval(intervalCek);
-
-            resetUploadState();
-
-            document.getElementById("status").innerHTML =
-                pesanError;
-
-            showCustomModal(
-                "error",
-                "Gagal Memproses",
-                pesanError
-            );
-        }
-
-    } catch (errCek) {
-
-        gagalCekProgress++;
-
-        console.warn(
-            "[PROGRESS NETWORK ERROR]",
-            gagalCekProgress,
-            errCek.message
-        );
-
-        // Jangan langsung menganggap upload gagal.
-        document.getElementById("status").innerHTML =
-            "Koneksi terganggu, server masih memproses video...";
-
-        if (pBar) {
-            pBar.style.width = "98%";
-        }
-
-        if (pText) {
-            pText.innerText =
-                `MENUNGGU SERVER... (${Math.min(gagalCekProgress, 5)}/5)`;
-        }
-
-        // Baru tampilkan error setelah gagal berkali-kali
-        if (gagalCekProgress >= 5) {
-
-            clearInterval(intervalCek);
-
-            resetUploadState();
-
-            document.getElementById("status").innerHTML =
-                "Koneksi ke server tidak stabil.";
-
-            showCustomModal(
-                "error",
-                "Koneksi Terganggu",
-                "Koneksi ke server beberapa kali gagal. Server mungkin masih memproses video, jadi jangan upload ulang sebelum memastikan hasil sebelumnya."
-            );
-        }
-    }
-
-}, 3000);
+                                await new Promise(r => setTimeout(r, 600));
+                                clearInterval(intervalCek); 
+                                
+                                resetUploadState();
+                                showCustomModal("success", "Upload Berhasil!", "Done bre cek group nya, Video akan otomatis terhapus dalam 5 menit");
+                            } 
+                            else if (statusData.status === "error") {
+                                clearInterval(intervalCek);
+                                throw new Error(statusData.message);
+                            }
+                        } catch (errCek) {
+                            clearInterval(intervalCek);
+                            resetUploadState();
+                            document.getElementById("status").innerHTML = errCek.message;
+                            showCustomModal("error", "Gagal Memproses", errCek.message);
+                        }
+                    }, 3000); 
 
                 } else {
                     resetUploadState();
@@ -709,51 +592,17 @@ const intervalCek = setInterval(async () => {
     };
 
     xhr.onerror = function () {
-    isCurrentlyUploading = true;
+        resetUploadState();
+        document.getElementById("status").innerHTML = "Koneksi terputus.";
+        showCustomModal("error", "Masalah Jaringan", "Gagal mengirim data. Koneksi jaringan terputus atau tidak stabil.");
+    };
 
-    document.getElementById("status").innerHTML =
-        "Koneksi upload terganggu. Server mungkin masih memproses...";
-
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-
-    if (pBar) {
-        pBar.style.width = "98%";
-    }
-
-    if (pText) {
-        pText.innerText =
-            "MENUNGGU SERVER... (98%)";
-    }
-
-    console.warn(
-        "[XHR NETWORK ERROR] Request mungkin sudah diterima server."
-    );
-};
-
-    xhr.timeout = 300000;
-
-xhr.ontimeout = function () {
-
-    document.getElementById("status").innerHTML =
-        "Upload belum mendapat respons. Server mungkin masih memproses...";
-
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-
-    if (pBar) {
-        pBar.style.width = "98%";
-    }
-
-    if (pText) {
-        pText.innerText =
-            "MENUNGGU SERVER... (98%)";
-    }
-
-    console.warn(
-        "[XHR TIMEOUT] Jangan upload ulang dulu."
-    );
-};
+    xhr.timeout = 300000; 
+    xhr.ontimeout = function () {
+        resetUploadState();
+        document.getElementById("status").innerHTML = "Upload Timeout.";
+        showCustomModal("error", "Masalah Jaringan", "Waktu unggah habis. Jaringan terlalu lambat untuk mengirim file ukuran ini.");
+    };
 
     xhr.open("POST", API + "/upload", true);
     xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
@@ -793,11 +642,19 @@ function resetUploadState() {
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="firebase-config.js"></script>
     <script>
         (function() {
+            const config = {
+                apiKey: "AIzaSyCzifL91Yg6PnQdsFyXS9P0XQFivabTK2I",
+                authDomain: "danzclean-auth.firebaseapp.com",
+                databaseURL: "https://danzclean-auth-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "danzclean-auth",
+                storageBucket: "danzclean-auth.firebasestorage.app",
+                messagingSenderId: "450022321477",
+                appId: "1:450022321477:web:4d3ee887b935726dd2a22c"
+            };
             if (!firebase.apps.length) {
-                firebase.initializeApp(FIREBASE_CONFIG_AUTH);
+                firebase.initializeApp(config);
             }
             const db = firebase.database();
             const ref = db.ref("total_visitors");
@@ -812,9 +669,18 @@ function resetUploadState() {
     </script>
     <script>
         (function() {
+            const verifyConfig = {
+                apiKey: "AIzaSyAe4TyvZVkZoqk652JIdIQlVp9DkjE_hZU",
+                authDomain: "danzclean-verify.firebaseapp.com",
+                databaseURL: "https://danzclean-verify-default-rtdb.asia-southeast1.firebasedatabase.app",
+                projectId: "danzclean-verify",
+                storageBucket: "danzclean-verify.firebasestorage.app",
+                messagingSenderId: "794873142364",
+                appId: "1:794873142364:web:18125563e592d5813eda99"
+            };
             const existing = firebase.apps.find(a => a.name === "verifyApp");
             if (!existing) {
-                firebase.initializeApp(FIREBASE_CONFIG_VERIFY, "verifyApp");
+                firebase.initializeApp(verifyConfig, "verifyApp");
             }
         })();
     </script>
@@ -886,12 +752,8 @@ function closeDonationPopup() {
 const ratingTrack =
 document.getElementById("ratingTrack")
 
-if (!firebase.apps.find(a => a.name === "mainApp")) {
-    firebase.initializeApp(FIREBASE_CONFIG_MAIN, "mainApp");
-}
-
 const reviewDb =
-firebase.app("mainApp").database()
+firebase.database()
 
 let reviewLoopStarted = false
 
@@ -1027,7 +889,7 @@ div.remove()
 
             <div class="popup-video-container" style="background: #111a3a; border: none; box-shadow: none; display: flex; justify-content: center; align-items: center; height: 200px; margin: 15px 0; overflow: hidden; border-radius: 14px;">
                 <video 
-                    src="./animegerak.mp4" 
+                    src="https://files.catbox.moe/xvqfio.mp4" 
                     autoplay 
                     loop 
                     muted 
@@ -1053,7 +915,7 @@ div.remove()
             
             <div class="tutorial-video-container">
                 <video id="tutorialVideo" controls controlsList="nodownload">
-                    <source src="https://b.top4top.io/m_3921a0j7h0.mp4" type="video/mp4">
+                    <source src="https://files.catbox.moe/duwzsj.mp4" type="video/mp4">
                     Browser kamu tidak mendukung pemutar video.
                 </video>
             </div>
@@ -1063,8 +925,7 @@ div.remove()
                 VIDEO:<br>
                 -NO CROP VIDEO SAAT UPLOAD STATUS
                 FOTO:<br>
-                -NO PAKAI FITUR MUSICK DI WA SAAT UPLOAD STATUS<br>
-                -WAJIB PAKAI DATA SELULER 
+                -NO PAKAI FITUR MUSICK DI WA SAAT UPLOAD STATUS
             </p>
         </div>
     </div>
@@ -1074,8 +935,8 @@ div.remove()
     <script>
     
     const whatsappGroups = [
-        { name: "ILUMINATING STARS 4(UNTUK SWHD)", url: "https://chat.whatsapp.com/KcN5Y4SnNAu1uEkFjFhbui?s=cl&p=a&mlu=4&ilr=4"},
-        { name: "GROUP FRIEND(CARI TEMAN/HAVEFUN)", url: "https://chat.whatsapp.com/Gle3RW4beMu5fo7oPxqlFG?s=cl&p=a&mlu=4&ilr=4" }
+        { name: "ILUMINATING STARS 3(UNTUK SWHD)", url: "https://chat.whatsapp.com/ClYy29g7FsX7gNxyrppekF?s=cl&p=a&mlu=4" },
+        { name: "GROUP FRIEND(CARI TEMAN/HAVEFUN)", url: "https://chat.whatsapp.com/JNMHzerLlO8Kf9sOVqA6zR?s=cl&p=a&mlu=4" }
     ];
 
     const groupListContainer = document.getElementById("groupListContainer");
@@ -1093,19 +954,17 @@ div.remove()
     }
 
     const groupModalOverlay = document.getElementById("groupModalOverlay");
-const joinGroupTrigger = document.getElementById("joinGroupTrigger");
-const closeGroupModal = document.getElementById("closeGroupModal");
+    const joinGroupTrigger = document.getElementById("joinGroupTrigger");
+    const closeGroupModal = document.getElementById("closeGroupModal");
 
-function openGroupModal() {
-    renderGroupButtons();
-    groupModalOverlay.classList.add("show");
-}
+    joinGroupTrigger.addEventListener("click", () => {
+        renderGroupButtons();
+        groupModalOverlay.classList.add("show");
+    });
 
-joinGroupTrigger.addEventListener("click", openGroupModal);
-
-closeGroupModal.addEventListener("click", () => {
-    groupModalOverlay.classList.remove("show");
-});
+    closeGroupModal.addEventListener("click", () => {
+        groupModalOverlay.classList.remove("show");
+    });
 
     groupModalOverlay.addEventListener("click", (e) => {
         if (e.target === groupModalOverlay) {
