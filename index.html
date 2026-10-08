@@ -714,52 +714,47 @@ const intervalCek = setInterval(async () => {
         }
     };
 
+    // Tandai kalau seluruh isi file sudah selesai terkirim ke server
+    let bodyTerkirim = false;
+    xhr.upload.onload = function () {
+        bodyTerkirim = true;
+    };
+
     xhr.onerror = function () {
-    isCurrentlyUploading = true;
+        console.warn("[XHR NETWORK ERROR] bodyTerkirim =", bodyTerkirim);
+        resetUploadState();
 
-    document.getElementById("status").innerHTML =
-        "Koneksi upload terganggu. Server mungkin masih memproses...";
-
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-
-    if (pBar) {
-        pBar.style.width = "98%";
-    }
-
-    if (pText) {
-        pText.innerText =
-            "MENUNGGU SERVER... (98%)";
-    }
-
-    console.warn(
-        "[XHR NETWORK ERROR] Request mungkin sudah diterima server."
-    );
-};
+        if (bodyTerkirim) {
+            document.getElementById("status").innerHTML = "Respons server tidak diterima.";
+            showCustomModal(
+                "error",
+                "Respons Tidak Diterima",
+                "Video sudah terkirim tapi balasan server tidak sampai. Cek grup WhatsApp dulu, kalau 1-2 menit belum ada hasil baru upload ulang."
+            );
+        } else {
+            document.getElementById("status").innerHTML = "Upload terputus.";
+            showCustomModal(
+                "error",
+                "Upload Terputus",
+                "Koneksi terputus saat mengunggah, video belum sampai ke server. Pastikan internet stabil dan jangan pindah aplikasi/tab saat upload, lalu coba lagi."
+            );
+        }
+    };
 
     xhr.timeout = 300000;
 
-xhr.ontimeout = function () {
-
-    document.getElementById("status").innerHTML =
-        "Upload belum mendapat respons. Server mungkin masih memproses...";
-
-    const pBar = document.getElementById("btnProgressBar");
-    const pText = document.getElementById("btnProgressText");
-
-    if (pBar) {
-        pBar.style.width = "98%";
-    }
-
-    if (pText) {
-        pText.innerText =
-            "MENUNGGU SERVER... (98%)";
-    }
-
-    console.warn(
-        "[XHR TIMEOUT] Jangan upload ulang dulu."
-    );
-};
+    xhr.ontimeout = function () {
+        console.warn("[XHR TIMEOUT] bodyTerkirim =", bodyTerkirim);
+        resetUploadState();
+        document.getElementById("status").innerHTML = "Upload terlalu lama.";
+        showCustomModal(
+            "error",
+            "Upload Terlalu Lama",
+            bodyTerkirim
+                ? "Video sudah terkirim tapi server belum membalas. Cek grup WhatsApp dulu sebelum upload ulang."
+                : "Upload tidak selesai dalam 5 menit. Coba pakai koneksi yang lebih stabil atau kompres videonya dulu, lalu coba lagi."
+        );
+    };
 
     xhr.open("POST", API + "/upload", true);
     xhr.setRequestHeader("Authorization", "Bearer " + tokenUpload);
