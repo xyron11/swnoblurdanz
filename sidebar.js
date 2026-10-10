@@ -51,7 +51,7 @@ document.addEventListener("click", (e) => {
 });
 
 function showCsHintTooltip(csBtn) {
-  // Ga usah muncul kalau lagi di halaman CS-nya sendiri
+  
   if (location.pathname.endsWith("/customerservice.html")) return;
 
   const tooltip = document.createElement("div");
@@ -64,35 +64,28 @@ function showCsHintTooltip(csBtn) {
     const btnRect = csBtn.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
 
-    // Kalau ukurannya masih kebaca 0 (tombol/tooltip belum sempat ke-layout),
-    // coba lagi di frame berikutnya alih-alih lanjut ngitung pake angka 0
-    // (ini yang bikin tooltip nyempil ke pojok kiri atas sebelumnya)
+    
     if (!btnRect.width || !tooltipRect.width) {
       requestAnimationFrame(positionTooltip);
       return;
     }
 
     const btnCenterX = btnRect.left + btnRect.width / 2;
-    const margin = 8; // jarak minimum ke tepi layar
-
-    // Hitung posisi "left" langsung (bukan "right") biar ga gampang salah hitung.
-    // Arrow ada di kanan box (right:14px), jadi box digeser supaya ujung kanannya
-    // (+19px) pas nunjuk ke tengah tombol CS
+    const margin = 8; 
     let left = btnCenterX + 19 - tooltipRect.width;
 
-    // Clamp biar box-nya ga pernah kepotong / nyempil keluar layar
+
     left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
 
     tooltip.style.left = left + "px";
     tooltip.style.top = (btnRect.bottom + 10) + "px";
   }
 
-  // Tunggu 2 frame biar layout topbar (posisi tombol CS) beneran final dulu
-  // sebelum diukur (1 frame kadang belum cukup di beberapa browser HP)
+  
   requestAnimationFrame(() => requestAnimationFrame(positionTooltip));
   window.addEventListener("resize", positionTooltip);
 
-  // Kasih jeda dikit biar animasi munculnya kerasa smooth
+  
   requestAnimationFrame(() => {
     requestAnimationFrame(() => tooltip.classList.add("show"));
   });
@@ -102,17 +95,16 @@ function showCsHintTooltip(csBtn) {
     setTimeout(() => tooltip.remove(), 400);
   };
 
-  // Ilang otomatis abis 4 detik
+  
   const autoHideTimer = setTimeout(hide, 7000);
 
-  // Kalau tombolnya diklik duluan sebelum 4 detik, tooltip langsung ilang
+  
   csBtn.addEventListener("click", () => {
     clearTimeout(autoHideTimer);
     hide();
   }, { once: true });
 
-  // Kalau sidebar (menu hamburger) dibuka, tooltip langsung ditutup juga
-  // biar ga nembus/ngambang di atas overlay yang blur
+  
   const sidebarObserver = new MutationObserver(() => {
     if (document.body.classList.contains("sidebar-open")) {
       clearTimeout(autoHideTimer);
@@ -156,7 +148,7 @@ function renderTopbarProfile() {
       </span>
       <span class="topbar-notif-dot" id="topbarNotifDot" style="display:none;"></span>
     `;
-    // Logic notifikasi (buka panel, ambil data firebase, dll) ada di notifikasi.js
+
     notifBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       if (typeof window.toggleNotifPanel === "function") window.toggleNotifPanel();
@@ -191,9 +183,7 @@ function renderTopbarProfile() {
   profileBtn.innerHTML = `<img src="${avatarSrc}" alt="Profil" onerror="this.src='${fallbackAvatar}'"><span class="topbar-profile-status"></span>`;
   topbar.appendChild(profileBtn);
 
-  // Tooltip CS baru ditampilkan SETELAH tombol profile juga selesai
-  // ditambahin, biar posisi tombol CS udah final (gara-gara margin-left:auto
-  // posisinya bisa geser begitu tombol profile nyusul ditambahin ke topbar)
+
   if (csBtnRef && !window.__csHintShown) {
     window.__csHintShown = true;
     showCsHintTooltip(csBtnRef);
@@ -300,7 +290,7 @@ function renderBottomNav() {
   const cur = mnNormPath(location.pathname);
   const realIdx = mnActiveIndex();
 
-  // ---- elemen ----
+  
   const nav = document.createElement("nav");
   nav.id = "mnNav";
   nav.className = "mn-nav mn-no-anim";
@@ -355,7 +345,7 @@ function renderBottomNav() {
   document.body.appendChild(popMore);
   document.body.appendChild(nav);
 
-  // kalau file gambar di folder media ga ada, pakai ikon SVG cadangan
+  
   nav.querySelectorAll(".mn-ico img").forEach(img => {
     const useFallback = () => {
       const span = img.parentNode;
@@ -378,7 +368,7 @@ function renderBottomNav() {
     setTimeout(() => nav.classList.remove("mn-melt"), 700);
   }
 
-  // Pindahin bola + nyalain menu yang aktif secara visual
+  
   function setVisual(idx, animate) {
     if (animate === false) nav.classList.add("mn-no-anim");
     nav.style.setProperty("--i", Math.max(idx, 0));
@@ -411,7 +401,7 @@ function renderBottomNav() {
     if (revert !== false) setVisual(realIdx);
   }
 
-  // ---- posisi awal: kalau datang dari menu lain, bola "meluncur" ke menu ini ----
+  
   let prev = null;
   try { prev = sessionStorage.getItem("mn_idx"); } catch (e) {}
   prev = prev === null ? null : parseInt(prev, 10);
@@ -427,7 +417,7 @@ function renderBottomNav() {
   }
   if (realIdx >= 0) saveIdx(realIdx);
 
-  // ---- klik menu di navigasi ----
+  
   nav.addEventListener("click", (e) => {
     const el = e.target.closest(".mn-item");
     if (!el) return;
@@ -453,12 +443,12 @@ function renderBottomNav() {
     navigating = true;
 
     closePop(false);
-    setVisual(idx);   // bola langsung jalan ke menu yang diklik
+    setVisual(idx);   
     saveIdx(idx);
     setTimeout(() => { location.href = it.href; }, 380);
   });
 
-  // ---- klik item di dalam popup ----
+  
   [popDl, popMore].forEach(p => {
     p.addEventListener("click", (e) => {
       const a = e.target.closest(".mn-pop-item");
@@ -467,7 +457,7 @@ function renderBottomNav() {
       const idx = MN_NAV.findIndex(x => x.popup === key);
       const internal = a.getAttribute("href") && a.getAttribute("href").charAt(0) === "/";
       if (internal) saveIdx(idx);
-      // external / logout: tutup popup, bola balik ke menu halaman ini
+      
       setTimeout(() => closePop(!internal), 0);
     });
   });
@@ -475,7 +465,7 @@ function renderBottomNav() {
   scrim.addEventListener("click", () => closePop(true));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && openKey) closePop(true); });
 
-  // balik pake tombol back (bfcache)
+  
   window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
     navigating = false;
@@ -487,8 +477,7 @@ function renderBottomNav() {
 /* ===================== TOPBAR ===================== */
 
 function ensureTopbar() {
-  // Topbar dibuat ulang bersih (id #dzTopbar) supaya ga kena CSS/script bawaan
-  // masing-masing halaman. Topbar lama (kalau ada) dibuang, isinya selain ☰ dipindah.
+  
   let topbar = document.getElementById("dzTopbar");
 
   if (!topbar) {
@@ -510,14 +499,14 @@ function ensureTopbar() {
     document.body.appendChild(topbar);
   }
 
-  // buang tombol ☰, sidebar & overlay lama
+  
   document.querySelectorAll(".menu-btn").forEach(el => el.remove());
   const oldSidebar = document.getElementById("sidebar");
   if (oldSidebar) oldSidebar.remove();
   const oldOverlay = document.getElementById("overlay");
   if (oldOverlay) oldOverlay.remove();
 
-  // brand di kiri biar topbar ga kosong
+  
   if (!topbar.querySelector(".topbar-brand")) {
     const brand = document.createElement("a");
     brand.className = "topbar-brand";
@@ -534,19 +523,20 @@ function dzTopbarOk() {
 }
 
 function dzRemoveStrayTopbars() {
-  // topbar kedua milik halaman (kalau ada) nutupin topbar kita -> dibuang
+  
   document.querySelectorAll(".topbar:not(#dzTopbar)").forEach(el => el.remove());
 }
 
 function dzRepairTopbar() {
-  // halaman maintenance sengaja tanpa topbar
+  
+  
   if (document.querySelector(".maintenance-page")) return;
   if (dzTopbarOk()) return;
   ensureTopbar();
   renderTopbarProfile();
 }
 
-// CSS kritis topbar ikut dipasang dari sini, jadi tetap rapi walau style.css masih ke-cache
+
 function dzInjectCriticalCss() {
   if (document.getElementById("dzCriticalCss")) return;
   const st = document.createElement("style");
@@ -568,8 +558,7 @@ function initDanzNav() {
   renderTopbarProfile();
   renderBottomNav();
 
-  // Kalau ada script lain di halaman yang ngosongin / ngeganti topbar,
-  // isi topbar (brand, notif, CS, profil) dipasang lagi otomatis.
+  
   let repairs = 0;
   let timer = null;
   dzRemoveStrayTopbars();
