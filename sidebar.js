@@ -1,9 +1,13 @@
-
 const MN_DOWNLOADER = [
   { href: "/tiktok.html", label: "TikTok Downloader" },
   { href: "/instagram.html", label: "Instagram Downloader" },
   { href: "/yt.html", label: "YouTube Downloader" },
   { href: "/pinterest.html", label: "Pinterest Downloader" },
+];
+
+const MN_PRESET = [
+  { href: "/preset-tamplate.html", label: "Preset & Template" },
+  { href: "/searchpreset.html", label: "Search Preset" },
 ];
 
 const MN_MORE = [
@@ -19,7 +23,7 @@ const MN_MORE = [
 const MN_NAV = [
   { key: "home", label: "Dashboard", icon: "home", img: "./media/dashboard.png", href: "/" },
   { key: "dl", label: "Downloader", icon: "download", img: "./media/downloader.png", popup: "dl", list: MN_DOWNLOADER },
-  { key: "preset", label: "Preset", icon: "layers", img: "./media/preset.png", href: "/preset-tamplate.html" },
+  { key: "preset", label: "Preset", icon: "layers", img: "./media/preset.png", popup: "preset", list: MN_PRESET },
   { key: "stats", label: "Statistik", icon: "chart", img: "./media/statistik.png", href: "/stats.html" },
   { key: "more", label: "Lainnya", icon: "grid", img: "./media/lainnya.png", popup: "more", list: MN_MORE },
 ];
@@ -50,8 +54,96 @@ document.addEventListener("click", (e) => {
   }
 });
 
+let dzNotifBootPromise = null;
+
+function dzLoadScript(src) {
+  return new Promise((resolve) => {
+    const sc = document.createElement("script");
+    sc.src = src;
+    sc.onload = () => resolve(true);
+    sc.onerror = () => resolve(false);
+    (document.head || document.documentElement).appendChild(sc);
+  });
+}
+
+function dzWhenPageLoaded() {
+  return new Promise((resolve) => {
+
+    if (document.readyState !== "loading") resolve();
+    else document.addEventListener("DOMContentLoaded", () => resolve(), { once: true });
+  });
+}
+
+const DZ_MAIN_CFG_KEY = "dz_fb_main_cfg";
+
+function dzBootNotif() {
+  if (dzNotifBootPromise) return dzNotifBootPromise;
+
+  dzNotifBootPromise = dzWhenPageLoaded().then(async () => {
+
+    const saveCfg = () => {
+      try {
+        if (typeof FIREBASE_CONFIG_MAIN !== "undefined" && FIREBASE_CONFIG_MAIN) {
+          localStorage.setItem(DZ_MAIN_CFG_KEY, JSON.stringify(FIREBASE_CONFIG_MAIN));
+          return true;
+        }
+      } catch (e) {}
+      return typeof FIREBASE_CONFIG_MAIN !== "undefined";
+    };
+    saveCfg();
+
+    if (typeof firebase === "undefined") {
+      await dzLoadScript("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
+    }
+    if (typeof firebase !== "undefined" && !firebase.database) {
+      await dzLoadScript("https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js");
+    }
+
+    if (!saveCfg()) {
+      for (const file of ["firebase-config.js", "config.js"]) {
+        if (document.querySelector('script[src*="' + file + '"]')) continue;
+        await dzLoadScript("/" + file);
+        if (saveCfg()) break;
+      }
+    }
+
+    if (typeof FIREBASE_CONFIG_MAIN === "undefined") {
+      try {
+        const saved = JSON.parse(localStorage.getItem(DZ_MAIN_CFG_KEY));
+        if (saved && saved.databaseURL) window.FIREBASE_CONFIG_MAIN = saved;
+      } catch (e) {}
+    }
+    if (typeof FIREBASE_CONFIG_MAIN === "undefined") {
+      console.warn("[DanzClean] FIREBASE_CONFIG_MAIN belum ketemu - buka Dashboard sekali biar tersimpan.");
+    }
+
+    if (typeof window.toggleNotifPanel !== "function" &&
+        !document.querySelector('script[src*="notifikasi.js"]')) {
+      await dzLoadScript("/notifikasi.js");
+    }
+  });
+
+  return dzNotifBootPromise;
+}
+
+function dzEnsureNotif(cb) {
+  dzBootNotif();
+  if (!cb) return;
+
+  let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    if (typeof window.toggleNotifPanel === "function") {
+      clearInterval(iv);
+      cb();
+    } else if (tries > 100) {
+      clearInterval(iv);
+    }
+  }, 100);
+}
+
 function showCsHintTooltip(csBtn) {
-  
+
   if (location.pathname.endsWith("/customerservice.html")) return;
 
   const tooltip = document.createElement("div");
@@ -64,16 +156,15 @@ function showCsHintTooltip(csBtn) {
     const btnRect = csBtn.getBoundingClientRect();
     const tooltipRect = tooltip.getBoundingClientRect();
 
-    
     if (!btnRect.width || !tooltipRect.width) {
       requestAnimationFrame(positionTooltip);
       return;
     }
 
     const btnCenterX = btnRect.left + btnRect.width / 2;
-    const margin = 8; 
-    let left = btnCenterX + 19 - tooltipRect.width;
+    const margin = 8;
 
+    let left = btnCenterX + 19 - tooltipRect.width;
 
     left = Math.max(margin, Math.min(left, window.innerWidth - tooltipRect.width - margin));
 
@@ -81,11 +172,9 @@ function showCsHintTooltip(csBtn) {
     tooltip.style.top = (btnRect.bottom + 10) + "px";
   }
 
-  
   requestAnimationFrame(() => requestAnimationFrame(positionTooltip));
   window.addEventListener("resize", positionTooltip);
 
-  
   requestAnimationFrame(() => {
     requestAnimationFrame(() => tooltip.classList.add("show"));
   });
@@ -95,16 +184,13 @@ function showCsHintTooltip(csBtn) {
     setTimeout(() => tooltip.remove(), 400);
   };
 
-  
   const autoHideTimer = setTimeout(hide, 7000);
 
-  
   csBtn.addEventListener("click", () => {
     clearTimeout(autoHideTimer);
     hide();
   }, { once: true });
 
-  
   const sidebarObserver = new MutationObserver(() => {
     if (document.body.classList.contains("sidebar-open")) {
       clearTimeout(autoHideTimer);
@@ -151,7 +237,9 @@ function renderTopbarProfile() {
 
     notifBtn.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (typeof window.toggleNotifPanel === "function") window.toggleNotifPanel();
+      dzEnsureNotif(() => {
+        if (typeof window.toggleNotifPanel === "function") window.toggleNotifPanel();
+      });
     });
     topbar.appendChild(notifBtn);
   }
@@ -182,7 +270,6 @@ function renderTopbarProfile() {
   profileBtn.id = "topbarProfileBtn";
   profileBtn.innerHTML = `<img src="${avatarSrc}" alt="Profil" onerror="this.src='${fallbackAvatar}'"><span class="topbar-profile-status"></span>`;
   topbar.appendChild(profileBtn);
-
 
   if (csBtnRef && !window.__csHintShown) {
     window.__csHintShown = true;
@@ -244,9 +331,6 @@ function renderTopbarProfile() {
   });
 }
 
-
-/* ===================== NAVIGASI BAWAH ===================== */
-
 function mnNormPath(p) {
   p = (p || "").toLowerCase().split("?")[0].split("#")[0];
   p = p.replace(/\.html$/, "");
@@ -290,7 +374,6 @@ function renderBottomNav() {
   const cur = mnNormPath(location.pathname);
   const realIdx = mnActiveIndex();
 
-  
   const nav = document.createElement("nav");
   nav.id = "mnNav";
   nav.className = "mn-nav mn-no-anim";
@@ -330,22 +413,21 @@ function renderBottomNav() {
   scrim.className = "mn-scrim";
   scrim.id = "mnScrim";
 
-  const popDl = document.createElement("div");
-  popDl.className = "mn-pop";
-  popDl.id = "mnPop-dl";
-  popDl.innerHTML = '<div class="mn-pop-title">Downloader</div>' + mnPopHtml(MN_DOWNLOADER, false, isOwner, cur);
-
-  const popMore = document.createElement("div");
-  popMore.className = "mn-pop";
-  popMore.id = "mnPop-more";
-  popMore.innerHTML = '<div class="mn-pop-title">Menu Lainnya</div>' + mnPopHtml(MN_MORE, true, isOwner, cur);
+  const popTitles = { dl: "Downloader", preset: "Preset", more: "Menu Lainnya" };
+  const pops = {};
+  MN_NAV.forEach(it => {
+    if (!it.popup) return;
+    const p = document.createElement("div");
+    p.className = "mn-pop";
+    p.id = "mnPop-" + it.popup;
+    p.innerHTML = '<div class="mn-pop-title">' + (popTitles[it.popup] || it.label) + "</div>" + mnPopHtml(it.list, it.popup === "more", isOwner, cur);
+    pops[it.popup] = p;
+  });
 
   document.body.appendChild(scrim);
-  document.body.appendChild(popDl);
-  document.body.appendChild(popMore);
+  Object.keys(pops).forEach(k => document.body.appendChild(pops[k]));
   document.body.appendChild(nav);
 
-  
   nav.querySelectorAll(".mn-ico img").forEach(img => {
     const useFallback = () => {
       const span = img.parentNode;
@@ -356,7 +438,6 @@ function renderBottomNav() {
   });
 
   const items = Array.from(nav.querySelectorAll(".mn-item"));
-  const pops = { dl: popDl, more: popMore };
   let visIdx = -2;
   let openKey = null;
   let navigating = false;
@@ -368,7 +449,6 @@ function renderBottomNav() {
     setTimeout(() => nav.classList.remove("mn-melt"), 700);
   }
 
-  
   function setVisual(idx, animate) {
     if (animate === false) nav.classList.add("mn-no-anim");
     nav.style.setProperty("--i", Math.max(idx, 0));
@@ -401,7 +481,6 @@ function renderBottomNav() {
     if (revert !== false) setVisual(realIdx);
   }
 
-  
   let prev = null;
   try { prev = sessionStorage.getItem("mn_idx"); } catch (e) {}
   prev = prev === null ? null : parseInt(prev, 10);
@@ -417,7 +496,6 @@ function renderBottomNav() {
   }
   if (realIdx >= 0) saveIdx(realIdx);
 
-  
   nav.addEventListener("click", (e) => {
     const el = e.target.closest(".mn-item");
     if (!el) return;
@@ -443,21 +521,19 @@ function renderBottomNav() {
     navigating = true;
 
     closePop(false);
-    setVisual(idx);   
+    setVisual(idx);
     saveIdx(idx);
     setTimeout(() => { location.href = it.href; }, 380);
   });
 
-  
-  [popDl, popMore].forEach(p => {
-    p.addEventListener("click", (e) => {
+  Object.keys(pops).forEach(key => {
+    pops[key].addEventListener("click", (e) => {
       const a = e.target.closest(".mn-pop-item");
       if (!a) return;
-      const key = p === popDl ? "dl" : "more";
       const idx = MN_NAV.findIndex(x => x.popup === key);
       const internal = a.getAttribute("href") && a.getAttribute("href").charAt(0) === "/";
       if (internal) saveIdx(idx);
-      
+
       setTimeout(() => closePop(!internal), 0);
     });
   });
@@ -465,7 +541,6 @@ function renderBottomNav() {
   scrim.addEventListener("click", () => closePop(true));
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && openKey) closePop(true); });
 
-  
   window.addEventListener("pageshow", (e) => {
     if (!e.persisted) return;
     navigating = false;
@@ -474,10 +549,8 @@ function renderBottomNav() {
   });
 }
 
-/* ===================== TOPBAR ===================== */
-
 function ensureTopbar() {
-  
+
   let topbar = document.getElementById("dzTopbar");
 
   if (!topbar) {
@@ -499,14 +572,12 @@ function ensureTopbar() {
     document.body.appendChild(topbar);
   }
 
-  
   document.querySelectorAll(".menu-btn").forEach(el => el.remove());
   const oldSidebar = document.getElementById("sidebar");
   if (oldSidebar) oldSidebar.remove();
   const oldOverlay = document.getElementById("overlay");
   if (oldOverlay) oldOverlay.remove();
 
-  
   if (!topbar.querySelector(".topbar-brand")) {
     const brand = document.createElement("a");
     brand.className = "topbar-brand";
@@ -523,26 +594,24 @@ function dzTopbarOk() {
 }
 
 function dzRemoveStrayTopbars() {
-  
+
   document.querySelectorAll(".topbar:not(#dzTopbar)").forEach(el => el.remove());
 }
 
 function dzRepairTopbar() {
-  
-  
+
   if (document.querySelector(".maintenance-page")) return;
   if (dzTopbarOk()) return;
   ensureTopbar();
   renderTopbarProfile();
 }
 
-
 function dzInjectCriticalCss() {
   if (document.getElementById("dzCriticalCss")) return;
   const st = document.createElement("style");
   st.id = "dzCriticalCss";
   st.textContent =
-    "#dzTopbar.topbar{display:flex!important;align-items:center!important;padding:0 12px 0 12px!important;z-index:5100!important;overflow:hidden!important}" +
+    "#dzTopbar.topbar{display:flex!important;align-items:center!important;padding:0 12px 0 12px!important;z-index:7400!important;overflow:hidden!important;pointer-events:auto!important}" +
     "#dzTopbar>.topbar-notif-btn{margin:0 8px 0 auto!important}" +
     "#dzTopbar>.topbar-cs-btn{margin:0 8px 0 0!important}" +
     "#dzTopbar>.topbar-profile-btn{margin:0!important}" +
@@ -558,10 +627,10 @@ function initDanzNav() {
   renderTopbarProfile();
   renderBottomNav();
 
-  
   let repairs = 0;
   let timer = null;
   dzRemoveStrayTopbars();
+  dzBootNotif();
   document.addEventListener("DOMContentLoaded", dzRemoveStrayTopbars);
   window.addEventListener("load", dzRemoveStrayTopbars);
   const mo = new MutationObserver(() => {
