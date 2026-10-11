@@ -15,7 +15,12 @@
     "@keyframes dzVtIn{from{opacity:0}to{opacity:1}}" +
     "#mnNav{view-transition-name:dz-nav}#dzTopbar{view-transition-name:dz-topbar}" +
     "::view-transition-old(dz-nav),::view-transition-new(dz-nav),::view-transition-old(dz-topbar),::view-transition-new(dz-topbar){animation:none;mix-blend-mode:normal}" +
-    "::view-transition-group(dz-nav),::view-transition-group(dz-topbar){animation:none}";
+    "::view-transition-group(dz-nav),::view-transition-group(dz-topbar){animation:none}" +
+    "::view-transition-old(dz-nav),::view-transition-old(dz-topbar){display:none}" +
+    "html:has(.maintenance-page) #mnNav,html:has(.maintenance-page) #dzTopbar{display:none!important}" +
+    "#mnNav,#dzTopbar{transition:opacity .25s ease}" +
+    "html:has(.popup-overlay.show) #mnNav,html:has(.popup-overlay.show) #dzTopbar{opacity:0!important;pointer-events:none!important}" +
+    ".popup-overlay{will-change:opacity;transform:translateZ(0)}";
 
   const css =
     "#dzLoader{position:fixed;inset:0;z-index:7100;display:flex;align-items:center;justify-content:center;background:#070a13;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease;overflow:hidden;font-family:'Poppins',sans-serif}" +
@@ -114,7 +119,8 @@
     const elapsed = now - start;
     const oldLoader = document.getElementById("pageLoader");
     const heldByPage = !!oldLoader && oldLoader.style.display !== "none";
-    const ready = domReady && !heldByPage;
+    const bodyHidden = !!document.body && document.body.style.display === "none";
+    const ready = domReady && !heldByPage && !bodyHidden;
 
     if (!shown && !ready && elapsed >= SHOW_AFTER_MS) {
       shown = true;
@@ -629,7 +635,7 @@ function renderBottomNav() {
 
   document.body.appendChild(scrim);
   Object.keys(pops).forEach(k => document.body.appendChild(pops[k]));
-  document.body.appendChild(nav);
+  document.documentElement.appendChild(nav);
 
   nav.querySelectorAll(".mn-ico img").forEach(img => {
     const item = MN_NAV.find(x => x.key === img.getAttribute("data-key"));
@@ -792,7 +798,7 @@ function ensureTopbar() {
       old.remove();
     });
 
-    document.body.appendChild(topbar);
+    document.documentElement.appendChild(topbar);
   }
 
   document.querySelectorAll(".menu-btn").forEach(el => el.remove());
