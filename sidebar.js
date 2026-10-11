@@ -1,13 +1,161 @@
+(function () {
+  if (window.__dzLoaderStarted) return;
+  window.__dzLoaderStarted = true;
+
+  const SHOW_AFTER_MS = 0;
+  const MIN_VISIBLE_MS = 600;
+  const MAX_MS = 8000;
+
+  const baseCss =
+    "html{background:#070a13}" +
+    "#pageLoader{visibility:hidden!important;pointer-events:none!important;z-index:7050!important}" +
+    "@view-transition{navigation:auto}" +
+    "::view-transition-old(root){animation:none}" +
+    "::view-transition-new(root){animation:dzVtIn .2s ease-out both}" +
+    "@keyframes dzVtIn{from{opacity:0}to{opacity:1}}" +
+    "#mnNav{view-transition-name:dz-nav}#dzTopbar{view-transition-name:dz-topbar}" +
+    "::view-transition-old(dz-nav),::view-transition-new(dz-nav),::view-transition-old(dz-topbar),::view-transition-new(dz-topbar){animation:none;mix-blend-mode:normal}" +
+    "::view-transition-group(dz-nav),::view-transition-group(dz-topbar){animation:none}";
+
+  const css =
+    "#dzLoader{position:fixed;inset:0;z-index:7100;display:flex;align-items:center;justify-content:center;background:#070a13;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease;overflow:hidden;font-family:'Poppins',sans-serif}" +
+    "#dzLoader.dz-ld-show{opacity:1;visibility:visible;pointer-events:auto}" +
+    "#dzLoader.dz-ld-show.dz-ld-out{opacity:0;pointer-events:none;transition-duration:.6s}" +
+    ".dz-ld-glow{position:absolute;inset:-20%;background:radial-gradient(420px 320px at 50% 44%,rgba(61,108,255,.26),transparent 70%),radial-gradient(360px 300px at 82% 78%,rgba(91,134,255,.12),transparent 70%),radial-gradient(340px 280px at 14% 18%,rgba(61,108,255,.14),transparent 70%);animation:dzLdDrift 9s ease-in-out infinite alternate}" +
+    ".dz-ld-center{position:relative;display:flex;flex-direction:column;align-items:center;gap:22px;transition:transform .65s cubic-bezier(.4,0,.2,1),filter .65s ease}" +
+    "#dzLoader.dz-ld-out .dz-ld-center{transform:scale(1.06);filter:blur(6px)}" +
+    ".dz-ld-mark{position:relative;width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;animation:dzLdPop .8s cubic-bezier(.2,.8,.2,1) .05s forwards}" +
+    ".dz-ld-mark::before{content:'';position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(91,134,255,0),#7fa2ff 55%,rgba(91,134,255,0) 75%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));animation:dzLdSpin 1.6s linear infinite}" +
+    ".dz-ld-mark::after{content:'';position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(circle,rgba(61,108,255,.35),transparent 65%);animation:dzLdBreathe 2.4s ease-in-out infinite}" +
+    ".dz-ld-mark img{position:relative;z-index:1;width:58px;height:58px;border-radius:50%;object-fit:cover;background:#0d1331}" +
+    ".dz-ld-word{display:flex;font-size:34px;font-weight:700;letter-spacing:.05em;line-height:1}" +
+    ".dz-ld-word span{display:inline-block;color:#fff;opacity:0;transform:translateY(16px) scale(.96);filter:blur(8px);animation:dzLdLetter .75s cubic-bezier(.2,.8,.2,1) forwards,dzLdGlow 2.6s ease-in-out 1.3s infinite;animation-delay:calc(var(--i) * 55ms + 160ms),calc(var(--i) * 90ms + 1300ms)}" +
+    ".dz-ld-word span.dz-b{color:#8fb0ff}" +
+    ".dz-ld-sub{margin-top:-10px;font-size:10.5px;font-weight:500;letter-spacing:.34em;text-transform:uppercase;color:rgba(158,167,214,.7);opacity:0;animation:dzLdFade .8s ease .85s forwards}" +
+    ".dz-ld-track{position:relative;width:150px;height:2px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;opacity:0;animation:dzLdFade .6s ease .5s forwards}" +
+    ".dz-ld-bar{position:absolute;inset:0;border-radius:2px;background:linear-gradient(90deg,#3d6cff,#9db8ff);box-shadow:0 0 12px rgba(91,134,255,.9);transform-origin:left center;transform:scaleX(var(--p,0))}" +
+    ".dz-ld-shine{position:absolute;top:0;bottom:0;width:46%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);transform:translateX(-120%);animation:dzLdShine 1.35s ease-in-out infinite}" +
+    "@keyframes dzLdLetter{to{opacity:1;transform:none;filter:none}}" +
+    "@keyframes dzLdGlow{0%,100%{text-shadow:0 0 0 rgba(127,162,255,0)}50%{text-shadow:0 0 18px rgba(127,162,255,.65)}}" +
+    "@keyframes dzLdPop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:scale(1)}}" +
+    "@keyframes dzLdSpin{to{transform:rotate(360deg)}}" +
+    "@keyframes dzLdBreathe{0%,100%{opacity:.55;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}" +
+    "@keyframes dzLdFade{to{opacity:1}}" +
+    "@keyframes dzLdShine{to{transform:translateX(320%)}}" +
+    "@keyframes dzLdDrift{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,2%,0) scale(1.08)}}" +
+    "@media (prefers-reduced-motion:reduce){.dz-ld-glow,.dz-ld-mark::before,.dz-ld-mark::after,.dz-ld-shine{animation:none}.dz-ld-word span{animation:dzLdLetter .01s forwards;animation-delay:0s}}";
+
+  const baseSt = document.createElement("style");
+  baseSt.id = "dzBaseCss";
+  baseSt.textContent = baseCss;
+  (document.head || document.documentElement).appendChild(baseSt);
+
+  const st = document.createElement("style");
+  st.id = "dzLoaderCss";
+  st.textContent = css;
+  (document.head || document.documentElement).appendChild(st);
+
+  const root = document.createElement("div");
+  root.id = "dzLoader";
+  root.setAttribute("aria-hidden", "true");
+  const word = "DanzClean".split("").map((c, i) =>
+    '<span style="--i:' + i + '"' + (i >= 4 ? ' class="dz-b"' : "") + ">" + c + "</span>").join("");
+  root.innerHTML =
+    '<div class="dz-ld-glow"></div>' +
+    '<div class="dz-ld-center">' +
+      '<div class="dz-ld-mark"><img src="./media/logo.png" alt="" onerror="this.style.display=\'none\'"></div>' +
+      '<div class="dz-ld-word">' + word + "</div>" +
+      '<div class="dz-ld-sub">HD Status Uploader</div>' +
+      '<div class="dz-ld-track"><i class="dz-ld-bar"></i><i class="dz-ld-shine"></i></div>' +
+    "</div>";
+  document.documentElement.appendChild(root);
+
+  const bar = root.querySelector(".dz-ld-bar");
+  const start = performance.now();
+  let domReady = document.readyState !== "loading";
+  let finishing = false;
+  let closed = false;
+  let shown = false;
+  let shownAt = 0;
+  let p = 0;
+
+  if (SHOW_AFTER_MS <= 0) {
+    shown = true;
+    shownAt = start;
+    root.classList.add("dz-ld-show");
+  }
+
+  if (!domReady) {
+    document.addEventListener("DOMContentLoaded", () => { domReady = true; }, { once: true });
+  }
+
+  function cleanup() {
+    root.remove();
+    st.remove();
+  }
+
+  function close() {
+    if (closed) return;
+    closed = true;
+    const oldLoader = document.getElementById("pageLoader");
+    if (oldLoader) oldLoader.style.display = "none";
+    if (!shown) {
+      cleanup();
+      return;
+    }
+    bar.style.setProperty("--p", "1");
+    root.classList.add("dz-ld-out");
+    setTimeout(cleanup, 750);
+  }
+
+  function tick() {
+    if (closed) return;
+    const now = performance.now();
+    const elapsed = now - start;
+    const oldLoader = document.getElementById("pageLoader");
+    const heldByPage = !!oldLoader && oldLoader.style.display !== "none";
+    const ready = domReady && !heldByPage;
+
+    if (!shown && !ready && elapsed >= SHOW_AFTER_MS) {
+      shown = true;
+      shownAt = now;
+      root.classList.add("dz-ld-show");
+    }
+
+    if (!finishing && ready && (!shown || now - shownAt >= MIN_VISIBLE_MS)) finishing = true;
+
+    if (finishing && !shown) {
+      close();
+      return;
+    }
+
+    p += ((finishing ? 1 : 0.9) - p) * (finishing ? 0.22 : 0.028);
+    bar.style.setProperty("--p", p.toFixed(4));
+    if (finishing && p > 0.985) {
+      close();
+      return;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  requestAnimationFrame(tick);
+  setTimeout(close, MAX_MS);
+
+  window.addEventListener("pageshow", (e) => {
+    if (e.persisted) close();
+  });
+})();
+
 const MN_DOWNLOADER = [
-  { href: "/tiktok.html", label: "TikTok Downloader" },
-  { href: "/instagram.html", label: "Instagram Downloader" },
-  { href: "/yt.html", label: "YouTube Downloader" },
-  { href: "/pinterest.html", label: "Pinterest Downloader" },
+  { href: "/tiktok.html", svg: "download", label: "TikTok Downloader" },
+  { href: "/instagram.html", svg: "download", label: "Instagram Downloader" },
+  { href: "/yt.html", svg: "download", label: "YouTube Downloader" },
+  { href: "/pinterest.html", svg: "download", label: "Pinterest Downloader" },
 ];
 
 const MN_PRESET = [
-  { href: "/preset-tamplate.html", label: "Preset & Template" },
-  { href: "/searchpreset.html", label: "Search Preset" },
+  { href: "/preset-tamplate.html", svg: "layers", label: "Preset & Template", sub: "Kumpulan preset yang dibagikan" },
+  { href: "/searchpreset.html", svg: "search", label: "Search Preset", sub: "Cari preset dari link TikTok" },
 ];
 
 const MN_MORE = [
@@ -24,7 +172,7 @@ const MN_NAV = [
   { key: "home", label: "Dashboard", icon: "home", img: "./media/dashboard.png", href: "/" },
   { key: "dl", label: "Downloader", icon: "download", img: "./media/downloader.png", popup: "dl", list: MN_DOWNLOADER },
   { key: "preset", label: "Preset", icon: "layers", img: "./media/preset.png", popup: "preset", list: MN_PRESET },
-  { key: "stats", label: "Statistik", icon: "chart", img: "./media/statistik.png", href: "/stats.html" },
+  { key: "stats", label: "Statistik", icon: "chart", img: "./media/statistik.png", alts: ["stats", "statistic", "statistics", "stat", "grafik", "chart"], href: "/stats.html" },
   { key: "more", label: "Lainnya", icon: "grid", img: "./media/lainnya.png", popup: "more", list: MN_MORE },
 ];
 
@@ -33,6 +181,7 @@ const MN_ICONS = {
   download: '<path d="M12 4v10"/><path d="M8 10.5l4 4 4-4"/><path d="M5 19h14"/>',
   layers: '<path d="M12 4 3.5 8.5 12 13l8.5-4.5z"/><path d="M3.5 12.5 12 17l8.5-4.5"/><path d="M3.5 16.5 12 21l8.5-4.5"/>',
   chart: '<path d="M5 20v-8"/><path d="M12 20V4"/><path d="M19 20v-5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
   grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.8"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.8"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.8"/>',
 };
 
@@ -331,6 +480,55 @@ function renderTopbarProfile() {
   });
 }
 
+const MN_ICON_CACHE_KEY = "dz_nav_icons_v2";
+
+const MN_ICON_EXTS = [".png", ".webp", ".jpg", ".jpeg", ".svg"];
+
+function mnIconCandidates(it) {
+  if (!it.img) return [];
+  const dir = it.img.slice(0, it.img.lastIndexOf("/") + 1);
+  const bases = [it.img.slice(it.img.lastIndexOf("/") + 1).replace(/\.[^.]+$/, "")].concat(it.alts || []);
+  const out = [];
+  bases.forEach(base => MN_ICON_EXTS.forEach(ext => out.push(dir + base + ext)));
+  return out;
+}
+
+function mnIconSrc(it) {
+  const list = mnIconCandidates(it);
+  try {
+    const c = JSON.parse(localStorage.getItem(MN_ICON_CACHE_KEY) || "{}");
+    if (c[it.key] && c[it.key].indexOf("data:image/") === 0) return c[it.key];
+  } catch (e) {}
+  return list[0] || "";
+}
+
+function mnSaveIcon(key, url) {
+  if (!url || url.indexOf("data:") === 0) return;
+  fetch(url)
+    .then(r => (r.ok ? r.blob() : null))
+    .then(blob => {
+      if (!blob || blob.size > 150000 || blob.type.indexOf("image/") !== 0) return;
+      const fr = new FileReader();
+      fr.onload = () => {
+        try {
+          const c = JSON.parse(localStorage.getItem(MN_ICON_CACHE_KEY) || "{}");
+          c[key] = fr.result;
+          localStorage.setItem(MN_ICON_CACHE_KEY, JSON.stringify(c));
+        } catch (e) {}
+      };
+      fr.readAsDataURL(blob);
+    })
+    .catch(() => {});
+}
+
+function mnForgetIcon(key) {
+  try {
+    const c = JSON.parse(localStorage.getItem(MN_ICON_CACHE_KEY) || "{}");
+    delete c[key];
+    localStorage.setItem(MN_ICON_CACHE_KEY, JSON.stringify(c));
+  } catch (e) {}
+}
+
 function mnNormPath(p) {
   p = (p || "").toLowerCase().split("?")[0].split("#")[0];
   p = p.replace(/\.html$/, "");
@@ -361,8 +559,13 @@ function mnPopHtml(list, isGrid, isOwner, cur) {
     const id = x.id ? ' id="' + x.id + '"' : "";
     const isCur = x.href && x.href.charAt(0) === "/" && mnNormPath(x.href) === cur;
     const cls = "mn-pop-item" + (x.danger ? " mn-danger" : "") + (isCur ? " current" : "");
-    const ico = x.icon ? '<img src="' + x.icon + '" alt="" onerror="this.style.display=\'none\'">' : "";
-    out += '<a href="' + x.href + '"' + t + id + ' class="' + cls + '">' + ico + "<span>" + x.label + "</span></a>";
+    const ico = x.icon
+      ? '<img src="' + x.icon + '" alt="" onerror="this.style.display=\'none\'">'
+      : (x.svg ? '<span class="mn-pop-ico">' + mnSvg(x.svg) + "</span>" : "");
+    const txt = x.sub
+      ? '<span class="mn-pop-txt"><span>' + x.label + "</span><small>" + x.sub + "</small></span>"
+      : "<span>" + x.label + "</span>";
+    out += '<a href="' + x.href + '"' + t + id + ' class="' + cls + '">' + ico + txt + "</a>";
   });
   return '<div class="' + (isGrid ? "mn-pop-grid" : "mn-pop-list") + '">' + out + "</div>";
 }
@@ -383,7 +586,7 @@ function renderBottomNav() {
   let itemsHtml = "";
   MN_NAV.forEach((it, i) => {
     const icoHtml = it.img
-      ? '<img src="' + it.img + '" alt="" draggable="false" data-fallback="' + it.icon + '">'
+      ? '<img src="' + mnIconSrc(it) + '" alt="" draggable="false" decoding="sync" data-key="' + it.key + '" data-try="0" data-fallback="' + it.icon + '">'
       : mnSvg(it.icon);
     const inner = '<span class="mn-ico">' + icoHtml + '</span><span class="mn-label">' + it.label + "</span>";
     if (it.popup) {
@@ -429,12 +632,32 @@ function renderBottomNav() {
   document.body.appendChild(nav);
 
   nav.querySelectorAll(".mn-ico img").forEach(img => {
+    const item = MN_NAV.find(x => x.key === img.getAttribute("data-key"));
+    const list = mnIconCandidates(item);
     const useFallback = () => {
       const span = img.parentNode;
       if (span) span.innerHTML = mnSvg(img.getAttribute("data-fallback"));
     };
-    img.addEventListener("error", useFallback, { once: true });
-    if (img.complete && img.naturalWidth === 0) useFallback();
+    const tryNext = () => {
+      if (img.src.indexOf("data:") === 0) {
+        mnForgetIcon(item.key);
+        img.setAttribute("data-try", "0");
+        img.src = list[0];
+        return;
+      }
+      const n = parseInt(img.getAttribute("data-try"), 10) + 1;
+      if (n >= list.length) {
+        useFallback();
+        return;
+      }
+      img.setAttribute("data-try", String(n));
+      img.src = list[n];
+    };
+    img.addEventListener("error", tryNext);
+    img.addEventListener("load", () => {
+      if (img.src.indexOf("data:") !== 0) mnSaveIcon(item.key, img.src);
+    });
+    if (img.complete && img.naturalWidth === 0 && img.getAttribute("src")) tryNext();
   });
 
   const items = Array.from(nav.querySelectorAll(".mn-item"));
@@ -523,7 +746,7 @@ function renderBottomNav() {
     closePop(false);
     setVisual(idx);
     saveIdx(idx);
-    setTimeout(() => { location.href = it.href; }, 380);
+    setTimeout(() => { location.href = it.href; }, 440);
   });
 
   Object.keys(pops).forEach(key => {
