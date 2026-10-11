@@ -1,5 +1,3 @@
-
-
 (function () {
     const NOTIF_DB_PATH = "notifications";
     const LAST_SEEN_KEY = "danzclean_last_seen_notif";
@@ -12,12 +10,11 @@
         return localStorage.getItem("isOwner") === "true";
     }
 
-
     function waitForFirebase(callback, tries) {
         tries = tries || 0;
         const ready = typeof firebase !== "undefined" &&
             firebase.database &&
-            typeof FIREBASE_CONFIG_NOTIF !== "undefined";
+            typeof FIREBASE_CONFIG_MAIN !== "undefined";
 
         if (ready) {
             callback();
@@ -26,11 +23,13 @@
         }
     }
 
+    const NOTIF_APP_NAME = "notifApp";
+
     function getMainDb() {
-        if (!firebase.apps.find(a => a.name === "mainApp")) {
-            firebase.initializeApp(FIREBASE_CONFIG_NOTIF, "mainApp");
+        if (!firebase.apps.find(a => a.name === NOTIF_APP_NAME)) {
+            firebase.initializeApp(FIREBASE_CONFIG_MAIN, NOTIF_APP_NAME);
         }
-        return firebase.app("mainApp").database();
+        return firebase.app(NOTIF_APP_NAME).database();
     }
 
     function escapeHtml(str) {
@@ -51,9 +50,6 @@
             return "";
         }
     }
-
-    // Tombol lonceng-nya sendiri dibuat di sidebar.js (bareng tombol CS & profil),
-    // di sini kita cuma pasang logicnya: data firebase, panel, titik merah, dst.
 
     function buildPanel() {
         if (panelEl) return panelEl;
@@ -88,9 +84,6 @@
         const btnRect = btn.getBoundingClientRect();
         const panelWidth = panelEl.offsetWidth || 240;
 
-        // Panel nempel di bawah tombol lonceng, tapi diklem biar ga
-        // kepotong ke kiri/kanan layar (lonceng bukan tombol paling
-        // kanan di topbar, jadi ga bisa asal align ke "right")
         let left = btnRect.left + (btnRect.width / 2) - (panelWidth / 2);
         left = Math.min(left, window.innerWidth - panelWidth - margin);
         left = Math.max(margin, left);
@@ -248,7 +241,6 @@
             console.error("Gagal memuat notifikasi:", err);
         });
     }
-
 
     window.toggleNotifPanel = toggleNotifPanel;
 
