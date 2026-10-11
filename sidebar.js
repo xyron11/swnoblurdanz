@@ -20,7 +20,8 @@
     "html:has(.maintenance-page) #mnNav,html:has(.maintenance-page) #dzTopbar{display:none!important}" +
     "#mnNav,#dzTopbar{transition:opacity .25s ease}" +
     "html:has(.popup-overlay.show) #mnNav,html:has(.popup-overlay.show) #dzTopbar{opacity:0!important;pointer-events:none!important}" +
-    ".popup-overlay{will-change:opacity;transform:translateZ(0)}";
+    ".popup-overlay{will-change:opacity;transform:translateZ(0)}" +
+    "html:has(#dzLoader) .cs-hint-tooltip{opacity:0!important;visibility:hidden!important}";
 
   const css =
     "#dzLoader{position:fixed;inset:0;z-index:7100;display:flex;align-items:center;justify-content:center;background:#070a13;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .3s ease;overflow:hidden;font-family:'Poppins',sans-serif}" +
@@ -297,6 +298,14 @@ function dzEnsureNotif(cb) {
   }, 100);
 }
 
+function dzWhenLoaderGone(cb) {
+  const check = () => {
+    if (document.getElementById("dzLoader")) setTimeout(check, 120);
+    else cb();
+  };
+  check();
+}
+
 function showCsHintTooltip(csBtn) {
 
   if (location.pathname.endsWith("/customerservice.html")) return;
@@ -428,7 +437,7 @@ function renderTopbarProfile() {
 
   if (csBtnRef && !window.__csHintShown) {
     window.__csHintShown = true;
-    showCsHintTooltip(csBtnRef);
+    dzWhenLoaderGone(() => showCsHintTooltip(csBtnRef));
   }
 
   const dropdown = document.createElement("div");
