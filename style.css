@@ -6173,3 +6173,21 @@ html {
 ::view-transition-group(dz-topbar) {
     animation: none;
 }
+
+::view-transition-old(dz-nav),
+::view-transition-old(dz-topbar) {
+    display: none;
+}
+html:has(.maintenance-page) #mnNav,
+html:has(.maintenance-page) #dzTopbar {
+    display: none !important;
+}
+html:has(.popup-overlay.show) #mnNav,
+html:has(.popup-overlay.show) #dzTopbar {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+.popup-overlay {
+    will-change: opacity;
+    transform: translateZ(0);
+}
