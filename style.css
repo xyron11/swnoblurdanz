@@ -19,7 +19,7 @@
 
 body {
     background-color: var(--bg-dark);
-    background-image: 
+    background-image:
         radial-gradient(circle at 10% 20%, rgba(61, 108, 255, 0.1) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(0, 255, 170, 0.06) 0%, transparent 45%);
     background-attachment: fixed;
@@ -27,7 +27,6 @@ body {
     min-height: 100vh;
     overflow-x: hidden;
 }
-
 
 .topbar {
     position: fixed;
@@ -362,7 +361,6 @@ body {
     object-fit: contain;
 }
 
-
 .sidebar {
     position: fixed;
     top: 0;
@@ -410,7 +408,6 @@ transform:translateX(20px);
     box-shadow: 0 0 25px rgba(76, 125, 255, 0.3);
 }
 
-
 .sidebar-header h2 {
     font-size: 22px;
 }
@@ -434,8 +431,6 @@ transform:translateX(20px);
     background: rgba(76, 125, 255, 0.12);
     padding-left: 28px;
 }
-
-
 
 .overlay {
     position: fixed;
@@ -468,10 +463,6 @@ body.sidebar-open .topbar-notif-btn {
     pointer-events: none;
     transition: filter .3s ease, opacity .3s ease;
 }
-
-/* ============================================================
-   TOMBOL NOTIFIKASI (LONCENG)
-   ============================================================ */
 
 .topbar-notif-btn {
     position: relative;
@@ -695,13 +686,11 @@ body.sidebar-open .topbar-notif-btn {
     width: 100%;
     max-width: 600px;
     margin: 0 auto;
-    padding: 140px 24px 40px; 
+    padding: 140px 24px 40px;
     text-align: center;
     position: relative;
     z-index: 1;
 }
-
-
 
 .logo h1 {
     font-size: 42px;
@@ -721,7 +710,7 @@ body.sidebar-open .topbar-notif-btn {
 
 .upload-box {
     display: block;
-    width: 100%; 
+    width: 100%;
     background: rgba(255, 255, 255, 0.02);
     border: 2px dashed rgba(61, 108, 255, 0.3);
     border-radius: 20px;
@@ -731,7 +720,6 @@ body.sidebar-open .topbar-notif-btn {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
 .upload-box:hover {
     border-color: var(--accent);
     background: rgba(0, 255, 170, 0.03);
@@ -740,7 +728,7 @@ body.sidebar-open .topbar-notif-btn {
 }
 
 .upload-box .icon img {
-    width: 56px; 
+    width: 56px;
     height: 56px;
     margin-bottom: 12px;
     filter: drop-shadow(0 0 8px var(--primary-glow));
@@ -750,7 +738,6 @@ body.sidebar-open .topbar-notif-btn {
 .upload-box:hover .icon img {
     transform: scale(1.1);
 }
-
 
 .icon {
     display: flex;
@@ -813,8 +800,6 @@ button:hover, #uploadBtn:hover {
 button:active, #uploadBtn:active {
     transform: translateY(0);
 }
-
-
 
 #status {
     margin-top: 22px;
@@ -971,9 +956,6 @@ button:active, #uploadBtn:active {
     object-fit: contain;
 }
 
-
-
-
 @keyframes fadeUp {
     from {
         opacity: 0;
@@ -984,8 +966,6 @@ button:active, #uploadBtn:active {
         transform: translateY(0);
     }
 }
-
-
 
 .maintenance-page{
     width:100%;
@@ -1063,7 +1043,6 @@ button:active, #uploadBtn:active {
     max-width:420px;
 
     overflow:hidden;
-    
 
     padding:34px 26px;
 
@@ -1274,8 +1253,6 @@ button:active, #uploadBtn:active {
     transform:scale(.97);
 }
 
-/* CUSTOM IMAGE MAINTENANCE */
-
 .maintenance-image{
     width:100%;
 
@@ -1300,8 +1277,6 @@ button:active, #uploadBtn:active {
     0 0 25px rgba(76,125,255,.15);
 }
 
-
-
 .maintenance-desc{
     color:#aeb8e8;
 
@@ -1318,8 +1293,6 @@ button:active, #uploadBtn:active {
     font-size:58px;
     margin-bottom:12px;
 }
-
-/* PANEL MAINTENANCE CUSTOM IMAGE */
 
 .upload-image-btn{
     width:100%;
@@ -1539,7 +1512,6 @@ button:active, #uploadBtn:active {
     transform:scale(.97);
 }
 
-
 .modal-overlay{
     position:fixed;
     top:0;
@@ -1633,10 +1605,6 @@ button:active, #uploadBtn:active {
     #4c7dff,
     #6b5cff);
 }
-
-/* =========================
-   RATING PAGE MODERN
-========================= */
 
 .rating-page{
     width:100%;
@@ -1990,19 +1958,6 @@ button:active, #uploadBtn:active {
     word-break:break-word;
 }
 
-/* MOBILE */
-
-
-
-
-
-
-
-
-
-
-/* EMPTY REVIEW */
-
 .empty-review{
 
     text-align:center;
@@ -2014,8 +1969,6 @@ button:active, #uploadBtn:active {
     font-size:15px;
 }
 
-/* REVIEW CARD HOVER */
-
 .review-card{
 
     transition:.25s;
@@ -2025,11 +1978,6 @@ button:active, #uploadBtn:active {
 
     transform:translateY(-2px);
 }
-
-/* MOBILE FIX */
-
-
-/* EDIT ULASAN TEXT */
 
 .edit-review-text{
     margin-top:12px;
@@ -2043,8 +1991,6 @@ button:active, #uploadBtn:active {
 
     display:inline-flex;
 }
-
-/* MODAL EDIT REVIEW */
 
 .review-modal{
     position:fixed;
@@ -2534,8 +2480,6 @@ div{
     margin-top:26px;
 }
 
-/* RATING SUMMARY */
-
 .rating-summary{
     display:flex;
 
@@ -2651,7 +2595,6 @@ div{
     transition:.4s ease;
 }
 
-
 @media(max-width: 480px) {
     .playstore-title { font-size: 28px; }
     .playstore-stars span { font-size: 46px; }
@@ -2667,7 +2610,6 @@ div{
     .rating-float-track { top: 96px !important; right: 8px !important; bottom: auto !important; left: auto !important; width: 158px; }
     .rating-item { padding: 8px; }
 }
-
 
 .custom-popup{
 position:fixed;
@@ -2839,19 +2781,17 @@ left:0;
 width:100%;
 height:100%;
 background:#020b3f;
-z-index:99999;
+z-index:7050;
+visibility:hidden;
+pointer-events:none;
 }
-/* ==========================================================
-   GANTI SEMUA KODE PALING BAWAH FILE DENGAN BLOK KODE INI
-   (EFEK TRANSPARAN BLUR & KECIL DI POJOK KANAN ATAS)
-   ========================================================== */
 
 .rating-float-track {
     position: fixed;
-    top: 98px !important;      /* Posisi atas untuk desktop, di bawah topbar (aman dari tombol profil) */
-    bottom: auto !important;   /* Mematikan reset bottom */
-    right: 10px !important;    /* Merapat ke kanan */
-    left: auto !important;     /* Mematikan reset left */
+    top: 98px !important;
+    bottom: auto !important;
+    right: 10px !important;
+    left: auto !important;
     transform: none !important;
     transition: .25s ease;
     z-index: 7000;
@@ -2859,7 +2799,7 @@ z-index:99999;
     flex-direction: column;
     gap: 10px;
     pointer-events: none;
-    width: 165px;              /* Ukuran box kecil proporsional */
+    width: 165px;
     overflow: visible;
 }
 
@@ -2867,16 +2807,15 @@ z-index:99999;
     cursor: pointer;
     pointer-events: auto;
     transition: transform .2s ease, opacity .2s ease;
-    width: 100%;               /* Mengikuti lebar track 165px */
-    padding: 10px;             /* Padding pas tidak terlalu lebar */
-    border-radius: 14px;       
-    
-    /* EFEK TRANSPARAN BLUR (GLASSMORPHISM) */
-    background: rgba(18, 24, 63, 0.45) !important; /* Menggunakan rgba transparan */
-    border: 1px solid rgba(255, 255, 255, 0.12) !important; /* Border tipis semi-transparan */
-    backdrop-filter: blur(14px) saturate(160%) !important; /* Efek blur tembus pandang */
+    width: 100%;
+    padding: 10px;
+    border-radius: 14px;
+
+    background: rgba(18, 24, 63, 0.45) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    backdrop-filter: blur(14px) saturate(160%) !important;
     -webkit-backdrop-filter: blur(14px) saturate(160%) !important;
-    
+
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     animation: reviewSlideRight 4.5s cubic-bezier(.22, 1, .36, 1) forwards;
     opacity: 0;
@@ -2908,7 +2847,7 @@ z-index:99999;
 }
 
 .rating-avatar {
-    width: 28px;               /* Ukuran avatar kecil */
+    width: 28px;
     height: 28px;
     border-radius: 50%;
     object-fit: cover;
@@ -2922,7 +2861,7 @@ z-index:99999;
 }
 
 .rating-username {
-    font-size: 11px;           /* Ukuran text username */
+    font-size: 11px;
     font-weight: 700;
     color: #ffffff;
     margin-bottom: 0px;
@@ -2932,18 +2871,18 @@ z-index:99999;
 }
 
 .rating-item-stars {
-    font-size: 8px;            /* Ukuran bintang kecil */
+    font-size: 8px;
     color: #ffd95c;
     letter-spacing: 0.5px;
 }
 
 .rating-item-text {
-    font-size: 10px;           /* Ukuran teks chat ulasan */
+    font-size: 10px;
     line-height: 1.3;
     color: rgba(255, 255, 255, 0.85);
     word-break: break-word;
     display: -webkit-box;
-    -webkit-line-clamp: 2;     /* Dikunci maksimal 2 baris agar tidak kepanjangan */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
@@ -2969,11 +2908,11 @@ z-index:99999;
 
 @media(max-width: 480px) {
     .rating-float-track {
-        top: 96px !important;  /* Di bawah topbar, aman dari tombol profil di layar HP */
+        top: 96px !important;
         right: 8px !important;
         bottom: auto !important;
         left: auto !important;
-        width: 158px;          /* Lebar box kecil sesuai gambar kedua */
+        width: 158px;
     }
 
     .rating-item {
@@ -2981,7 +2920,6 @@ z-index:99999;
     }
 }
 
-/* Bagian bawah ini adalah kode bawaan progress bar & popup donasi kamu yang diamankan */
 .btn-progress-container {
     position: absolute;
     bottom: 0;
@@ -3119,7 +3057,7 @@ z-index:99999;
     margin-bottom: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
-    aspect-ratio: 16 / 9; 
+    aspect-ratio: 16 / 9;
     background: #05081c;
 }
 
@@ -3132,7 +3070,7 @@ z-index:99999;
 
 .popup-donate-btn {
     display: block;
-    background: linear-gradient(135deg, #faad14, #d48806); 
+    background: linear-gradient(135deg, #faad14, #d48806);
     color: #05081c;
     text-decoration: none;
     padding: 14px 0;
@@ -3155,43 +3093,39 @@ z-index:99999;
     transform: translateY(1px);
 }
 
-/* DESKOP*/
 @media (min-width: 768px) {
 
     #tutorialBtn {
-        height: 58px !important;        
+        height: 58px !important;
         border-radius: 22px !important;
         font-size: 22px !important;
-        letter-spacing: 2px !important; 
+        letter-spacing: 2px !important;
     }
 
     .container {
-        max-width: 760px !important; 
+        max-width: 760px !important;
         padding: 130px 24px 20px !important;
     }
 
     .upload-box {
         border-radius: 36px !important;
-        padding: 150px 40px !important; 
-        margin-bottom: 45px !important; 
+        padding: 150px 40px !important;
+        margin-bottom: 45px !important;
     }
 
     .upload-box .icon img {
-        width: 200px !important; 
+        width: 200px !important;
         height: 200px !important;
         margin-bottom: 30px !important;
     }
 
     .upload-box p {
-        font-size: 28px !important; 
+        font-size: 28px !important;
         line-height: 1.5 !important;
     }
 
-    /* Cuma buat elemen uploader di halaman utama.
-       JANGAN pakai selector global `input` / `button` di sini, karena bakal
-       ngerusak halaman login, tombol foto profil, tombol CS, dan semua popup. */
     .container > input {
-        padding: 24px 20px !important; 
+        padding: 24px 20px !important;
         border-radius: 22px !important;
         font-size: 22px !important;
         margin-bottom: 45px !important;
@@ -3205,13 +3139,11 @@ z-index:99999;
         letter-spacing: 2px !important;
         margin-bottom: 30px !important;
     }
-    
+
     .footer {
-        margin-top: 40px !important; 
+        margin-top: 40px !important;
     }
 }
-
-
 
 .tutorial-overlay {
     position: fixed;
@@ -3231,7 +3163,6 @@ z-index:99999;
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-
 .tutorial-overlay.show {
     opacity: 1;
     pointer-events: auto;
@@ -3244,7 +3175,7 @@ z-index:99999;
     width: 92%;
     max-width: 360px;
     max-height: 90vh;
-    overflow-y: auto; 
+    overflow-y: auto;
     padding: 24px;
     position: relative;
     text-align: center;
@@ -3253,20 +3184,18 @@ z-index:99999;
     transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-
-
 .tutorial-overlay.show .tutorial-card {
     transform: scale(1) translateY(0);
 }
 
 .tutorial-close-btn {
-    position: sticky; 
+    position: sticky;
     top: 0px;
 
     float: right;
     margin-top: -4px;
     margin-right: -4px;
-    
+
     width: 34px;
     height: 34px;
     background: rgba(255, 255, 255, 0.08);
@@ -3279,7 +3208,7 @@ z-index:99999;
     justify-content: center;
     cursor: pointer;
     transition: all 0.25s ease;
-    z-index: 100; 
+    z-index: 100;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
 }
 
@@ -3300,11 +3229,10 @@ z-index:99999;
     padding-right: 20px;
 }
 
-
 .tutorial-video-container {
     width: 100%;
     max-width: 280px;
-    margin: 0 auto 18px; 
+    margin: 0 auto 18px;
     border-radius: 18px;
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -3313,14 +3241,12 @@ z-index:99999;
     background: #000000;
 }
 
-
 .tutorial-video-container video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
 }
-
 
 .tutorial-desc {
     font-size: 13.5px;
@@ -3331,7 +3257,6 @@ z-index:99999;
     margin-bottom: 5px;
 }
 
-
 @media (min-width: 768px) {
     #tutorialBtn {
         padding: 20px !important;
@@ -3341,7 +3266,7 @@ z-index:99999;
         margin-bottom: 20px !important;
     }
     .tutorial-card {
-        max-width: 480px; 
+        max-width: 480px;
         padding: 32px;
     }
     .tutorial-title {
@@ -3351,7 +3276,6 @@ z-index:99999;
         font-size: 15px;
     }
 }
-
 
         .btn-join-main {
             display: flex;
@@ -3380,7 +3304,6 @@ z-index:99999;
             filter: brightness(1.05);
         }
 
-        /* Modal Overlay */
         .group-modal-overlay {
             position: fixed;
             top: 0;
@@ -3404,7 +3327,6 @@ z-index:99999;
             pointer-events: auto;
         }
 
-
         .group-modal-card {
             background: linear-gradient(145deg, rgba(19, 25, 62, 0.95), rgba(9, 13, 38, 0.98));
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -3426,7 +3348,6 @@ z-index:99999;
             transform: scale(1) translateY(0);
         }
 
-       
         .group-modal-close {
             position: absolute;
             top: 16px;
@@ -3452,7 +3373,6 @@ z-index:99999;
             border-color: rgba(255, 99, 132, 0.4);
             transform: rotate(90deg);
         }
-
 
         .group-modal-title {
             font-size: 18px;
@@ -3486,18 +3406,16 @@ z-index:99999;
             border-radius: 10px;
         }
 
-
-
         .group-link-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             width: 100%;
-            min-height: 46px; 
+            min-height: 46px;
             height: auto;
             padding: 10px 16px;
-            
+
             background: linear-gradient(135deg, #00ffaa, #00b377);
             color: #05081c;
             text-decoration: none;
@@ -3509,7 +3427,6 @@ z-index:99999;
             text-transform: uppercase;
             box-shadow: 0 4px 12px rgba(0, 255, 170, 0.25);
             transition: all 0.25s ease;
-            
 
             word-break: break-word;
             text-align: center;
@@ -3521,15 +3438,12 @@ z-index:99999;
             filter: brightness(1.1);
         }
 
-        /* STYLING SUBMENU MATCHING THEME */
 .submenu-container {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-in-out;
     background: rgba(0, 0, 0, 0.2);
 }
-
-
 
 .submenu-item {
     padding-left: 35px !important;
@@ -3555,11 +3469,6 @@ z-index:99999;
 .submenu-trigger.submenu-open .submenu-arrow {
     transform: rotate(180deg);
 }
-
-
-/* =========================================================
-   HOVER / CLICK EXPANDING LOGIN CARD WITH CONIC GRADIENT
-   ========================================================= */
 
 .login-body {
     min-height: 100vh;
@@ -3601,7 +3510,6 @@ z-index:99999;
     margin: auto;
 }
 
-/* Base Card Container */
 .expand-card-box {
     position: relative;
     border-radius: 24px;
@@ -3612,7 +3520,6 @@ z-index:99999;
     transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Conic Neon Rotating Border */
 .expand-card-box::before {
     content: "";
     position: absolute;
@@ -3640,7 +3547,6 @@ z-index:99999;
     100% { transform: rotate(360deg); }
 }
 
-/* Header Trigger (State Tertutup) */
 .expand-trigger {
     position: relative;
     z-index: 2;
@@ -3675,7 +3581,6 @@ z-index:99999;
     transition: transform 0.4s ease;
 }
 
-/* Content Form Animation (Expanded State) */
 .expand-content {
     position: relative;
     z-index: 2;
@@ -3688,10 +3593,9 @@ z-index:99999;
     transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, padding 0.4s ease;
 }
 
-/* Hover di Desktop / Active di Mobile */
 .expand-card-box:hover .expand-content,
 .expand-card-box.active .expand-content {
-    max-height: 1000px; /* Diperbesar agar form OTP tidak kepotong */
+    max-height: 1000px;
     opacity: 1;
     padding: 10px 24px 28px 24px;
 }
@@ -3701,7 +3605,6 @@ z-index:99999;
     transform: rotate(180deg);
 }
 
-/* Form Styles Inside */
 .auth-header {
     text-align: center;
     margin-bottom: 20px;
@@ -3736,16 +3639,14 @@ z-index:99999;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.25s ease;
-    overflow: hidden; /* Mencegah logo meluap */
+    overflow: hidden;
 }
-
 
 .btn-google:hover {
     background: rgba(255, 255, 255, 0.12);
     border-color: rgba(59, 130, 246, 0.4);
 }
 
-/* Fix Ukuran Logo Google */
 .google-icon {
     width: 20px !important;
     height: 20px !important;
@@ -3780,7 +3681,7 @@ z-index:99999;
 }
 
 .auth-form.hidden {
-    display: none !important; /* Fix agar Step 2 (OTP) tersembunyi dulu sebelum dikirim */
+    display: none !important;
 }
 
 .form-group {
@@ -3852,7 +3753,6 @@ z-index:99999;
     text-align: center;
 }
 
-/* Indikator status pengecekan nomor WhatsApp/HP */
 .phone-input-wrapper {
     position: relative;
     display: flex;
@@ -3909,7 +3809,6 @@ z-index:99999;
     to { transform: rotate(360deg); }
 }
 
-/* Indikator kekuatan password */
 .password-strength-bars {
     display: flex;
     gap: 6px;
@@ -3949,7 +3848,6 @@ z-index:99999;
     color: #22c55e;
 }
 
-/* Teks peringatan error login (bukan popup, cuma tulisan) */
 .inline-error-text {
     display: none;
     color: #ff4d4f;
@@ -3974,7 +3872,6 @@ z-index:99999;
     transform: none;
 }
 
-/* Jarak lebih lega antara input terakhir & tombol aksi */
 .auth-form {
     gap: 18px;
 }
@@ -4017,7 +3914,6 @@ z-index:99999;
     cursor: not-allowed;
 }
 
-/* Peringatan format nomor */
 .phone-format-warning {
     display: none;
     font-size: 11px;
@@ -4030,9 +3926,6 @@ z-index:99999;
     display: block;
 }
 
-/* ======================================================
-   LANDING PAGE (danzclean.html) - dipindah dari inline <style>
-   ====================================================== */
 :root{
     --bg:#070a13;
     --bg-soft:#0b0f22;
@@ -4053,7 +3946,6 @@ body{
     overflow-x:hidden;
 }
 
-/* ===== Ambient background ===== */
 .ambient{
     position:fixed;
     inset:0;
@@ -4070,7 +3962,6 @@ body{
 .ambient .a2{ width:380px; height:380px; top:40%; right:-140px; background:rgba(0,255,170,.12); }
 .ambient .a3{ width:340px; height:340px; bottom:-140px; left:20%; background:rgba(61,108,255,.15); }
 
-/* ===== Nav ===== */
 .nav{
     position:sticky;
     top:0;
@@ -4126,7 +4017,6 @@ body{
     .nav-links{ display:flex; }
 }
 
-/* ===== Section shell ===== */
 .section{
     position:relative;
     z-index:1;
@@ -4151,7 +4041,6 @@ body{
     background:var(--accent);
 }
 
-/* ===== Hero ===== */
 .hero{
     padding-top:64px;
     display:flex;
@@ -4214,7 +4103,6 @@ body{
 }
 .btn-ghost:hover{ color:#fff; }
 
-/* ===== Before/After demo (signature element) ===== */
 .demo-wrap{
     margin-top:20px;
     width:100%;
@@ -4301,7 +4189,6 @@ body{
     color:var(--muted-dim);
 }
 
-/* ===== Stat chips ===== */
 .chip-row{
     display:flex;
     flex-wrap:wrap;
@@ -4322,7 +4209,6 @@ body{
     color:var(--muted);
 }
 
-/* ===== Features ===== */
 .section-head{
     text-align:center;
     max-width:520px;
@@ -4390,7 +4276,6 @@ body{
     color:var(--muted);
 }
 
-/* ===== How it works ===== */
 .steps{
     display:flex;
     flex-direction:column;
@@ -4423,7 +4308,6 @@ body{
 .step-title{ font-size:15.5px; font-weight:700; margin-bottom:5px; }
 .step-desc{ font-size:13.5px; color:var(--muted); line-height:1.65; max-width:520px; }
 
-/* ===== CTA banner ===== */
 .cta-banner{
     position:relative;
     z-index:1;
@@ -4452,7 +4336,6 @@ body{
     margin-right:auto;
 }
 
-/* ===== Footer ===== */
 .site-footer{
     position:relative;
     z-index:1;
@@ -4687,10 +4570,7 @@ body{
     border-color: rgba(255, 60, 60, 0.4);
     color: #ffffff;
 }
-/* ======================================================
-   PEMILIH KODE NEGARA UNTUK INPUT NOMOR TELEPON
-   (dipakai bareng phone-country.js)
-   ====================================================== */
+
 .phone-input-wrapper--with-country {
     gap: 8px;
 }
@@ -4754,12 +4634,10 @@ body{
     margin-left: 1px;
 }
 
-/* Kelas util untuk menyembunyikan elemen (dipakai juga oleh phone-country.js) */
 .hidden-element {
     display: none !important;
 }
 
-/* Panel dropdown pencarian negara (posisi fixed, di-append ke body) */
 .country-dropdown-panel {
     z-index: 5000;
     max-height: 320px;
@@ -4847,8 +4725,6 @@ body{
     line-height: 1.4;
 }
 
-
-/* ===== Preset & Template (preset-tamplate.html) ===== */
         .pt-page {
             width: 100%;
             max-width: 600px;
@@ -5746,7 +5622,6 @@ body{
             100% { background-position: 0 50%; }
         }
 
-        /* Baris preview gambar sampul (thumbnail) hasil auto-capture frame video */
         .pt-thumb-row {
             display: flex;
             align-items: center;
@@ -5813,7 +5688,6 @@ body{
             transform: scale(0.96);
         }
 
-        /* Modal edit frame (scrub video buat pilih sampul) */
         .pt-frame-card {
             max-width: 380px;
         }
@@ -5863,20 +5737,12 @@ body{
             line-height: 1.5;
         }
 
-
-/* =====================================================================
-   NAVIGASI BAWAH (LIQUID) + TOPBAR TANPA ☰
-   ===================================================================== */
-
-/* sidebar lama sudah diganti navigasi bawah */
 .menu-btn,
 .sidebar,
 .overlay { display: none !important; }
 
-/* biar konten ga ketutup navigasi */
 body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 
-/* brand di kiri topbar */
 .topbar-brand {
     display: flex;
     align-items: center;
@@ -5903,7 +5769,6 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     -webkit-text-fill-color: transparent;
 }
 
-/* ---------- bar ---------- */
 .mn-nav {
     --mn-h: 62px;
     --mn-bar: #0d1331;
@@ -5927,10 +5792,10 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.07), 0 14px 30px rgba(0, 0, 0, 0.55);
 }
 
-/* lapisan gooey: bar + blob digabung jadi satu cairan */
 .mn-goo {
     position: absolute;
     inset: 0;
+    transform: translateZ(0);
     filter: url(#mn-goo);
 }
 .mn-bar {
@@ -5940,7 +5805,6 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     background: var(--mn-bar);
 }
 
-/* slot = kolom 1 menu, digeser pakai --i */
 .mn-slot {
     position: absolute;
     top: 0;
@@ -5948,12 +5812,14 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     width: calc(100% / var(--n));
     height: var(--mn-h);
     transform: translateX(calc(var(--i) * 100%));
-    transition: transform .5s cubic-bezier(.34, 1.32, .5, 1);
+    transition: transform .42s cubic-bezier(.34, 1.2, .5, 1);
     pointer-events: none;
+    will-change: transform;
+    backface-visibility: hidden;
 }
-/* bagian "ekor" cairan: lebih lambat dari bola, jadi kelihatan melar */
+
 .mn-slot-trail {
-    transition: transform .8s cubic-bezier(.22, 1, .36, 1) .05s;
+    transition: transform .6s cubic-bezier(.22, 1, .36, 1) .04s;
 }
 .mn-nav.mn-no-anim .mn-slot,
 .mn-nav.mn-no-anim .mn-ico,
@@ -5980,9 +5846,8 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     box-shadow: 0 0 18px rgba(61, 108, 255, 0.7), inset 0 2px 3px rgba(255, 255, 255, 0.35);
 }
 
-/* efek melt -> slide -> reform */
-.mn-melt .mn-blob { animation: mnMelt .65s ease; }
-.mn-melt .mn-bead { animation: mnBead .65s ease; }
+.mn-melt .mn-blob { animation: mnMelt .42s ease; }
+.mn-melt .mn-bead { animation: mnBead .42s ease; }
 @keyframes mnMelt {
     0%   { transform: scale(1, 1); }
     35%  { transform: scale(1.5, .45) translateY(8px); }
@@ -5994,11 +5859,9 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     100% { transform: scale(1, 1); }
 }
 
-/* kalau halaman ga ada di navigasi, bolanya disembunyiin */
 .mn-nav.mn-none .mn-bead-wrap,
 .mn-nav.mn-none .mn-slot .mn-blob { opacity: 0; }
 
-/* ---------- menu ---------- */
 .mn-items {
     position: relative;
     display: flex;
@@ -6007,7 +5870,7 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .mn-item,
 .mn-item:hover,
 .mn-item:active {
-    /* reset rule global `button {}` (gradient, padding, glow, hover naik) */
+
     width: auto;
     overflow: visible;
     border-radius: 0;
@@ -6038,7 +5901,7 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     width: 22px;
     height: 22px;
     display: block;
-    transition: transform .5s cubic-bezier(.34, 1.4, .5, 1) .04s;
+    transition: transform .42s cubic-bezier(.34, 1.3, .5, 1);
 }
 .mn-ico svg { width: 100%; height: 100%; display: block; }
 .mn-ico img {
@@ -6066,7 +5929,6 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
 .mn-item.active .mn-label { font-weight: 700; }
 .mn-item:focus-visible .mn-label { text-decoration: underline; }
 
-/* ---------- popup (Downloader & Lainnya) ---------- */
 .mn-scrim {
     position: fixed;
     inset: 0;
@@ -6149,8 +6011,6 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     .mn-melt .mn-blob, .mn-melt .mn-bead { animation: none; }
 }
 
-
-/* topbar: dipaksa tampil sama di semua halaman, ga bisa ditimpa CSS halaman */
 #dzTopbar.topbar {
     position: fixed !important;
     top: 14px !important;
@@ -6170,7 +6030,8 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     border: 1px solid rgba(255, 255, 255, 0.05) !important;
     border-radius: 32px !important;
     overflow: hidden !important;
-    z-index: 5100 !important;
+    z-index: 7400 !important;
+    pointer-events: auto !important;
     opacity: 1 !important;
     visibility: visible !important;
     transform: none !important;
@@ -6198,4 +6059,117 @@ body { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.mn-pop-list {
+    gap: 4px;
+}
+.mn-pop-list .mn-pop-item {
+    gap: 12px;
+    min-height: 56px;
+    padding: 9px 12px 9px 10px;
+    border: 0;
+    border-radius: 16px;
+    background: transparent;
+}
+.mn-pop-list .mn-pop-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+.mn-pop-list .mn-pop-item:active {
+    background: rgba(61, 108, 255, 0.14);
+}
+.mn-pop-ico {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    flex-shrink: 0;
+    color: #9db8ff;
+    background: rgba(61, 108, 255, 0.14);
+    transition: background .25s ease, color .25s ease, box-shadow .25s ease;
+}
+.mn-pop-ico svg {
+    width: 19px;
+    height: 19px;
+}
+.mn-pop-txt {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+.mn-pop-txt small {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #8f99c9;
+    line-height: 1.4;
+}
+.mn-pop-list .mn-pop-item::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    margin-left: auto;
+    border-right: 2px solid rgba(158, 167, 214, 0.55);
+    border-top: 2px solid rgba(158, 167, 214, 0.55);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+}
+.mn-pop-list .mn-pop-item.current {
+    background: linear-gradient(100deg, rgba(61, 108, 255, 0.2), rgba(61, 108, 255, 0.04) 85%);
+    border: 0;
+}
+.mn-pop-list .mn-pop-item.current .mn-pop-ico {
+    color: #fff;
+    background: linear-gradient(135deg, #6c97ff, #3d6cff 60%, #2b4fd6);
+    box-shadow: 0 6px 16px rgba(61, 108, 255, 0.45);
+}
+.mn-pop-list .mn-pop-item.current::after {
+    width: 8px;
+    height: 8px;
+    border: 0;
+    border-radius: 50%;
+    transform: none;
+    background: #7fa2ff;
+    box-shadow: 0 0 10px rgba(127, 162, 255, 0.9);
+}
+
+
+html {
+    background: #070a13;
+}
+@view-transition {
+    navigation: auto;
+}
+::view-transition-old(root) {
+    animation: none;
+}
+::view-transition-new(root) {
+    animation: dzVtIn .2s ease-out both;
+}
+@keyframes dzVtIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+#mnNav {
+    view-transition-name: dz-nav;
+}
+#dzTopbar {
+    view-transition-name: dz-topbar;
+}
+::view-transition-old(dz-nav),
+::view-transition-new(dz-nav),
+::view-transition-old(dz-topbar),
+::view-transition-new(dz-topbar) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+::view-transition-group(dz-nav),
+::view-transition-group(dz-topbar) {
+    animation: none;
 }
