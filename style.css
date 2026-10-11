@@ -6191,3 +6191,8 @@ html:has(.popup-overlay.show) #dzTopbar {
     will-change: opacity;
     transform: translateZ(0);
 }
+
+html:has(#dzLoader) .cs-hint-tooltip {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
