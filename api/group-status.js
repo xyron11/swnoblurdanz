@@ -18,6 +18,21 @@ async function fetchInvite(code) {
   }
 }
 
+async function check(code) {
+  const r = await fetchInvite(code);
+  if (r.status === 404 || r.status === 410) {
+    return { state: 'dead', status: r.status, title: '' };
+  }
+  if (!r.ok) return { state: 'error', status: r.status, title: '' };
+
+  const html = await r.text();
+  const m = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i)
+         || html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:title["']/i);
+  const title = m ? m[1].trim() : '';
+  const alive = !!title && !/^whatsapp (group )?invite$/i.test(title);
+  return { state: alive ? 'alive' : 'dead', status: r.status, title };
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -27,10 +42,13 @@ module.exports = async (req, res) => {
     return res.status(200).json({ ok: true, active: false });
   }
 
-  const success = (active) => {
+  const success = (active, info) => {
     lastKnown[code] = { active, t: Date.now() };
-    res.setHeader('Cache-Control', 's-maxage=15, stale-while-revalidate=300');
-    return res.status(200).json({ ok: true, active });
+    res.setHeader(
+      'Cache-Control',
+      active ? 's-maxage=15, stale-while-revalidate=300' : 's-maxage=5'
+    );
+    return res.status(200).json({ ok: true, active, status: info.status, title: info.title });
   };
 
   const fail = (reason) => {
@@ -43,22 +61,22 @@ module.exports = async (req, res) => {
   };
 
   try {
-    let r = await fetchInvite(code);
+    let a = await check(code);
 
-    if (r.status === 429 || r.status === 403 || r.status >= 500) {
+    if (a.state === 'error') {
       await sleep(600);
-      r = await fetchInvite(code);
+      a = await check(code);
     }
 
-    if (r.status === 404 || r.status === 410) return success(false);
-    if (!r.ok) return fail('whatsapp-http-' + r.status);
+    if (a.state === 'dead') {
+      await sleep(700);
+      const b = await check(code);
+      if (b.state !== 'dead') a = b;
+    }
 
-    const html = await r.text();
-    const m = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i)
-           || html.match(/<meta[^>]+content=["']([^"']*)["'][^>]+property=["']og:title["']/i);
-    const title = m ? m[1].trim() : '';
-
-    return success(!!title && !/^whatsapp (group )?invite$/i.test(title));
+    if (a.state === 'alive') return success(true, a);
+    if (a.state === 'dead') return success(false, a);
+    return fail('whatsapp-http-' + a.status);
   } catch (e) {
     return fail('error: ' + (e && e.message ? e.message : e));
   }
