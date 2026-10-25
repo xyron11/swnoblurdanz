@@ -1,5 +1,3 @@
-
-
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*'); 
   res.setHeader('Cache-Control', 's-maxage=3');
@@ -25,7 +23,7 @@ module.exports = async (req, res) => {
     if (r.status === 404 || r.status === 410) {
       return res.status(200).json({ ok: true, active: false });
     }
-    if (!r.ok) return res.status(200).json({ ok: false });
+    if (!r.ok) return res.status(200).json({ ok: false, reason: 'whatsapp-http-' + r.status });
 
     const html = await r.text();
     const m = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i)
@@ -39,6 +37,6 @@ module.exports = async (req, res) => {
     }
     return res.status(200).json({ ok: true, active: true });
   } catch (e) {
-    return res.status(200).json({ ok: false }); 
+    return res.status(200).json({ ok: false, reason: 'error: ' + (e && e.message ? e.message : e) });
   }
 };
