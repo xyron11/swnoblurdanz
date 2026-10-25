@@ -1346,7 +1346,7 @@ div.remove()
     }
 
     const groupModalOverlay = document.getElementById("groupModalOverlay");
-    // Pindahkan modal ke <body> supaya selalu di atas semua elemen lain (rating dll)
+    
     document.body.appendChild(groupModalOverlay);
     new MutationObserver(() => {
         document.body.classList.toggle("gm-open", groupModalOverlay.classList.contains("show"));
