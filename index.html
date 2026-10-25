@@ -812,7 +812,7 @@ const intervalCek = setInterval(async () => {
                 `MENUNGGU SERVER... (${Math.min(gagalCekProgress, 5)}/5)`;
         }
 
-        // Baru tampilkan error setelah gagal berkali-kali
+        
         if (gagalCekProgress >= 5) {
 
             clearInterval(intervalCek);
@@ -849,7 +849,7 @@ const intervalCek = setInterval(async () => {
         }
     };
 
-    // Tandai kalau seluruh isi file sudah selesai terkirim ke server
+    
     let bodyTerkirim = false;
     xhr.upload.onload = function () {
         bodyTerkirim = true;
@@ -1213,15 +1213,14 @@ div.remove()
         { name: "ILUMINATING STARS 3(UNTUK SWHD BARU)", url: "https://chat.whatsapp.com/F5SzrFA56sMEaxUIuFtyiY?s=cl&p=a&mlu=4&ilr=4"},
             { name: "ILUMINATING STARS 4(UNTUK SWHD BARU)", url: "https://chat.whatsapp.com/Ff6OZ6fsCK10fBDXYbpC5g?s=cl&p=a&mlu=4&ilr=4"},
         { name: "ILUMINATING STARS 5(UNTUK SWHD BARU)", url: "https://chat.whatsapp.com/LIJjZwcgrOA40LRNHpRVSQ?s=cl&p=a&mlu=4&ilr=4"},
-                    { name: "ILUMINATING STARS 6(UNTUK SWHD BARU)", url: "https://chat.whatsapp.com/HJHAwh4UawE2rufxDLhgZv?s=cl&p=a&mlu=4&ilr=4"} 
+                    { name: "ILUMINATING STARS 6(UNTUK SWHD BARU)", url: "https://chat.whatsapp.com/HJHAwh4UawE2rufxDLhgZv?s=cl&p=a&mlu=4&ilr=4"},
+                                        { name: "TESS", url: "https://chat.whatsapp.com/FjjHfxbKMvYK5Nyr3GxKUX?s=cl&p=a&mlu=4&ilr=4"}
     ];
 
     const groupListContainer = document.getElementById("groupListContainer");
     
-    // ===== STATUS LINK GRUP + SALIN LINK =====
-    const GROUP_STATUS_TTL = 60 * 1000; // cache 60 detik
-    // Di localhost / file:// panggil function yang sudah ter-deploy di Vercel.
-    // Ganti domain di bawah kalau domain webmu berbeda.
+    
+    const GROUP_STATUS_TTL = 60 * 1000;
     const GROUP_API_BASE = /^(localhost|127\.0\.0\.1|)$/.test(location.hostname)
         ? "https://danzclean.arisu.biz.id"
         : "";
@@ -1237,7 +1236,7 @@ div.remove()
         return code ? "https://chat.whatsapp.com/" + code : url;
     }
 
-    // return: "online" | "offline" | "unknown"
+    
     async function checkGroupStatus(url) {
         const code = getInviteCode(url);
         if (!code) return "offline";
@@ -1256,7 +1255,7 @@ div.remove()
             const data = await res.json();
             if (data && data.ok) status = data.active ? "online" : "offline";
         } catch (e) {
-            status = "unknown"; // server tidak bisa dihubungi -> jangan salah vonis offline
+            status = "unknown"; 
         } finally {
             clearTimeout(timer);
         }
