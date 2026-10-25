@@ -178,6 +178,141 @@
             50% { transform: scale(1.08); }
             100% { transform: scale(1); }
         }
+    
+        /* ===== Daftar grup: tombol hijau + status + salin ===== */
+        body.gm-open .rating-float-track {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .gc-item { position: relative; width: 100%; }
+
+        .gc-link {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            min-height: 64px;
+            padding: 0 54px 0 0;
+            box-sizing: border-box;
+            background: linear-gradient(135deg, #00ffaa, #00b377);
+            color: #05081c;
+            text-decoration: none;
+            border-radius: 18px;
+            box-shadow: 0 4px 14px rgba(0, 255, 170, 0.25);
+            transition: transform 0.2s ease;
+        }
+        .gc-link:active { transform: scale(0.98); }
+
+        .gc-state {
+            flex: 0 0 64px;
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border-right: 1px solid rgba(5, 8, 28, 0.2);
+        }
+
+        .gc-dot {
+            display: block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #05081c;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .gc-status {
+            font-size: 9.5px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0.2px;
+            text-align: center;
+            opacity: 0.85;
+        }
+
+        .gc-body {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 10px 8px;
+            text-align: center;
+        }
+
+        .gc-name {
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .gc-sub {
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.2;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            opacity: 0.7;
+        }
+        .gc-sub:empty { display: none; }
+
+        .gc-item[data-status="online"] .gc-dot {
+            background: #00d45a;
+            box-shadow: 0 0 0 2px #fff, 0 0 8px #00d45a;
+            animation: gcPulse 1.6s infinite;
+        }
+        .gc-item[data-status="checking"] .gc-dot {
+            background: #ffc933;
+            animation: gcPulse 0.8s infinite;
+        }
+        .gc-item[data-status="unknown"] .gc-dot { background: #7c84a8; }
+        .gc-item[data-status="offline"] .gc-dot {
+            background: #ff3b5c;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
+        }
+
+        @keyframes gcPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        .gc-copy {
+            position: absolute;
+            right: 9px;
+            top: 50%;
+            width: 36px;
+            height: 36px;
+            margin-top: -18px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 50%;
+            background: rgba(5, 8, 28, 0.2);
+            color: #05081c;
+            cursor: pointer;
+        }
+        .gc-copy svg { display: block; }
+        .gc-copy:active { transform: scale(0.9); }
+        .gc-copy.copied { background: #05081c; color: #00ffaa; }
+
+        .gc-item[data-status="offline"] .gc-link {
+            background: linear-gradient(135deg, #4a4f6b, #353a55);
+            color: #c3c8e6;
+            box-shadow: none;
+            pointer-events: none;
+        }
+        .gc-item[data-status="offline"] .gc-state { border-right-color: rgba(255, 255, 255, 0.15); }
+        .gc-item[data-status="offline"] .gc-copy {
+            opacity: 0.35;
+            pointer-events: none;
+            color: #c3c8e6;
+        }
     </style>
 </head>
 
@@ -1083,19 +1218,140 @@ div.remove()
 
     const groupListContainer = document.getElementById("groupListContainer");
     
+    // ===== STATUS LINK GRUP + SALIN LINK =====
+    const GROUP_STATUS_TTL = 60 * 1000; // cache 60 detik
+    // Di localhost / file:// panggil function yang sudah ter-deploy di Vercel.
+    // Ganti domain di bawah kalau domain webmu berbeda.
+    const GROUP_API_BASE = /^(localhost|127\.0\.0\.1|)$/.test(location.hostname)
+        ? "https://danzclean.arisu.biz.id"
+        : "";
+    const groupStatusCache = {};
+
+    function getInviteCode(url) {
+        const m = String(url).match(/chat\.whatsapp\.com\/([A-Za-z0-9]+)/);
+        return m ? m[1] : null;
+    }
+
+    function cleanGroupUrl(url) {
+        const code = getInviteCode(url);
+        return code ? "https://chat.whatsapp.com/" + code : url;
+    }
+
+    // return: "online" | "offline" | "unknown"
+    async function checkGroupStatus(url) {
+        const code = getInviteCode(url);
+        if (!code) return "offline";
+
+        const cached = groupStatusCache[code];
+        if (cached && Date.now() - cached.t < GROUP_STATUS_TTL) return cached.s;
+
+        let status = "unknown";
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        try {
+            const res = await fetch(`${GROUP_API_BASE}/api/group-status?code=${encodeURIComponent(code)}`, {
+                cache: "no-store",
+                signal: ctrl.signal
+            });
+            const data = await res.json();
+            if (data && data.ok) status = data.active ? "online" : "offline";
+        } catch (e) {
+            status = "unknown"; // server tidak bisa dihubungi -> jangan salah vonis offline
+        } finally {
+            clearTimeout(timer);
+        }
+
+        if (status !== "unknown") groupStatusCache[code] = { s: status, t: Date.now() };
+        return status;
+    }
+
+    function setGroupStatus(item, status) {
+        const label = { checking: "Mengecek", online: "Online", offline: "Offline", unknown: "Unknown" };
+        item.dataset.status = status;
+        item.querySelector(".group-status-text").textContent = label[status];
+    }
+
+    async function copyText(text) {
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch (e) {}
+        try {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand("copy");
+            document.body.removeChild(ta);
+            return ok;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    const SVG_ATTR = 'width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"';
+    const ICON_COPY = `<svg ${SVG_ATTR}><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H16"/></svg>`;
+    const ICON_CHECK = `<svg ${SVG_ATTR}><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
+    const ICON_FAIL = `<svg ${SVG_ATTR}><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+
     function renderGroupButtons() {
         groupListContainer.innerHTML = "";
         whatsappGroups.forEach(group => {
-            const btn = document.createElement("a");
-            btn.href = group.url;
-            btn.target = "_blank";
-            btn.className = "group-link-btn";
-            btn.innerHTML = `💬 ${group.name}`;
-            groupListContainer.appendChild(btn);
+            const item = document.createElement("div");
+            item.className = "gc-item";
+
+            const link = document.createElement("a");
+            link.href = group.url;
+            link.target = "_blank";
+            link.rel = "noopener";
+            link.className = "gc-link";
+            const parts = group.name.match(/^(.*?)\s*\((.*)\)\s*$/);
+            const title = parts ? parts[1] : group.name;
+            const sub = parts ? parts[2] : "";
+            link.innerHTML =
+                '<span class="gc-state"><i class="gc-dot"></i>' +
+                '<span class="gc-status"><span class="group-status-text"></span></span></span>' +
+                '<span class="gc-body"><span class="gc-name"></span><span class="gc-sub"></span></span>';
+            link.querySelector(".gc-name").textContent = title;
+            link.querySelector(".gc-sub").textContent = sub;
+
+            const copyBtn = document.createElement("button");
+            copyBtn.type = "button";
+            copyBtn.className = "gc-copy";
+            copyBtn.title = "Salin link grup";
+            copyBtn.setAttribute("aria-label", "Salin link grup");
+            copyBtn.innerHTML = ICON_COPY;
+            copyBtn.addEventListener("click", async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const ok = await copyText(cleanGroupUrl(group.url));
+                copyBtn.innerHTML = ok ? ICON_CHECK : ICON_FAIL;
+                copyBtn.classList.toggle("copied", ok);
+                setTimeout(() => {
+                    copyBtn.innerHTML = ICON_COPY;
+                    copyBtn.classList.remove("copied");
+                }, 1500);
+            });
+
+            item.appendChild(link);
+            item.appendChild(copyBtn);
+            groupListContainer.appendChild(item);
+
+            setGroupStatus(item, "checking");
+            checkGroupStatus(group.url).then(st => setGroupStatus(item, st));
         });
     }
 
     const groupModalOverlay = document.getElementById("groupModalOverlay");
+    // Pindahkan modal ke <body> supaya selalu di atas semua elemen lain (rating dll)
+    document.body.appendChild(groupModalOverlay);
+    new MutationObserver(() => {
+        document.body.classList.toggle("gm-open", groupModalOverlay.classList.contains("show"));
+    }).observe(groupModalOverlay, { attributes: true, attributeFilter: ["class"] });
 const joinGroupTrigger = document.getElementById("joinGroupTrigger");
 const closeGroupModal = document.getElementById("closeGroupModal");
 
