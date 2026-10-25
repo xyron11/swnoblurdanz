@@ -1219,7 +1219,8 @@ div.remove()
     const groupListContainer = document.getElementById("groupListContainer");
     
     
-    const GROUP_STATUS_TTL = 60 * 1000;
+    const GROUP_STATUS_TTL = 3 * 1000; 
+const GROUP_POLL_MS = 5 * 1000;  
     const GROUP_API_BASE = /^(localhost|127\.0\.0\.1|)$/.test(location.hostname)
         ? "https://danzclean.arisu.biz.id"
         : "";
@@ -1295,6 +1296,18 @@ div.remove()
     const ICON_COPY = `<svg ${SVG_ATTR}><rect x="9" y="9" width="12" height="12" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H16"/></svg>`;
     const ICON_CHECK = `<svg ${SVG_ATTR}><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`;
     const ICON_FAIL = `<svg ${SVG_ATTR}><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+    
+    function refreshGroupStatuses() {
+    groupListContainer.querySelectorAll(".gc-item").forEach(item => {
+        checkGroupStatus(item.dataset.url).then(st => {
+            const prev = item.dataset.status;
+            if (st === "unknown" && (prev === "online" || prev === "offline")) return;
+            setGroupStatus(item, st);
+        });
+    });
+}
+
+let groupPollTimer = null;
 
     function renderGroupButtons() {
         groupListContainer.innerHTML = "";
@@ -1335,8 +1348,9 @@ div.remove()
                 }, 1500);
             });
 
-            item.appendChild(link);
-            item.appendChild(copyBtn);
+            item.dataset.url = group.url;
+item.appendChild(link);
+item.appendChild(copyBtn);
             groupListContainer.appendChild(item);
 
             setGroupStatus(item, "checking");
@@ -1348,7 +1362,10 @@ div.remove()
     
     document.body.appendChild(groupModalOverlay);
     new MutationObserver(() => {
-        document.body.classList.toggle("gm-open", groupModalOverlay.classList.contains("show"));
+        const open = groupModalOverlay.classList.contains("show");
+document.body.classList.toggle("gm-open", open);
+clearInterval(groupPollTimer);
+groupPollTimer = open ? setInterval(refreshGroupStatuses, GROUP_POLL_MS) : null;
     }).observe(groupModalOverlay, { attributes: true, attributeFilter: ["class"] });
 const joinGroupTrigger = document.getElementById("joinGroupTrigger");
 const closeGroupModal = document.getElementById("closeGroupModal");
