@@ -368,7 +368,10 @@ Cari akun berdasarkan username / email / no HP, lalu blokir atau buka blokir.
 type="text"
 id="blockSearch"
 class="block-search"
-placeholder="Cari username, email, atau nomor HP...">
+placeholder="Cari username, email, atau nomor HP (+62 838-3386-8943)..."
+autocomplete="off"
+autocapitalize="off"
+spellcheck="false">
 
 <div class="block-tabs">
 <button class="block-tab active" id="tabSemua" onclick="setBlockFilter('semua')">Semua</button>
@@ -599,10 +602,22 @@ const usersRef = db.ref("users")
 const manualUsersRef = db.ref("manual_users")
 const blockedUsersRef = db.ref("blocked_users")
 
-let daftarAkun = {}     // uid -> {uid, username, email, phone, photo, password}
+let authMap = {}        // uid -> akun dari /users
+let manualMap = {}      // uid -> akun dari /manual_users
+let daftarAkun = {}     // uid -> gabungan keduanya
 let daftarBlokir = {}   // uid -> {blocked, reason}
 let blockSearchQuery = ""
-let blockFilter = "semua" // semua | aktif | blokir
+let blockFilter = "semua" // semua | aktif | blokir | manual | duplikat
+
+// ===== cache (dihitung ulang HANYA kalau data Firebase berubah) =====
+let akunList = []                 // sudah terurut + sudah punya index pencarian
+let uidDuplikatCache = new Set()
+let statsCache = { totalAkun: 0, totalManual: 0, totalDuplikat: 0 }
+let hasilFilter = []              // hasil filter/pencarian saat ini
+const PAGE_SIZE = 40              // jumlah baris yang dirender per batch
+let shownCount = PAGE_SIZE
+const dataSiap = { users: false, manual: false, blokir: false }
+const collator = new Intl.Collator()
 
 function setBlockFilter(filter){
     blockFilter = filter
@@ -612,7 +627,7 @@ function setBlockFilter(filter){
     document.getElementById("tabManual").classList.toggle("active", filter === "manual")
     document.getElementById("tabDuplikat").classList.toggle("active", filter === "duplikat")
     document.getElementById("hapusSemuaDuplikatBtn").style.display = filter === "duplikat" ? "block" : "none"
-    renderBlockList()
+    renderBlockList(true)
 }
 
 async function hashSHA256(teks){
@@ -639,120 +654,268 @@ function inisialAvatar(nama){
     return nama.trim().charAt(0).toUpperCase()
 }
 
-function cariGrupDuplikat(){
+function esc(v){
+    return String(v == null ? "" : v)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;")
+}
+
+// ===== normalisasi nomor HP =====
+// "+62 838-3386-8943" / "0838 3386 8943" / "6283833868943"  ->  "6283833868943"
+function digitsOnly(s){
+    return String(s == null ? "" : s).replace(/\D/g, "")
+}
+
+function canonPhone(s){
+    let d = digitsOnly(s)
+    if(!d) return ""
+    if(d.startsWith("620")) return "62" + d.slice(3)
+    if(d.startsWith("00"))  return d.slice(2)
+    if(d.startsWith("0"))   return "62" + d.slice(1)
+    if(d.startsWith("8"))   return "62" + d
+    return d
+}
+
+// bikin fungsi pencocok SEKALI per pencarian (bukan per akun)
+function buatPencocok(raw){
+    const q = raw.trim().toLowerCase()
+    if(!q) return null
+
+    const qd = digitsOnly(q)
+    const varian = []
+    // query terlihat seperti nomor HP (hanya angka + spasi + - ( ) .)
+    if(/^[\d\s+\-().]+$/.test(q) && qd.length >= 3){
+        varian.push(qd)
+        if(qd.startsWith("620"))     varian.push("62" + qd.slice(3))
+        else if(qd.startsWith("00")) varian.push(qd.slice(2))
+        else if(qd.startsWith("0"))  varian.push("62" + qd.slice(1))
+    }
+
+    if(varian.length === 0){
+        return akun => akun._s.includes(q)
+    }
+    return akun => akun._s.includes(q) || (akun._p !== "" && varian.some(v => akun._p.includes(v)))
+}
+
+// ===== bangun ulang index (dipanggil hanya saat data akun berubah) =====
+function rebuildIndex(){
+
+    daftarAkun = Object.assign({}, authMap, manualMap)
+
+    const list = []
     const grup = {}
-    Object.values(daftarAkun).forEach(akun => {
-        if(ownerUid && akun.uid === ownerUid) return
+    let totalManual = 0
+
+    for(const key in daftarAkun){
+        const akun = daftarAkun[key]
+        if(ownerUid && akun.uid === ownerUid) continue
+
+        const username = akun.username || ""
         const email = (akun.email || "").trim().toLowerCase()
         const phone = (akun.phone || "").trim()
+
+        akun._n = username
+        akun._s = (username + "\n" + (akun.email || "") + "\n" + (akun.phone || "")).toLowerCase()
+        akun._p = canonPhone(akun.phone)
+        list.push(akun)
+
+        if(akun.sumberAkun === "manual") totalManual++
+
+        // deteksi duplikat (aturan sama persis seperti sebelumnya: email / nomor identik)
         if(email){
-            const key = "email:" + email
-            if(!grup[key]) grup[key] = []
-            grup[key].push(akun.uid)
+            const k = "email:" + email
+            ;(grup[k] || (grup[k] = [])).push(akun.uid)
         }
         if(phone){
-            const key = "phone:" + phone
-            if(!grup[key]) grup[key] = []
-            grup[key].push(akun.uid)
+            const k = "phone:" + phone
+            ;(grup[k] || (grup[k] = [])).push(akun.uid)
         }
-    })
-    const hasil = {}
-    Object.keys(grup).forEach(key => {
-        if(grup[key].length > 1) hasil[key] = grup[key]
-    })
-    return hasil
+    }
+
+    list.sort((a, b) => collator.compare(a._n, b._n))
+    akunList = list
+
+    const setDup = new Set()
+    for(const k in grup){
+        if(grup[k].length > 1) grup[k].forEach(u => setDup.add(u))
+    }
+    uidDuplikatCache = setDup
+
+    statsCache = {
+        totalAkun: list.length,
+        totalManual: totalManual,
+        totalDuplikat: setDup.size
+    }
 }
 
 function getUidDuplikat(){
-    const grup = cariGrupDuplikat()
-    const set = new Set()
-    Object.values(grup).forEach(uids => uids.forEach(u => set.add(u)))
-    return set
+    return uidDuplikatCache
 }
 
-function renderBlockList(){
+function rowHtml(akun){
+
+    const bl = daftarBlokir[akun.uid]
+    const statusBlokir = !!(bl && bl.blocked)
+    const uid = esc(akun.uid)
+
+    const avatarHtml = akun.photo
+        ? `<img src="${esc(akun.photo)}" loading="lazy" decoding="async" alt="">`
+        : esc(inisialAvatar(akun.username))
+
+    const punyaPassword = !!akun.passwordHash
+
+    const alasanBlokir = statusBlokir && bl.reason
+        ? `<div class="block-meta">Alasan: ${esc(bl.reason)}</div>`
+        : ""
+
+    const badgeManual = akun.sumberAkun === "manual"
+        ? '<span style="font-size:10px;color:#73a5ff;background:rgba(76,125,255,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">MANUAL</span>'
+        : ""
+    const badgeDup = uidDuplikatCache.has(akun.uid)
+        ? '<span style="font-size:10px;color:#ff8f4d;background:rgba(255,143,77,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">DUPLIKAT</span>'
+        : ""
+
+    return `
+    <div class="block-row">
+        <div class="block-avatar">${avatarHtml}</div>
+        <div class="block-info">
+            <div class="block-username">${esc(akun.username) || "(tanpa username)"} ${badgeManual} ${badgeDup}</div>
+            <div class="block-meta">${esc(akun.email)}</div>
+            <div class="block-phone">
+                <span class="block-phone-text">${esc(akun.phone) || "(tidak ada nomor)"}</span>
+                <button class="block-edit-phone" data-act="phone" data-uid="${uid}">✏️ Ubah</button>
+            </div>
+            <div class="block-password">
+                <span class="block-password-text">${punyaPassword ? "Password: terenkripsi" : "(belum punya password)"}</span>
+                <button class="block-edit-password" data-act="pass" data-uid="${uid}">✏️ Ubah</button>
+            </div>
+            ${alasanBlokir}
+        </div>
+        <div class="block-actions">
+            <span class="block-status ${statusBlokir ? "blocked" : "aktif"}">
+                ${statusBlokir ? "DIBLOKIR" : "AKTIF"}
+            </span>
+            <button
+                class="block-btn ${statusBlokir ? "do-unblock" : "do-block"}"
+                data-act="toggle" data-uid="${uid}" data-blocked="${statusBlokir ? "0" : "1"}">
+                ${statusBlokir ? "Buka" : "Blokir"}
+            </button>
+            <button
+                class="block-btn do-delete"
+                data-act="delete" data-uid="${uid}">
+                 Hapus
+            </button>
+        </div>
+    </div>
+    `
+}
+
+function moreHtml(){
+    const sisa = hasilFilter.length - shownCount
+    if(sisa <= 0) return ""
+    return `<div id="blockMore" class="block-empty" data-act="more" style="cursor:pointer;color:#73a5ff;font-weight:600;">Tampilkan lebih banyak (${sisa} lagi)</div>`
+}
+
+function renderMore(){
+    if(shownCount >= hasilFilter.length) return
+    const container = document.getElementById("blockList")
+    const dari = shownCount
+    shownCount = Math.min(shownCount + PAGE_SIZE, hasilFilter.length)
+
+    const more = document.getElementById("blockMore")
+    if(more) more.remove()
+
+    container.insertAdjacentHTML(
+        "beforeend",
+        hasilFilter.slice(dari, shownCount).map(rowHtml).join("") + moreHtml()
+    )
+}
+
+function renderBlockList(reset){
 
     const container = document.getElementById("blockList")
     const countEl = document.getElementById("blockCount")
-    const q = blockSearchQuery.trim().toLowerCase()
-    const uidDuplikat = getUidDuplikat()
 
-    const daftar = Object.values(daftarAkun).filter(akun => {
-        if(ownerUid && akun.uid === ownerUid) return false
+    // tunggu semua sumber data selesai dimuat dulu
+    if(!(dataSiap.users && dataSiap.manual && dataSiap.blokir)) return
 
-        const statusBlokir = !!(daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked)
-        if(blockFilter === "aktif" && statusBlokir) return false
-        if(blockFilter === "blokir" && !statusBlokir) return false
-        if(blockFilter === "manual" && akun.sumberAkun !== "manual") return false
-        if(blockFilter === "duplikat" && !uidDuplikat.has(akun.uid)) return false
+    const cocok = buatPencocok(blockSearchQuery)
 
-        if(!q) return true
-        return (
-            (akun.username || "").toLowerCase().includes(q) ||
-            (akun.email || "").toLowerCase().includes(q) ||
-            (akun.phone || "").toLowerCase().includes(q)
-        )
-    }).sort((a,b) => (a.username || "").localeCompare(b.username || ""))
+    const hasil = []
+    for(let i = 0; i < akunList.length; i++){
+        const akun = akunList[i]
 
-    const totalAkun = Object.keys(daftarAkun).filter(uid => !(ownerUid && uid === ownerUid)).length
+        if(blockFilter !== "semua"){
+            const statusBlokir = !!(daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked)
+            if(blockFilter === "aktif" && statusBlokir) continue
+            if(blockFilter === "blokir" && !statusBlokir) continue
+            if(blockFilter === "manual" && akun.sumberAkun !== "manual") continue
+            if(blockFilter === "duplikat" && !uidDuplikatCache.has(akun.uid)) continue
+        }
+
+        if(cocok && !cocok(akun)) continue
+        hasil.push(akun)
+    }
+
+    hasilFilter = hasil
+
     const totalBlokir = Object.values(daftarBlokir).filter(b => b && b.blocked).length
-    const totalManual = Object.values(daftarAkun).filter(akun => !(ownerUid && akun.uid === ownerUid) && akun.sumberAkun === "manual").length
-    const totalDuplikat = uidDuplikat.size
-    countEl.innerText = `${totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${totalManual} login manual · ${totalDuplikat} duplikat`
+    let teks = `${statsCache.totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${statsCache.totalManual} login manual · ${statsCache.totalDuplikat} duplikat`
+    if(cocok || blockFilter !== "semua"){
+        teks += ` — ${hasil.length} hasil`
+    }
+    countEl.innerText = teks
 
-    if(daftar.length === 0){
+    if(reset){
+        shownCount = PAGE_SIZE
+    }
+
+    if(hasil.length === 0){
         container.innerHTML = `<div class="block-empty">Tidak ada akun ditemukan.</div>`
         return
     }
 
-    container.innerHTML = daftar.map(akun => {
+    const scrollLama = container.scrollTop
 
-        const statusBlokir = daftarBlokir[akun.uid] && daftarBlokir[akun.uid].blocked
-        const infoBlokir = daftarBlokir[akun.uid]
-        const avatarHtml = akun.photo
-            ? `<img src="${akun.photo}">`
-            : inisialAvatar(akun.username)
+    container.innerHTML =
+        hasil.slice(0, shownCount).map(rowHtml).join("") + moreHtml()
 
-        const punyaPassword = !!akun.passwordHash
+    container.scrollTop = reset ? 0 : scrollLama
 
-        const alasanBlokir = statusBlokir && infoBlokir && infoBlokir.reason
-            ? `<div class="block-meta">Alasan: ${infoBlokir.reason}</div>`
-            : ""
+    requestAnimationFrame(cekLoadMore)
+}
 
-        return `
-        <div class="block-row">
-            <div class="block-avatar">${avatarHtml}</div>
-            <div class="block-info">
-                <div class="block-username">${akun.username || "(tanpa username)"} ${akun.sumberAkun === "manual" ? '<span style="font-size:10px;color:#73a5ff;background:rgba(76,125,255,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">MANUAL</span>' : ""} ${uidDuplikat.has(akun.uid) ? '<span style="font-size:10px;color:#ff8f4d;background:rgba(255,143,77,.15);padding:2px 7px;border-radius:10px;margin-left:4px;font-weight:700;">DUPLIKAT</span>' : ""}</div>
-                <div class="block-meta">${akun.email || ""}</div>
-                <div class="block-phone">
-                    <span class="block-phone-text">${akun.phone || "(tidak ada nomor)"}</span>
-                    <button class="block-edit-phone" onclick="editNomorAkun('${akun.uid}')">✏️ Ubah</button>
-                </div>
-                <div class="block-password">
-                    <span class="block-password-text">${punyaPassword ? "Password: terenkripsi" : "(belum punya password)"}</span>
-                    <button class="block-edit-password" onclick="editPasswordAkun('${akun.uid}')">✏️ Ubah</button>
-                </div>
-                ${alasanBlokir}
-            </div>
-            <div class="block-actions">
-                <span class="block-status ${statusBlokir ? "blocked" : "aktif"}">
-                    ${statusBlokir ? "DIBLOKIR" : "AKTIF"}
-                </span>
-                <button
-                    class="block-btn ${statusBlokir ? "do-unblock" : "do-block"}"
-                    onclick="toggleBlokirAkun('${akun.uid}', ${statusBlokir ? "false" : "true"})">
-                    ${statusBlokir ? "Buka" : "Blokir"}
-                </button>
-                <button
-                    class="block-btn do-delete"
-                    onclick="hapusAkun('${akun.uid}')">
-                     Hapus
-                </button>
-            </div>
-        </div>
-        `
-    }).join("")
+// auto-muat batch berikutnya saat tombol "Tampilkan lebih banyak" mendekati layar
+function cekLoadMore(){
+    const more = document.getElementById("blockMore")
+    if(!more) return
+    const container = document.getElementById("blockList")
+    const lr = container.getBoundingClientRect()
+    const mr = more.getBoundingClientRect()
+    const batas = Math.min(lr.bottom, window.innerHeight)
+    if(mr.top < batas + 300) renderMore()
+}
+
+let scrollRaf = null
+function onScrollLoad(){
+    if(scrollRaf) return
+    scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = null
+        cekLoadMore()
+    })
+}
+
+function hapusLokal(uids){
+    uids.forEach(uid => {
+        delete authMap[uid]
+        delete manualMap[uid]
+        delete daftarBlokir[uid]
+    })
+    rebuildIndex()
+    renderBlockList(false)
 }
 
 let pendingBlockUid = null
@@ -841,9 +1004,7 @@ function konfirmasiHapusAkun(){
         manualUsersRef.child(uid).remove(),
         blockedUsersRef.child(uid).remove()
     ]).then(() => {
-        delete daftarAkun[uid]
-        delete daftarBlokir[uid]
-        renderBlockList()
+        hapusLokal([uid])
         showPopup("Berhasil", `Akun "${nama}" berhasil dihapus ✅`)
     }).catch(() => {
         showPopup("Gagal", "Gagal menghapus akun. Cek Firebase rules atau koneksi.")
@@ -870,23 +1031,21 @@ function closeDupModal(){
 
 function konfirmasiHapusDuplikat(){
 
-    const uidSet = getUidDuplikat()
+    const uidList = Array.from(getUidDuplikat())
     document.getElementById("dupModal").classList.remove("active")
 
-    if(uidSet.size === 0) return
+    if(uidList.length === 0) return
 
     const promises = []
-    uidSet.forEach(uid => {
+    uidList.forEach(uid => {
         promises.push(usersRef.child(uid).remove())
         promises.push(manualUsersRef.child(uid).remove())
         promises.push(blockedUsersRef.child(uid).remove())
-        delete daftarAkun[uid]
-        delete daftarBlokir[uid]
     })
 
     Promise.all(promises).then(() => {
-        renderBlockList()
-        showPopup("Berhasil", `Berhasil menghapus ${uidSet.size} akun duplikat, tidak ada yang disisakan ✅`)
+        hapusLokal(uidList)
+        showPopup("Berhasil", `Berhasil menghapus ${uidList.length} akun duplikat, tidak ada yang disisakan ✅`)
     }).catch(() => {
         showPopup("Gagal", "Terjadi kesalahan saat menghapus akun duplikat.")
     })
@@ -987,31 +1146,87 @@ async function simpanPasswordAkun(){
     })
 }
 
+// ----- pencarian: debounce supaya tidak render di setiap ketikan -----
+let searchTimer = null
 document.getElementById("blockSearch").addEventListener("input", (e) => {
-    blockSearchQuery = e.target.value
-    renderBlockList()
+    const v = e.target.value
+    clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => {
+        blockSearchQuery = v
+        renderBlockList(true)
+    }, 180)
 })
+
+// ----- satu event listener untuk semua tombol di list (delegation) -----
+const blockListEl = document.getElementById("blockList")
+
+blockListEl.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-act]")
+    if(!el) return
+    const act = el.dataset.act
+    const uid = el.dataset.uid
+
+    if(act === "more")        renderMore()
+    else if(act === "phone")  editNomorAkun(uid)
+    else if(act === "pass")   editPasswordAkun(uid)
+    else if(act === "toggle") toggleBlokirAkun(uid, el.dataset.blocked === "1")
+    else if(act === "delete") hapusAkun(uid)
+})
+
+blockListEl.addEventListener("scroll", onScrollLoad, { passive: true })
+window.addEventListener("scroll", onScrollLoad, { passive: true })
+
+// ----- gabungkan banyak update Firebase jadi satu render -----
+let refreshTimer = null
+let perluRebuild = false
+
+function jadwalkanRefresh(rebuild){
+    if(rebuild) perluRebuild = true
+    clearTimeout(refreshTimer)
+    refreshTimer = setTimeout(() => {
+        if(perluRebuild){
+            rebuildIndex()
+            perluRebuild = false
+        }
+        renderBlockList(false)
+    }, 60)
+}
+
+function gagalMuat(nama){
+    return (err) => {
+        console.error("Gagal memuat " + nama, err)
+        dataSiap[nama] = true
+        document.getElementById("blockCount").innerText = "Gagal memuat sebagian data (" + nama + "). Cek koneksi / Firebase rules."
+    }
+}
 
 usersRef.on("value", snap => {
     const data = snap.val() || {}
+    const map = {}
     Object.keys(data).forEach(uid => {
-        daftarAkun[uid] = { uid, ...data[uid], sumberAkun: "auth" }
+        map[uid] = { uid, ...data[uid], sumberAkun: "auth" }
     })
-    renderBlockList()
-})
+    authMap = map
+    dataSiap.users = true
+    jadwalkanRefresh(true)
+}, gagalMuat("users"))
 
 manualUsersRef.on("value", snap => {
     const data = snap.val() || {}
+    const map = {}
     Object.keys(data).forEach(uid => {
-        daftarAkun[uid] = { uid, ...data[uid], sumberAkun: "manual" }
+        map[uid] = { uid, ...data[uid], sumberAkun: "manual" }
     })
-    renderBlockList()
-})
+    manualMap = map
+    dataSiap.manual = true
+    jadwalkanRefresh(true)
+}, gagalMuat("manual"))
 
 blockedUsersRef.on("value", snap => {
     daftarBlokir = snap.val() || {}
-    renderBlockList()
-})
+    dataSiap.blokir = true
+    jadwalkanRefresh(false)
+}, gagalMuat("blokir"))
 
 </script>
 
