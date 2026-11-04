@@ -63,6 +63,48 @@ href="style.css">
     cursor:pointer;
 }
 
+.review-filters{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 12px;
+    margin-bottom:6px;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+}
+.review-filters::-webkit-scrollbar{ display:none; }
+
+.rv-chip{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:9px 16px;
+    border-radius:20px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.06);
+    color:#aeb8e8;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    white-space:nowrap;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+    transition:.2s;
+}
+.rv-chip small{
+    font-size:11px;
+    font-weight:600;
+    opacity:.65;
+}
+.rv-chip.active{
+    background:linear-gradient(135deg,#3d6cff,#6b5cff);
+    border-color:transparent;
+    color:#fff;
+    box-shadow:0 6px 18px rgba(76,125,255,.35);
+}
+.rv-chip.active small{ opacity:.85; }
+
 .confirm-row{
     display:flex;
     gap:10px;
@@ -237,6 +279,8 @@ POSTING
 <div class="review-section-title">
 Ulasan Pengguna
 </div>
+
+<div class="review-filters" id="reviewFilters"></div>
 
 <div id="reviewList">
 <div class="review-note">Memuat ulasan...</div>
@@ -421,6 +465,9 @@ let targetEditId = null
 let dataMap = {}        // id -> item (data live terbaru)
 let viewEntries = []    // daftar yang ditampilkan (sudah terurut)
 let hasMyReview = false
+let allEntries = []     // semua ulasan (belum difilter)
+let allStats = null
+let ratingFilter = 0    // 0 = semua, 1..5 = bintang
 
 /* ============================================================
    RINGKASAN (rata-rata + bar)
@@ -561,7 +608,9 @@ function renderList(){
     const list = document.getElementById("reviewList")
 
     if(viewEntries.length === 0){
-        list.innerHTML = `<div class="review-note">Belum ada ulasan. Jadilah yang pertama!</div>`
+        list.innerHTML = ratingFilter
+            ? `<div class="review-note">Belum ada ulasan bintang ${ratingFilter}.</div>`
+            : `<div class="review-note">Belum ada ulasan. Jadilah yang pertama!</div>`
         return
     }
 
@@ -569,10 +618,30 @@ function renderList(){
     observeMore()
 }
 
-function tampilkan(entries, stats){
+function renderFilters(){
+
+    const el = document.getElementById("reviewFilters")
+    const c = allStats && allStats.c ? allStats.c : [0, 0, 0, 0, 0, 0]
+    const total = allStats ? allStats.count : allEntries.length
+
+    const chips = [{ v: 0, label: "Semua", n: total }]
+    for(let i = 5; i >= 1; i--){
+        chips.push({ v: i, label: "★ " + i, n: c[i] })
+    }
+
+    el.innerHTML = chips.map(ch =>
+        `<span class="rv-chip ${ratingFilter === ch.v ? "active" : ""}" data-star="${ch.v}">${ch.label}<small>${ch.n}</small></span>`
+    ).join("")
+}
+
+function terapkanFilter(reset){
+
+    const sumber = ratingFilter
+        ? allEntries.filter(e => e.star === ratingFilter)
+        : allEntries
 
     // ulasan milik sendiri di paling atas, sisanya terbaru dulu
-    viewEntries = entries.slice().sort((a, b) => {
+    viewEntries = sumber.slice().sort((a, b) => {
         if(userUid){
             if(a.id === userUid) return -1
             if(b.id === userUid) return 1
@@ -580,13 +649,34 @@ function tampilkan(entries, stats){
         return (b.time || 0) - (a.time || 0)
     })
 
+    if(reset) shown = PAGE_SIZE
+
+    renderList()
+}
+
+function tampilkan(entries, stats){
+
+    allEntries = entries
+    allStats = stats
+
     hasMyReview = !!userUid && entries.some(e => e.id === userUid)
 
     renderSummary(stats)
-    renderList()
+    renderFilters()
+    terapkanFilter(false)
 
     document.getElementById("ratingTopContainer").style.display = hasMyReview ? "none" : "block"
 }
+
+document.getElementById("reviewFilters").addEventListener("click", e => {
+    const chip = e.target.closest("[data-star]")
+    if(!chip) return
+    const v = Number(chip.dataset.star) || 0
+    if(v === ratingFilter) return
+    ratingFilter = v
+    renderFilters()
+    terapkanFilter(true)
+})
 
 /* ============================================================
    CACHE LOKAL (list langsung muncul, data live menyusul)
