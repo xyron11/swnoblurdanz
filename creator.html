@@ -62,12 +62,16 @@ href="style.css">
 .cr-frame{
     position:relative;
     min-height:190px;
-    overflow:hidden;
-    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 14%, #000 68%, transparent 100%);
-    mask-image:linear-gradient(180deg, transparent 0, #000 14%, #000 68%, transparent 100%);
 }
 
-.cr-frame img{
+.cr-photo{
+    position:relative;
+    overflow:hidden;
+    -webkit-mask-image:linear-gradient(180deg, transparent 0, #000 5%, #000 93%, transparent 100%);
+    mask-image:linear-gradient(180deg, transparent 0, #000 5%, #000 93%, transparent 100%);
+}
+
+.cr-photo img{
     display:block;
     width:100%;
     height:auto;
@@ -79,8 +83,8 @@ href="style.css">
 .cr-frame::after{
     content:"";
     position:absolute;
-    inset:14px 18px 34px;
-    border:1px solid rgba(217,196,147,.34);
+    inset:16px 18px;
+    border:1px solid rgba(217,196,147,.38);
     pointer-events:none;
     opacity:0;
     animation:crFade 1.2s ease .9s forwards;
@@ -96,7 +100,7 @@ href="style.css">
 
 .cr-intro{
     position:relative;
-    margin-top:-36px;
+    margin-top:18px;
     padding:0 24px;
     text-align:center;
 }
@@ -355,7 +359,7 @@ href="style.css">
 }
 
 @media (prefers-reduced-motion:reduce){
-    .cr-frame img{ animation:none; opacity:1; transform:none; }
+    .cr-photo img{ animation:none; opacity:1; transform:none; }
     .cr-frame::after{ animation:none; opacity:1; }
     .cr-rise{ animation:none; opacity:1; transform:none; }
     .cr-rv{ opacity:1; transform:none; transition:none; }
@@ -393,12 +397,14 @@ onclick="toggleMenu()">
 <header class="cr-hero">
 
 <div class="cr-frame">
+<div class="cr-photo">
 <img
 src="https://raw.githubusercontent.com/xyron11/DB-PHOTO/main/Proyek%20Baru%20226%20%5BBCD92D5%5D.png"
 alt="Danz Tsuyoi"
 fetchpriority="high"
 decoding="async"
 onerror="this.style.display='none'">
+</div>
 </div>
 
 <div class="cr-intro">
