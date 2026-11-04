@@ -11,6 +11,10 @@ content="width=device-width, initial-scale=1.0">
 
 <title>Blokir Akun - danzclean</title>
 
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link
 href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
 rel="stylesheet">
@@ -619,6 +623,97 @@ let shownCount = PAGE_SIZE
 const dataSiap = { users: false, manual: false, blokir: false }
 const collator = new Intl.Collator()
 
+// ===== cache lokal (IndexedDB): list langsung muncul, Firebase menyusul di belakang =====
+const CACHE_DB = "danzclean_blokirakun"
+const CACHE_STORE = "kv"
+let cacheDipakai = false
+let cacheDbPromise = null
+let cacheTimer = null
+
+function liveSiap(){
+    return dataSiap.users && dataSiap.manual && dataSiap.blokir
+}
+
+function bukaCacheDb(){
+    if(cacheDbPromise) return cacheDbPromise
+    cacheDbPromise = new Promise((resolve, reject) => {
+        if(!window.indexedDB) return reject(new Error("IndexedDB tidak tersedia"))
+        const req = indexedDB.open(CACHE_DB, 1)
+        req.onupgradeneeded = () => req.result.createObjectStore(CACHE_STORE)
+        req.onsuccess = () => resolve(req.result)
+        req.onerror = () => reject(req.error)
+    })
+    return cacheDbPromise
+}
+
+function cacheGet(key){
+    return bukaCacheDb().then(db => new Promise((resolve, reject) => {
+        const r = db.transaction(CACHE_STORE, "readonly").objectStore(CACHE_STORE).get(key)
+        r.onsuccess = () => resolve(r.result)
+        r.onerror = () => reject(r.error)
+    }))
+}
+
+function cacheSet(key, val){
+    return bukaCacheDb().then(db => new Promise((resolve, reject) => {
+        const tx = db.transaction(CACHE_STORE, "readwrite")
+        tx.objectStore(CACHE_STORE).put(val, key)
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+    }))
+}
+
+// simpan versi ringkas (tanpa hash password, foto base64 besar dibuang)
+function jadwalkanSimpanCache(){
+    clearTimeout(cacheTimer)
+    cacheTimer = setTimeout(() => {
+        if(!liveSiap()) return
+        const ringkas = (m) => Object.values(m).map(a => ({
+            uid: a.uid,
+            username: a.username || "",
+            email: a.email || "",
+            phone: a.phone || "",
+            photo: (typeof a.photo === "string" && a.photo.length <= 500) ? a.photo : "",
+            sumberAkun: a.sumberAkun,
+            pw: a.passwordHash ? 1 : 0
+        }))
+        cacheSet("snapshot", {
+            owner: ownerUid || null,
+            waktu: Date.now(),
+            auth: ringkas(authMap),
+            manual: ringkas(manualMap),
+            blokir: daftarBlokir
+        }).catch(() => {})
+    }, 1500)
+}
+
+function muatDariCache(){
+    cacheGet("snapshot").then(snap => {
+        if(!snap || liveSiap()) return
+        if((snap.owner || null) !== (ownerUid || null)) return
+
+        const bangun = (arr) => {
+            const m = {}
+            ;(arr || []).forEach(a => {
+                m[a.uid] = {
+                    uid: a.uid, username: a.username, email: a.email, phone: a.phone,
+                    photo: a.photo, sumberAkun: a.sumberAkun, passwordHash: a.pw ? "1" : ""
+                }
+            })
+            return m
+        }
+
+        // jangan timpa bagian yang sudah keburu datang dari server
+        if(!dataSiap.users)  authMap = bangun(snap.auth)
+        if(!dataSiap.manual) manualMap = bangun(snap.manual)
+        if(!dataSiap.blokir) daftarBlokir = snap.blokir || {}
+
+        cacheDipakai = true
+        rebuildIndex()
+        renderBlockList(true)
+    }).catch(() => {})
+}
+
 function setBlockFilter(filter){
     blockFilter = filter
     document.getElementById("tabSemua").classList.toggle("active", filter === "semua")
@@ -840,7 +935,7 @@ function renderBlockList(reset){
     const countEl = document.getElementById("blockCount")
 
     // tunggu semua sumber data selesai dimuat dulu
-    if(!(dataSiap.users && dataSiap.manual && dataSiap.blokir)) return
+    if(!liveSiap() && !cacheDipakai) return
 
     const cocok = buatPencocok(blockSearchQuery)
 
@@ -866,6 +961,9 @@ function renderBlockList(reset){
     let teks = `${statsCache.totalAkun} akun terdaftar · ${totalBlokir} diblokir · ${statsCache.totalManual} login manual · ${statsCache.totalDuplikat} duplikat`
     if(cocok || blockFilter !== "semua"){
         teks += ` — ${hasil.length} hasil`
+    }
+    if(!liveSiap()){
+        teks += " · menyinkronkan data…"
     }
     countEl.innerText = teks
 
@@ -916,6 +1014,7 @@ function hapusLokal(uids){
     })
     rebuildIndex()
     renderBlockList(false)
+    jadwalkanSimpanCache()
 }
 
 let pendingBlockUid = null
@@ -1013,6 +1112,11 @@ function konfirmasiHapusAkun(){
 
 function hapusSemuaDuplikatAkun(){
 
+    if(!liveSiap()){
+        showPopup("Info", "Data masih disinkronkan dari server, tunggu sebentar lalu coba lagi.")
+        return
+    }
+
     const uidSet = getUidDuplikat()
 
     if(uidSet.size === 0){
@@ -1030,6 +1134,12 @@ function closeDupModal(){
 }
 
 function konfirmasiHapusDuplikat(){
+
+    if(!liveSiap()){
+        document.getElementById("dupModal").classList.remove("active")
+        showPopup("Info", "Data masih disinkronkan dari server, tunggu sebentar lalu coba lagi.")
+        return
+    }
 
     const uidList = Array.from(getUidDuplikat())
     document.getElementById("dupModal").classList.remove("active")
@@ -1189,6 +1299,7 @@ function jadwalkanRefresh(rebuild){
             perluRebuild = false
         }
         renderBlockList(false)
+        jadwalkanSimpanCache()
     }, 60)
 }
 
@@ -1227,6 +1338,8 @@ blockedUsersRef.on("value", snap => {
     dataSiap.blokir = true
     jadwalkanRefresh(false)
 }, gagalMuat("blokir"))
+
+muatDariCache()
 
 </script>
 
