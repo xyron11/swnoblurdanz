@@ -426,9 +426,10 @@
                     );
                 },
 
-                isFull() {
-                    return lastDigits.length === country.max;
-                },
+                isDetecting() {
+    return lastDigits.length >= country.min &&
+           lastDigits.length < country.max;
+},
 
                 setCountry,
                 setFromFullDigits,
